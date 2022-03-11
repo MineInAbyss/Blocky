@@ -1,8 +1,12 @@
+@file:UseSerializers(IntRangeSerializer::class)
+
 package com.mineinabyss.blocky.components
 
+import com.mineinabyss.idofront.serialization.IntRangeSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.UseSerializers
 import org.bukkit.Sound
 
 @Serializable
@@ -15,6 +19,5 @@ data class BlockyInfo (
     val affectedByPiston: Boolean = true,
     val placeSound: Sound,
     val canBeDebugged: Boolean = true,
-    val blockExp: Float = 0F,
-    val blockDrop: SerializableItemStack? = null
+    val blockDrop: List<BlockDrops> = listOf()
 )
