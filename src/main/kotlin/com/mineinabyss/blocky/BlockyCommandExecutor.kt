@@ -8,7 +8,6 @@ import com.mineinabyss.idofront.commands.CommandHolder
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.ecs.components.itemcontexts.PlayerInventoryContext
@@ -54,7 +53,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
         return when (args.size) {
             1 -> listOf("give", "menu").filter { it.startsWith(args[0]) }
             2 -> {
-                when (args[1]) {
+                when (args[0]) {
                     "give" -> BlockyTypeQuery.map { it.key.toString() }
                     else -> listOf()
                 }
