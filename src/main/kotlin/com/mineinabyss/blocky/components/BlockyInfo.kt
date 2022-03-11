@@ -8,10 +8,13 @@ import org.bukkit.Sound
 @Serializable
 @SerialName("blocky:info")
 data class BlockyInfo (
+    val modelId: String,
     val requiredTools: List<SerializableItemStack> = listOf(),
     val canBeBroken: Boolean = true,
     val blockBreakTime: Int,
     val affectedByPiston: Boolean = true,
     val placeSound: Sound,
-    val canBeDebugged: Boolean = true
+    val canBeDebugged: Boolean = true,
+    val blockExp: Float = 0F,
+    val blockDrop: SerializableItemStack? = null
 )

@@ -17,7 +17,3 @@ object BlockyTypeQuery : Query() {
 
     val TargetScope.key by get<PrefabKey>()
 }
-
-enum class BlockType {
-    NORMAL, INTERACTABLE, MISC
-}

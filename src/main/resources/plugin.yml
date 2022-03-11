@@ -4,6 +4,7 @@ main: com.mineinabyss.blocky.BlockyPlugin
 api-version: 1.17
 authors: [ boy0000 ]
 depend: [ Geary ]
+softdepend: [ Looty, Guiy ]
 
 commands:
   blocky:

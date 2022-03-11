@@ -6,7 +6,6 @@ import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.getService
 import com.mineinabyss.idofront.plugin.registerEvents
-import com.mineinabyss.idofront.plugin.registerService
 import org.bukkit.plugin.java.JavaPlugin
 import java.io.File
 

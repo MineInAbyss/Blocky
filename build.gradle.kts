@@ -10,6 +10,7 @@ plugins {
     id("com.mineinabyss.conventions.papermc")
     id("com.mineinabyss.conventions.copyjar")
     id("com.mineinabyss.conventions.publication")
+    id("org.jetbrains.compose") version "1.0.1"
     kotlin("plugin.serialization")
 }
 
@@ -24,8 +25,10 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
+    compileOnly(Deps.kotlin.stdlib)
     compileOnly(Deps.kotlinx.serialization.json)
     compileOnly(Deps.kotlinx.serialization.kaml)
+    compileOnly(Deps.kotlinx.coroutines)
     compileOnly(Deps.minecraft.skedule)
 
     compileOnly(Deps.`sqlite-jdbc`) { isTransitive = false }

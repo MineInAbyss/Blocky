@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.components
 
-import com.mineinabyss.blocky.BlockType
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
@@ -8,5 +7,13 @@ import kotlinx.serialization.Serializable
 @SerialName("blocky:type")
 data class BlockyType (
     val blockType: BlockType = BlockType.NORMAL,
-    val blockModelId: Int,
+    val blockModelType: BlockModelType = BlockModelType.NOTE_BLOCK,
 )
+
+enum class BlockType {
+    NORMAL, PASSTHROUGH, INTERACTABLE, MISC
+}
+
+enum class BlockModelType {
+    NOTE_BLOCK, MODELENGINE
+}

@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.BlockType
+import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyDebug
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.BlockyType
