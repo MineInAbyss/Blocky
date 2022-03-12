@@ -16,10 +16,7 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
-import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.block.NotePlayEvent
+import org.bukkit.event.block.*
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -78,6 +75,31 @@ class BlockListener : Listener {
         if (!blocky.canBeBroken && (damager as Player).gameMode != GameMode.CREATIVE) isCancelled = true
     }
 
+    //TODO Try and somehow do custom break-times depending on item in hand etc
+    @EventHandler
+    fun BlockDamageEvent.onMiningBlockyBlock() {
+        /*val gearyBlock = block.getBlockyBlockFromBlock() ?: return
+        val type = gearyBlock.get<BlockyType>() ?: return
+        val info = gearyBlock.get<BlockyInfo>() ?: return
+        var progress = 0F
+        var timePassed = 0F
+        val lastTime = System.currentTimeMillis()
+
+        if (type.blockModelType == BlockModelType.MODELENGINE) return
+        if (!info.canBeBroken && player.gameMode != GameMode.CREATIVE) return
+
+        blockyPlugin.schedule {
+            do {
+                player.addPotionEffect(PotionEffect(PotionEffectType.SLOW_DIGGING, -1, 1, false, false))
+                timePassed = lastTime - System.currentTimeMillis().toFloat()
+                progress = info.blockBreakTime.toFloat() - timePassed
+                player.sendBlockDamage(block.location, progress)
+                waitFor(1)
+            } while (progress < 1F)
+            player.removePotionEffect(PotionEffectType.SLOW_DIGGING)
+        }*/
+    }
+
     @EventHandler
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         val gearyBlock = block.getBlockyBlockFromBlock() ?: return
@@ -107,6 +129,4 @@ class BlockListener : Listener {
             expToDrop = it.exp
         }
     }
-
-
 }
