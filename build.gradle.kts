@@ -4,6 +4,7 @@ val idofrontVersion: String by project
 val gearyPlatformVersion: String by project
 val deeperworldVersion: String by project
 val guiyVersion: String by project
+val modelengineVersion: String by project
 
 plugins {
     id("com.mineinabyss.conventions.kotlin")
@@ -46,6 +47,7 @@ dependencies {
     // Other plugins
     compileOnly("com.mineinabyss:deeperworld:$deeperworldVersion")
     compileOnly("com.mineinabyss:guiy-compose:$guiyVersion")
+    compileOnly("com.ticxo.modelengine:api:$modelengineVersion")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
 
     // Shaded

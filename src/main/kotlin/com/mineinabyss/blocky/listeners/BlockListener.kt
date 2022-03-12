@@ -1,9 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockModelType
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyType
+import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
 import com.mineinabyss.blocky.helpers.getBlockyBlockFromBlock
 import com.mineinabyss.geary.papermc.access.toGeary
@@ -52,19 +49,21 @@ class BlockListener : Listener {
     @EventHandler
     fun PlayerInteractEvent.onPlacingBlockyMisc() {
         val item = player.inventory.itemInMainHand
-        val blockyType = item.toGearyOrNull(player)?.get<BlockyType>() ?: return
-        val blockyInfo = item.toGearyOrNull(player)?.get<BlockyInfo>() ?: return
+        val geary = item.toGearyOrNull(player) ?: return
+        val blockyType = geary.get<BlockyType>() ?: return
+        val blockyInfo = geary.get<BlockyInfo>() ?: return
+        val blockEntity = geary.get<BlockyEntity>() ?: return
         val loc = clickedBlock?.location?.toCenterLocation() ?: return
 
         if (hand != EquipmentSlot.HAND) return
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (blockyType.blockType == BlockType.NORMAL || blockyType.blockType == BlockType.PASSTHROUGH) return
 
-        //TODO This will probably not work like it does in Mobzy
         if (blockyType.blockModelType == BlockModelType.MODELENGINE) {
-            loc.spawnFromPrefab(item.toGearyOrNull(player)!!)
+            val prefabKey = geary.getOrSetPersisting { BlockyEntity(blockEntity.prefab) }
+            loc.spawnFromPrefab(prefabKey.prefab) ?: error("Prefab ${prefabKey.prefab} not found")
 
-            if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
+            if (player.gameMode != GameMode.CREATIVE) item.subtract()
             player.playSound(loc, blockyInfo.placeSound, 1f, 1f)
         }
     }
