@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import com.mineinabyss.blocky.BlockyTypeQuery
+import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.guiy.components.Grid
@@ -9,19 +10,31 @@ import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.guiy.modifiers.size
-import com.mineinabyss.looty.ecs.components.LootyType
+import com.mineinabyss.looty.LootyFactory
 import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
 
 @Composable
 fun BlockyUIScope.BlockyInteractableMenu() {
     Grid(Modifier.size(5, 5)) {
-        BlockyTypeQuery.filter {
+        val interactables = BlockyTypeQuery.filter {
             it.entity.get<BlockyType>()?.blockType == BlockType.INTERACTABLE
-        }.forEach {
-            val item = it.entity.get<LootyType>()?.createItem()!!
-            Item(it.entity.get<LootyType>()?.createItem()!!, Modifier.clickable {
-                if (player.itemOnCursor.type == Material.AIR) player.setItemOnCursor(item)
-                else if (player.itemOnCursor == item) player.itemOnCursor.amount += 1
+
+        }
+        interactables.forEach {
+            val interactable = LootyFactory.createFromPrefab(it.key) ?: return@forEach
+            Item(interactable, Modifier.clickable {
+                val cursor = player.itemOnCursor
+                if (cursor.type == Material.AIR) player.setItemOnCursor(interactable)
+                val isEqual = player.itemOnCursor.itemMeta.customModelData == interactable.itemMeta.customModelData
+
+                if (clickType.isShiftClick) {
+                    player.setItemOnCursor(interactable)
+                    player.itemOnCursor.amount = interactable.maxStackSize
+                }
+                else if (clickType.isLeftClick && !isEqual) player.setItemOnCursor(ItemStack(Material.AIR))
+                else if (clickType.isRightClick) cursor.subtract(1)
+                else if (clickType.isLeftClick && isEqual && cursor.amount < interactable.maxStackSize) cursor.amount += 1
             })
         }
     }
