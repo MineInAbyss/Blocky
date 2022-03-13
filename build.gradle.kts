@@ -49,6 +49,8 @@ dependencies {
     compileOnly("com.mineinabyss:guiy-compose:$guiyVersion")
     compileOnly("com.ticxo.modelengine:api:$modelengineVersion")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
+    compileOnly(Deps.minecraft.headlib)
+    compileOnly(Deps.minecraft.anvilgui)
 
     // Shaded
     implementation("com.mineinabyss:idofront:$idofrontVersion")

@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.menus.BlockyTypeScreen
+import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.inventory.guiy
 import com.mineinabyss.idofront.commands.CommandHolder
@@ -39,7 +39,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             "menu" {
                 playerAction {
                     val player = sender as Player
-                    guiy { BlockyTypeScreen(player) }
+                    guiy { BlockyMainMenu(player) }
                 }
             }
         }

@@ -6,23 +6,35 @@ import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.components.Item
-import com.mineinabyss.guiy.components.canvases.Chest
-import com.mineinabyss.guiy.inventory.GuiyOwner
 import com.mineinabyss.guiy.modifiers.Modifier
-import com.mineinabyss.guiy.modifiers.height
+import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.looty.ecs.components.LootyType
-import org.bukkit.entity.Player
+import org.bukkit.Material
+import org.bukkit.inventory.ItemStack
 
 @Composable
-fun GuiyOwner.BlockyNoteBlockMenu(player: Player) {
-    Chest(setOf(player), ":something:", Modifier.height(5), onClose = { player.closeInventory() }) {
-        Grid(Modifier.size(5, 5)) {
-            BlockyTypeQuery.filter {
-                it.entity.get<BlockyType>()?.blockType == BlockType.NORMAL
-            }.forEach {
-                Item(it.entity.get<LootyType>()?.createItem()!!)
-            }
+fun BlockyUIScope.BlockyNoteBlockMenu() {
+    Grid(Modifier.size(5, 5)) {
+        BlockyTypeQuery.filter {
+            it.entity.get<BlockyType>()?.blockType == BlockType.NORMAL
+        }.forEach {
+            Item(it.entity.get<LootyType>()?.createItem()!!, Modifier.clickable {
+                val cursor = player.itemOnCursor
+                val block = it.entity.get<LootyType>()?.createItem()!!
+                if (cursor.type == Material.AIR) player.setItemOnCursor(block)
+                val isEqual = player.itemOnCursor.itemMeta.customModelData == block.itemMeta.customModelData
+
+                if (clickType.isShiftClick) {
+                    player.setItemOnCursor(block)
+                    player.itemOnCursor.amount = block.maxStackSize
+                }
+                else if (clickType.isLeftClick && !isEqual) player.setItemOnCursor(ItemStack(Material.AIR))
+                else if (clickType.isRightClick) cursor.subtract(1)
+                else if (clickType.isLeftClick && isEqual && cursor.amount < block.maxStackSize) cursor.amount += 1
+
+                //else player.setItemOnCursor(ItemStack(Material.AIR))
+            })
         }
     }
 }

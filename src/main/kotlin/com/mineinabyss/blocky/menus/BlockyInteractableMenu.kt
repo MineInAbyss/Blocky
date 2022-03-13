@@ -6,23 +6,23 @@ import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.components.Item
-import com.mineinabyss.guiy.components.canvases.Chest
-import com.mineinabyss.guiy.inventory.GuiyOwner
 import com.mineinabyss.guiy.modifiers.Modifier
-import com.mineinabyss.guiy.modifiers.height
+import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.looty.ecs.components.LootyType
-import org.bukkit.entity.Player
+import org.bukkit.Material
 
 @Composable
-fun GuiyOwner.BlockyInteractableMenu(player: Player) {
-    Chest(setOf(player), ":something:", Modifier.height(5), onClose = { player.closeInventory() }) {
-        Grid(Modifier.size(5, 5)) {
-            BlockyTypeQuery.filter {
-                it.entity.get<BlockyType>()?.blockType == BlockType.INTERACTABLE
-            }.forEach {
-                Item(it.entity.get<LootyType>()?.createItem()!!)
-            }
+fun BlockyUIScope.BlockyInteractableMenu() {
+    Grid(Modifier.size(5, 5)) {
+        BlockyTypeQuery.filter {
+            it.entity.get<BlockyType>()?.blockType == BlockType.INTERACTABLE
+        }.forEach {
+            val item = it.entity.get<LootyType>()?.createItem()!!
+            Item(it.entity.get<LootyType>()?.createItem()!!, Modifier.clickable {
+                if (player.itemOnCursor.type == Material.AIR) player.setItemOnCursor(item)
+                else if (player.itemOnCursor == item) player.itemOnCursor.amount += 1
+            })
         }
     }
 }
