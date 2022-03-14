@@ -6,14 +6,14 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("blocky:type")
 data class BlockyType (
-    val blockType: BlockType = BlockType.NORMAL,
-    val blockModelType: BlockModelType = BlockModelType.VANILLA,
+    val blockType: BlockType = BlockType.CUBE,
+    val blockModelType: BlockModelType = BlockModelType.BLOCK,
 )
 
 enum class BlockType {
-    NORMAL, PASSTHROUGH, INTERACTABLE, MISC
+    CUBE, GROUND, WALL, INTERACTABLE, MISC
 }
 
 enum class BlockModelType {
-    VANILLA, MODELENGINE
+    BLOCK, ENTITY
 }

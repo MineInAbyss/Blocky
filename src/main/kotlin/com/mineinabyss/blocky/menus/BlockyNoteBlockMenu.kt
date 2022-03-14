@@ -18,7 +18,7 @@ import org.bukkit.inventory.ItemStack
 fun BlockyUIScope.BlockyNoteBlockMenu() {
     Grid(Modifier.size(5, 5)) {
         val blocks = BlockyTypeQuery.filter {
-            it.entity.get<BlockyType>()?.blockType == BlockType.NORMAL
+            it.entity.get<BlockyType>()?.blockType == BlockType.CUBE
 
         }
         blocks.forEach {

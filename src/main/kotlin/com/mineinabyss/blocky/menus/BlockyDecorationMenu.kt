@@ -15,26 +15,27 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 @Composable
-fun BlockyUIScope.BlockyPassthroughMenu() {
+fun BlockyUIScope.BlockyDecorationMenu() {
     Grid(Modifier.size(5, 5)) {
         val passthroughs = BlockyTypeQuery.filter {
-            it.entity.get<BlockyType>()?.blockType == BlockType.PASSTHROUGH
+            it.entity.get<BlockyType>()?.blockType == BlockType.WALL &&
+            it.entity.get<BlockyType>()?.blockType == BlockType.GROUND
 
         }
         passthroughs.forEach {
-            val passthrough = LootyFactory.createFromPrefab(it.key) ?: return@forEach
-            Item(passthrough, Modifier.clickable {
+            val decoration = LootyFactory.createFromPrefab(it.key) ?: return@forEach
+            Item(decoration, Modifier.clickable {
                 val cursor = player.itemOnCursor
-                if (cursor.type == Material.AIR) player.setItemOnCursor(passthrough)
-                val isEqual = player.itemOnCursor.itemMeta.customModelData == passthrough.itemMeta.customModelData
+                if (cursor.type == Material.AIR) player.setItemOnCursor(decoration)
+                val isEqual = player.itemOnCursor.itemMeta.customModelData == decoration.itemMeta.customModelData
 
                 if (clickType.isShiftClick) {
-                    player.setItemOnCursor(passthrough)
-                    player.itemOnCursor.amount = passthrough.maxStackSize
+                    player.setItemOnCursor(decoration)
+                    player.itemOnCursor.amount = decoration.maxStackSize
                 }
                 else if (clickType.isLeftClick && !isEqual) player.setItemOnCursor(ItemStack(Material.AIR))
                 else if (clickType.isRightClick) cursor.subtract(1)
-                else if (clickType.isLeftClick && isEqual && cursor.amount < passthrough.maxStackSize) cursor.amount += 1
+                else if (clickType.isLeftClick && isEqual && cursor.amount < decoration.maxStackSize) cursor.amount += 1
             })
         }
     }

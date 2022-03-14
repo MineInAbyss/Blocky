@@ -24,7 +24,7 @@ class PlayerListener : Listener {
 
         rightClicked.toGearyOrNull()?.with { blocky: BlockyType, info: BlockyInfo ->
             if (!info.canBeDebugged) return
-            if (blocky.blockType == BlockType.NORMAL) {
+            if (blocky.blockType == BlockType.CUBE) {
                 //TODO Consider replicating how stairs change their model depending on somehting?
             }
             else if (blocky.blockType == BlockType.MISC) {

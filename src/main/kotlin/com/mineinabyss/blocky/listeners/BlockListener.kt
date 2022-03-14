@@ -3,6 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
 import com.mineinabyss.blocky.helpers.getBlockyBlockFromBlock
+import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.spawnFromPrefab
 import com.mineinabyss.idofront.entities.rightClicked
@@ -30,24 +31,30 @@ class BlockListener : Listener {
     @EventHandler
     fun PlayerInteractEvent.onChangingNote() {
         if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) isCancelled = true
+        if (action == Action.PHYSICAL && material == Material.TRIPWIRE) isCancelled = true
     }
 
     @EventHandler
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
         val blockyType = itemInHand.toGearyOrNull(player)?.get<BlockyType>() ?: return
         val blockyItem = itemInHand.toGearyOrNull(player)?.get<BlockyInfo>() ?: return
+        if (blockyType.blockModelType == BlockModelType.ENTITY) return
 
-        //if (!itemInHand.itemMeta.hasCustomModelData()) return
-        if (blockyType.blockType == BlockType.NORMAL) {
-            block.setType(Material.NOTE_BLOCK, false)
+        if (blockyType.blockType == BlockType.CUBE) {
             block.blockData = block.getBlockyBlockDataFromItem(blockyItem.modelId.toInt())
-        } else if (blockyType.blockType == BlockType.PASSTHROUGH) {
-            block.setType(Material.TRIPWIRE, false)
+            return
         }
+        else if (blockyType.blockType == BlockType.GROUND/* && blockAgainst.getFace(blockPlaced) == BlockFace.UP*/)
+            block.setType(Material.TRIPWIRE, false)
+        else if (blockyType.blockType == BlockType.WALL/* && blockAgainst.getFace(blockPlaced) != BlockFace.UP*/)
+            block.setType(Material.GLOW_LICHEN, false)
+        else isCancelled = true
+
+        block.blockData = block.getBlockyDecorationDataFromItem(blockyItem.modelId.toInt())
     }
 
     @EventHandler
-    fun PlayerInteractEvent.onPlacingBlockyMisc() {
+    fun PlayerInteractEvent.onPlacingBlockyEntity() {
         val item = player.inventory.itemInMainHand
         val geary = item.toGearyOrNull(player) ?: return
         val blockyType = geary.get<BlockyType>() ?: return
@@ -57,19 +64,17 @@ class BlockListener : Listener {
 
         if (hand != EquipmentSlot.HAND) return
         if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (blockyType.blockType == BlockType.NORMAL || blockyType.blockType == BlockType.PASSTHROUGH) return
+        if (blockyType.blockModelType != BlockModelType.ENTITY) return
 
-        if (blockyType.blockModelType == BlockModelType.MODELENGINE) {
-            val prefabKey = geary.getOrSetPersisting { BlockyEntity(blockEntity.prefab) }
-            loc.spawnFromPrefab(prefabKey.prefab) ?: error("Prefab ${prefabKey.prefab} not found")
+        val prefabKey = geary.getOrSetPersisting { BlockyEntity(blockEntity.prefab) }
+        loc.spawnFromPrefab(prefabKey.prefab) ?: error("Prefab ${prefabKey.prefab} not found")
 
-            if (player.gameMode != GameMode.CREATIVE) item.subtract()
-            player.playSound(loc, blockyInfo.placeSound, 1f, 1f)
-        }
+        if (player.gameMode != GameMode.CREATIVE) item.subtract()
+        player.playSound(loc, blockyInfo.placeSound, 1f, 1f)
     }
 
     @EventHandler
-    fun EntityDamageByEntityEvent.onBreakingBlockyMisc() {
+    fun EntityDamageByEntityEvent.onBreakingBlockyEntity() {
         val blocky = entity.toGeary().get<BlockyInfo>() ?: return
         if (!blocky.canBeBroken && (damager as Player).gameMode != GameMode.CREATIVE) isCancelled = true
     }
@@ -105,7 +110,7 @@ class BlockListener : Listener {
         val type = gearyBlock.get<BlockyType>() ?: return
         val info = gearyBlock.get<BlockyInfo>() ?: return
 
-        if (type.blockModelType == BlockModelType.MODELENGINE) return
+        if (type.blockModelType == BlockModelType.ENTITY) return
         isDropItems = false
 
         info.blockDrop.map {

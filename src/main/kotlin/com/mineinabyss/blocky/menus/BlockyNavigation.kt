@@ -40,7 +40,7 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
                 when (screen) {
                     BlockyScreen.Default -> BlockyMenu()
                     BlockyScreen.NoteBlock -> BlockyNoteBlockMenu()
-                    BlockyScreen.Passthrough -> BlockyPassthroughMenu()
+                    BlockyScreen.Passthrough -> BlockyDecorationMenu()
                     BlockyScreen.Misc -> BlockyMiscMenu()
                     BlockyScreen.Interactable -> BlockyInteractableMenu()
                 }
