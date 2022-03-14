@@ -3,6 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
 import com.mineinabyss.blocky.helpers.getBlockyBlockFromBlock
+import com.mineinabyss.blocky.helpers.getBlockyDecorationBlockFromBlock
 import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.spawnFromPrefab
@@ -10,6 +11,8 @@ import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.block.BlockFace
+import org.bukkit.block.data.type.GlowLichen
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -44,9 +47,9 @@ class BlockListener : Listener {
             block.blockData = block.getBlockyBlockDataFromItem(blockyItem.modelId.toInt())
             return
         }
-        else if (blockyType.blockType == BlockType.GROUND/* && blockAgainst.getFace(blockPlaced) == BlockFace.UP*/)
+        else if (blockyType.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP)
             block.setType(Material.TRIPWIRE, false)
-        else if (blockyType.blockType == BlockType.WALL/* && blockAgainst.getFace(blockPlaced) != BlockFace.UP*/)
+        else if (blockyType.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP)
             block.setType(Material.GLOW_LICHEN, false)
         else isCancelled = true
 
@@ -106,8 +109,8 @@ class BlockListener : Listener {
 
     @EventHandler
     fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val gearyBlock = block.getBlockyBlockFromBlock() ?: return
-        val type = gearyBlock.get<BlockyType>() ?: return
+        val gearyBlock = block.getBlockyBlockFromBlock() ?: block.getBlockyDecorationBlockFromBlock()
+        val type = gearyBlock?.get<BlockyType>() ?: return
         val info = gearyBlock.get<BlockyInfo>() ?: return
 
         if (type.blockModelType == BlockModelType.ENTITY) return
@@ -131,6 +134,9 @@ class BlockListener : Listener {
 
             for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
             expToDrop = it.exp
+        }
+        if (type.blockType == BlockType.WALL){
+            (block.blockData as GlowLichen).isWaterlogged = false
         }
     }
 }

@@ -5,7 +5,6 @@ import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
-import com.mineinabyss.idofront.messaging.broadcastVal
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.Note
@@ -15,6 +14,8 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.GlowLichen
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.block.data.type.Tripwire
+
+val blockMap: MutableMap<BlockData, Int> = mutableMapOf()
 
 fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
     setType(Material.NOTE_BLOCK, false)
@@ -43,33 +44,13 @@ fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
     }
 
     data.note = Note((blockId - noteId))
+    blockMap.putIfAbsent(data, blockId)
     return data
 }
 
 fun Block.getBlockyBlockFromBlock(): GearyEntity? {
-    val data = blockData as? NoteBlock ?: return null
-    val instrumentId = when (data.instrument) {
-        Instrument.BASS_DRUM -> 0
-        Instrument.PIANO -> 1
-        Instrument.SNARE_DRUM -> 2
-        Instrument.STICKS -> 3
-        Instrument.BASS_GUITAR -> 4
-        Instrument.FLUTE -> 5
-        Instrument.BELL -> 6
-        Instrument.GUITAR -> 7
-        Instrument.CHIME -> 8
-        Instrument.XYLOPHONE -> 9
-        Instrument.IRON_XYLOPHONE -> 10
-        Instrument.COW_BELL -> 11
-        Instrument.DIDGERIDOO -> 12
-        Instrument.BIT -> 13
-        Instrument.BANJO -> 14
-        Instrument.PLING -> 15
-        else -> 0
-    }
-    val blockId = data.note.id + instrumentId * 25
     val blockyBlock = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockId
+        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockMap[blockData]
     }?.entity ?: return null
 
     return blockyBlock
@@ -86,7 +67,7 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
     val blockyType = BlockyTypeQuery.firstOrNull {
         it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockId
     }?.entity?.get<BlockyType>() ?: return blockData
-    blockyType.blockType.broadcastVal()
+
     when (blockyType.blockType) {
         BlockType.GROUND -> {
             setType(Material.TRIPWIRE, false)
@@ -124,10 +105,10 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
             setType(Material.GLOW_LICHEN, false)
             val data = blockData as GlowLichen
             val upRange = 17..32
-            val northRange = 2..64
-            val southRange = 5..64
-            val eastRange = 3..64
-            val westRange = 9..64
+            val northRange = 2..32
+            val southRange = 5..32
+            val eastRange = 3..32
+            val westRange = 9..32
 
             data.isWaterlogged = true
             if (blockId in upRange) data.setFace(BlockFace.UP, true)
@@ -151,15 +132,14 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
         }
         else -> return blockData
     }
+    blockMap.putIfAbsent(blockData, blockId)
     return blockData
 }
 
-/*
+//TODO Figure out how tf to reverse blockState info from block into one Int
 fun Block.getBlockyDecorationBlockFromBlock(): GearyEntity? {
-    val data = blockData as? Tripwire ?: return null
-    val blockId = 1 + 1 * 25
     val blockyDecoration = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockId
+        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockMap[blockData]
     }?.entity ?: return null
     return blockyDecoration
-}*/
+}
