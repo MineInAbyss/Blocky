@@ -118,18 +118,35 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
                 if (blockId in i..i + 1) eastRange step 2
                 else data.setFace(BlockFace.EAST, true)
             }
-
             blockData = data
         }
         BlockType.WALL -> {
             setType(Material.GLOW_LICHEN, false)
             val data = blockData as GlowLichen
-            data.allowedFaces.broadcastVal()
-            data.allowedFaces.broadcastVal()
-            data.isWaterlogged.broadcastVal()
+            val upRange = 17..32
+            val northRange = 2..64
+            val southRange = 5..64
+            val eastRange = 3..64
+            val westRange = 9..64
 
+            data.isWaterlogged = true
+            if (blockId in upRange) data.setFace(BlockFace.UP, true)
+            if (blockId in northRange step 2) data.setFace(BlockFace.NORTH, true)
 
+            for (i in westRange) {
+                if (blockId !in i..i + 7) westRange step 8
+                else data.setFace(BlockFace.WEST, true)
+            }
 
+            for (i in southRange) {
+                if (blockId !in i..i + 4) southRange step 4
+                else data.setFace(BlockFace.SOUTH, true)
+            }
+
+            for (i in eastRange) {
+                if (blockId in i..i + 1) eastRange step 2
+                else data.setFace(BlockFace.EAST, true)
+            }
             blockData = data
         }
         else -> return blockData
