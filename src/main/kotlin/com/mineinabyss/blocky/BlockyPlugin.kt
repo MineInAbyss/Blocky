@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.listeners.BlockListener
+import com.mineinabyss.blocky.listeners.BlockyBlockListener
+import com.mineinabyss.blocky.listeners.BlockyEntityListener
 import com.mineinabyss.blocky.listeners.PlayerListener
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -14,7 +15,9 @@ val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::clas
 interface BlockyContext {
     companion object : BlockyContext by getService()
 
-    //val db: Database
+    val isFAWELoaded: Boolean
+        get() = blockyPlugin.server.pluginManager.isPluginEnabled("FastAsyncWorldEdit")
+
 }
 
 class BlockyPlugin : JavaPlugin() {
@@ -31,7 +34,7 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
 
-        registerEvents(PlayerListener(), BlockListener())
+        registerEvents(PlayerListener(), BlockyBlockListener(), BlockyEntityListener())
 
         gearyAddon {
             autoScanComponents()

@@ -21,6 +21,7 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
     maven("https://repo.dmulloy2.net/nexus/repository/public/") //ProtocolLib
+    maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://jitpack.io")
 }
 
@@ -49,6 +50,8 @@ dependencies {
     compileOnly("com.mineinabyss:guiy-compose:$guiyVersion")
     compileOnly("com.ticxo.modelengine:api:$modelengineVersion")
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
+    compileOnly("com.fastasyncworldedit:FAWE-Bukkit:1.17-47") { isTransitive = false }
+    compileOnly("com.fastasyncworldedit:FAWE-Core:1.17-47")
     compileOnly(Deps.minecraft.headlib)
     compileOnly(Deps.minecraft.anvilgui)
 

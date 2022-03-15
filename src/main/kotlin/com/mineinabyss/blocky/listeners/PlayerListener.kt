@@ -35,7 +35,7 @@ class PlayerListener : Listener {
     }
 
     @EventHandler
-    fun InventoryClickEvent.onTakingBlockyMenu() {
+    fun InventoryClickEvent.onBlockyMenuInteract() {
         if (inventory.holder !is GuiyInventoryHolder) return
         if (clickedInventory?.type != InventoryType.PLAYER) return
 

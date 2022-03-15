@@ -48,14 +48,6 @@ fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
     return data
 }
 
-fun Block.getBlockyBlockFromBlock(): GearyEntity? {
-    val blockyBlock = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockMap[blockData]
-    }?.entity ?: return null
-
-    return blockyBlock
-}
-
 /**
  * Calculates the correct BlockState-data for the custom-block tied to this item.
  *
@@ -136,10 +128,10 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
     return blockData
 }
 
-//TODO Figure out how tf to reverse blockState info from block into one Int
-fun Block.getBlockyDecorationBlockFromBlock(): GearyEntity? {
-    val blockyDecoration = BlockyTypeQuery.firstOrNull {
+fun Block.getPrefabFromBlock(): GearyEntity? {
+    val blockyBlock = BlockyTypeQuery.firstOrNull {
         it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockMap[blockData]
     }?.entity ?: return null
-    return blockyDecoration
+
+    return blockyBlock
 }

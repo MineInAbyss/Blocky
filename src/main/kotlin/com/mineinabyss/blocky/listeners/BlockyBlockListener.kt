@@ -1,30 +1,26 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.components.BlockModelType
+import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
-import com.mineinabyss.blocky.helpers.getBlockyBlockFromBlock
-import com.mineinabyss.blocky.helpers.getBlockyDecorationBlockFromBlock
 import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
-import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.spawnFromPrefab
+import com.mineinabyss.blocky.helpers.getPrefabFromBlock
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.GlowLichen
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
-import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.EquipmentSlot
 import kotlin.random.Random
 
 
-class BlockListener : Listener {
+class BlockyBlockListener : Listener {
 
     @EventHandler
     fun NotePlayEvent.cancelBlockyNotes() {
@@ -56,32 +52,6 @@ class BlockListener : Listener {
         block.blockData = block.getBlockyDecorationDataFromItem(blockyItem.modelId.toInt())
     }
 
-    @EventHandler
-    fun PlayerInteractEvent.onPlacingBlockyEntity() {
-        val item = player.inventory.itemInMainHand
-        val geary = item.toGearyOrNull(player) ?: return
-        val blockyType = geary.get<BlockyType>() ?: return
-        val blockyInfo = geary.get<BlockyInfo>() ?: return
-        val blockEntity = geary.get<BlockyEntity>() ?: return
-        val loc = clickedBlock?.location?.toCenterLocation() ?: return
-
-        if (hand != EquipmentSlot.HAND) return
-        if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (blockyType.blockModelType != BlockModelType.ENTITY) return
-
-        val prefabKey = geary.getOrSetPersisting { BlockyEntity(blockEntity.prefab) }
-        loc.spawnFromPrefab(prefabKey.prefab) ?: error("Prefab ${prefabKey.prefab} not found")
-
-        if (player.gameMode != GameMode.CREATIVE) item.subtract()
-        player.playSound(loc, blockyInfo.placeSound, 1f, 1f)
-    }
-
-    @EventHandler
-    fun EntityDamageByEntityEvent.onBreakingBlockyEntity() {
-        val blocky = entity.toGeary().get<BlockyInfo>() ?: return
-        if (!blocky.canBeBroken && (damager as Player).gameMode != GameMode.CREATIVE) isCancelled = true
-    }
-
     //TODO Try and somehow do custom break-times depending on item in hand etc
     @EventHandler
     fun BlockDamageEvent.onMiningBlockyBlock() {
@@ -109,8 +79,8 @@ class BlockListener : Listener {
 
     @EventHandler
     fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val gearyBlock = block.getBlockyBlockFromBlock() ?: block.getBlockyDecorationBlockFromBlock()
-        val type = gearyBlock?.get<BlockyType>() ?: return
+        val gearyBlock = block.getPrefabFromBlock() ?: return
+        val type = gearyBlock.get<BlockyType>() ?: return
         val info = gearyBlock.get<BlockyInfo>() ?: return
 
         if (type.blockModelType == BlockModelType.ENTITY) return
