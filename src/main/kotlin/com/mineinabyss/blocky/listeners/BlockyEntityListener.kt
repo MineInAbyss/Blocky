@@ -41,6 +41,6 @@ class BlockyEntityListener : Listener {
     @EventHandler
     fun EntityDamageByEntityEvent.onBreakingBlockyEntity() {
         val blocky = entity.toGeary().get<BlockyInfo>() ?: return
-        if (!blocky.canBeBroken && (damager as Player).gameMode != GameMode.CREATIVE) isCancelled = true
+        if (blocky.isUnbreakable && (damager as Player).gameMode != GameMode.CREATIVE) isCancelled = true
     }
 }

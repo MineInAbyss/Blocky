@@ -9,6 +9,7 @@ import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
 import com.mineinabyss.blocky.helpers.getPrefabFromBlock
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.GlowLichen
@@ -42,8 +43,7 @@ class BlockyBlockListener : Listener {
         if (blockyType.blockType == BlockType.CUBE) {
             block.blockData = block.getBlockyBlockDataFromItem(blockyItem.modelId.toInt())
             return
-        }
-        else if (blockyType.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP)
+        } else if (blockyType.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP)
             block.setType(Material.TRIPWIRE, false)
         else if (blockyType.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP)
             block.setType(Material.GLOW_LICHEN, false)
@@ -55,7 +55,14 @@ class BlockyBlockListener : Listener {
     //TODO Try and somehow do custom break-times depending on item in hand etc
     @EventHandler
     fun BlockDamageEvent.onMiningBlockyBlock() {
-        /*val gearyBlock = block.getBlockyBlockFromBlock() ?: return
+        val gearyBlock = block.getPrefabFromBlock() ?: return
+        val blocky = gearyBlock.get<BlockyInfo>() ?: return
+        if (blocky.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
+
+
+        //isCancelled = false
+
+        /*
         val type = gearyBlock.get<BlockyType>() ?: return
         val info = gearyBlock.get<BlockyInfo>() ?: return
         var progress = 0F
@@ -105,7 +112,7 @@ class BlockyBlockListener : Listener {
             for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
             expToDrop = it.exp
         }
-        if (type.blockType == BlockType.WALL){
+        if (type.blockType == BlockType.WALL) {
             (block.blockData as GlowLichen).isWaterlogged = false
         }
     }

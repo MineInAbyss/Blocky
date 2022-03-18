@@ -14,7 +14,7 @@ import org.bukkit.Sound
 data class BlockyInfo (
     val modelId: String,
     val requiredTools: List<SerializableItemStack> = listOf(),
-    val canBeBroken: Boolean = true,
+    val isUnbreakable: Boolean = false,
     val blockBreakTime: Int,
     val affectedByPiston: Boolean = true,
     val placeSound: Sound,
