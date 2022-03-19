@@ -3,11 +3,12 @@ package com.mineinabyss.blocky.menus
 import androidx.compose.runtime.Composable
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyType
+import com.mineinabyss.blocky.components.BlockyEntity
+import com.mineinabyss.blocky.components.EntityType
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
+import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.looty.LootyFactory
@@ -15,10 +16,10 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 @Composable
-fun BlockyUIScope.BlockyMiscMenu() {
+fun BlockyUIScope.BlockyJavaEntityMenu() {
     Grid(Modifier.size(5, 5)) {
         val miscs = BlockyTypeQuery.filter {
-            it.entity.get<BlockyType>()?.blockType == BlockType.MISC
+            it.entity.get<BlockyEntity>()?.entityType == EntityType.JAVA
 
         }
         miscs.forEach {
@@ -38,4 +39,5 @@ fun BlockyUIScope.BlockyMiscMenu() {
             })
         }
     }
+    BackButton(Modifier.at(0, 4))
 }

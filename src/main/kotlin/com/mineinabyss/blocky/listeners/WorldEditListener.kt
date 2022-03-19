@@ -1,9 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.geary.papermc.toPrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Material
@@ -20,22 +19,20 @@ class WorldEditListener : Listener {
         //if (!isFAWELoaded) return
         val args: List<String> = message.split(" ")
         val blockyID = args.firstOrNull { it.contains("mineinabyss:") }?.toMCKey()?.toPrefabKey() ?: return
-        val type = blockyID.toEntity()?.get<BlockyType>()?.blockType ?: return
+        val block = blockyID.toEntity()?.get<BlockyBlock>() ?: return
         val info = blockyID.toEntity()?.get<BlockyInfo>() ?: return
 
-        val cmd = when (type) {
+        val blockData = when (block.blockType) {
             BlockType.CUBE -> String.format(
                 "%s[instrument=%s,note=%s,powered=%s]",
                 Material.NOTE_BLOCK.toString().lowercase(),
-                getInstrument(info.modelId.toInt() / 25),
-                info.modelId.toInt(),
+                getInstrument(block.blockId / 25),
+                block.blockId,
                 true
             )
-            BlockType.WALL -> getDecorationData(info.modelId.toInt())
-            BlockType.GROUND -> getDecorationData(info.modelId.toInt())
-            else -> return
+            else -> getDecorationData(block.blockId, block.blockType)
         }
-        message = message.replace(blockyID.toString(), cmd, true)
+        message = message.replace(blockyID.toString(), blockData, true)
     }
 }
 
@@ -61,12 +58,8 @@ private fun getInstrument(id: Int): String {
     }
 }
 
-private fun getDecorationData(blockId: Int): String {
-    val blockyType = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockId
-    }?.entity?.get<BlockyType>() ?: return ""
-
-    when (blockyType.blockType) {
+private fun getDecorationData(blockId: Int, blockType: BlockType): String {
+    when (blockType) {
         BlockType.GROUND -> {
             val inAttachedRange = blockId in 33..64
             val inPoweredRange = blockId in 17..32 || blockId in 49..64

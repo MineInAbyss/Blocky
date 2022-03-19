@@ -1,9 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyDebug
+import com.mineinabyss.blocky.components.BlockyEntity
 import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.geary.ecs.api.entities.with
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.guiy.inventory.GuiyInventoryHolder
@@ -20,17 +19,11 @@ class PlayerListener : Listener {
     @EventHandler
     fun PlayerInteractAtEntityEvent.debugBlocky() {
         val item = player.inventory.itemInMainHand
-        val debug = item.toGearyOrNull(player)?.get<BlockyDebug>() ?: return
+        item.toGearyOrNull(player)?.get<BlockyDebug>() ?: return
 
-        rightClicked.toGearyOrNull()?.with { blocky: BlockyType, info: BlockyInfo ->
+        rightClicked.toGearyOrNull()?.with { entity: BlockyEntity, info: BlockyInfo ->
             if (!info.canBeDebugged) return
-            if (blocky.blockType == BlockType.CUBE) {
-                //TODO Consider replicating how stairs change their model depending on somehting?
-            }
-            else if (blocky.blockType == BlockType.MISC) {
-                rightClicked.setRotation(rightClicked.location.yaw + 90F, rightClicked.location.pitch)
-            }
-            else return
+            rightClicked.setRotation(rightClicked.location.yaw + 180, rightClicked.location.pitch)
         } ?: return
     }
 

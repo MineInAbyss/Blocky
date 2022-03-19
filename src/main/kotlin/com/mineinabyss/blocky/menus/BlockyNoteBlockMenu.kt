@@ -4,10 +4,11 @@ import androidx.compose.runtime.Composable
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyType
+import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
+import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.looty.LootyFactory
@@ -18,7 +19,7 @@ import org.bukkit.inventory.ItemStack
 fun BlockyUIScope.BlockyNoteBlockMenu() {
     Grid(Modifier.size(5, 5)) {
         val blocks = BlockyTypeQuery.filter {
-            it.entity.get<BlockyType>()?.blockType == BlockType.CUBE
+            it.entity.get<BlockyBlock>()?.blockType == BlockType.CUBE
 
         }
         blocks.forEach {
@@ -38,4 +39,5 @@ fun BlockyUIScope.BlockyNoteBlockMenu() {
             })
         }
     }
+    BackButton(Modifier.at(0, 4))
 }

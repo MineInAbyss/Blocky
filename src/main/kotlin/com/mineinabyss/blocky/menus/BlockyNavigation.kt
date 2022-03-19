@@ -17,9 +17,9 @@ import org.bukkit.entity.Player
 sealed class BlockyScreen(val title: String, val height: Int) {
     object Default : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
     object NoteBlock : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
-    object Passthrough : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
-    object Misc : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
-    object Interactable : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
+    object Decoration : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
+    object JavaEntity : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
+    object AnimatedEntity : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
 
 }
 
@@ -40,9 +40,9 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
                 when (screen) {
                     BlockyScreen.Default -> BlockyMenu()
                     BlockyScreen.NoteBlock -> BlockyNoteBlockMenu()
-                    BlockyScreen.Passthrough -> BlockyDecorationMenu()
-                    BlockyScreen.Misc -> BlockyMiscMenu()
-                    BlockyScreen.Interactable -> BlockyInteractableMenu()
+                    BlockyScreen.Decoration -> BlockyDecorationMenu()
+                    BlockyScreen.JavaEntity -> BlockyJavaEntityMenu()
+                    BlockyScreen.AnimatedEntity -> BlockyAnimatedEntityMenu()
                 }
             }
         }
@@ -53,14 +53,5 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
 fun BlockyUIScope.BackButton(modifier: Modifier = Modifier) {
     Button(onClick = { nav.back() }, modifier = modifier) {
         Item(HeadLib.STONE_ARROW_LEFT.toItemStack("Back"))
-    }
-}
-
-@Composable
-fun BlockyUIScope.Blocks(modifier: Modifier = Modifier) {
-    Button(onClick = {
-
-    }) {
-
     }
 }

@@ -12,7 +12,6 @@ import org.bukkit.Sound
 @Serializable
 @SerialName("blocky:info")
 data class BlockyInfo (
-    val modelId: String,
     val requiredTools: List<SerializableItemStack> = listOf(),
     val isUnbreakable: Boolean = false,
     val blockBreakTime: Int,

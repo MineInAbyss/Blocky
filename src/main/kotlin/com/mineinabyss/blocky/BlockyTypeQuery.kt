@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.components.BlockyType
+import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.geary.ecs.accessors.TargetScope
 import com.mineinabyss.geary.ecs.accessors.building.get
 import com.mineinabyss.geary.ecs.query.Query
@@ -12,7 +12,7 @@ object BlockyTypeQuery : Query() {
     init {
         has<LootyType>()
         has<Prefab>()
-        has<BlockyType>()
+        has<BlockyInfo>()
     }
 
     val TargetScope.key by get<PrefabKey>()

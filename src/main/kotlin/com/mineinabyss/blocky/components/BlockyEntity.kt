@@ -7,5 +7,11 @@ import kotlinx.serialization.Serializable
 @Serializable
 @SerialName("blocky:entity")
 class BlockyEntity(
-    val prefab: PrefabKey
+    val entityType: EntityType = EntityType.JAVA,
+    val entityPrefab: PrefabKey,
+    val collisionRadius: Int = 0,
 )
+
+enum class EntityType {
+    MODEL_ENGINE, JAVA
+}

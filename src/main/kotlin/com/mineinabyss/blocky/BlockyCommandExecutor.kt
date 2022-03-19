@@ -44,6 +44,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             }
         }
     }
+
     override fun onTabComplete(
         sender: CommandSender,
         command: Command,
@@ -54,7 +55,14 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             1 -> listOf("give", "menu").filter { it.startsWith(args[0]) }
             2 -> {
                 when (args[0]) {
-                    "give" -> BlockyTypeQuery.map { it.key.toString() }
+                    "give" -> {
+                        BlockyTypeQuery
+                            .filter {
+                                val arg = args[1].lowercase()
+                                it.key.name.startsWith(arg) || it.key.key.startsWith(arg)
+                            }
+                            .map { it.key.toString() }
+                    }
                     else -> listOf()
                 }
             }

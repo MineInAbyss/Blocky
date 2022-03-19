@@ -3,11 +3,12 @@ package com.mineinabyss.blocky.menus
 import androidx.compose.runtime.Composable
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyType
+import com.mineinabyss.blocky.components.BlockyEntity
+import com.mineinabyss.blocky.components.EntityType
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
+import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.looty.LootyFactory
@@ -15,11 +16,10 @@ import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 @Composable
-fun BlockyUIScope.BlockyInteractableMenu() {
+fun BlockyUIScope.BlockyAnimatedEntityMenu() {
     Grid(Modifier.size(5, 5)) {
         val interactables = BlockyTypeQuery.filter {
-            it.entity.get<BlockyType>()?.blockType == BlockType.INTERACTABLE
-
+            it.entity.get<BlockyEntity>()?.entityType == EntityType.MODEL_ENGINE
         }
         interactables.forEach {
             val interactable = LootyFactory.createFromPrefab(it.key) ?: return@forEach
@@ -38,4 +38,5 @@ fun BlockyUIScope.BlockyInteractableMenu() {
             })
         }
     }
+    BackButton(Modifier.at(0, 4))
 }

@@ -2,8 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyType
+import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -57,11 +56,11 @@ fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
  * [BlockType.WALL] -> Allows for 16 blockstates via Glow Lichen.
 */
 fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
-    val blockyType = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockId
-    }?.entity?.get<BlockyType>() ?: return blockData
+    val blockyBlock = BlockyTypeQuery.firstOrNull {
+        it.entity.get<BlockyBlock>()?.blockId == blockId
+    }?.entity?.get<BlockyBlock>() ?: return blockData
 
-    when (blockyType.blockType) {
+    when (blockyBlock.blockType) {
         BlockType.GROUND -> {
             setType(Material.TRIPWIRE, false)
             val data = blockData as Tripwire
@@ -131,7 +130,7 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
 
 fun Block.getPrefabFromBlock(): GearyEntity? {
     val blockyBlock = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyInfo>()?.modelId?.toInt() == blockMap[blockData]
+        it.entity.get<BlockyBlock>()?.blockId == blockMap[blockData]
     }?.entity ?: return null
 
     return blockyBlock

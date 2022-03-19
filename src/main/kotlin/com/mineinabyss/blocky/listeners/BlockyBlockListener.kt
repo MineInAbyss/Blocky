@@ -1,9 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockModelType
 import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyType
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
 import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
 import com.mineinabyss.blocky.helpers.getPrefabFromBlock
@@ -12,13 +11,13 @@ import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.type.GlowLichen
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
-import org.bukkit.event.block.*
+import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockDamageEvent
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.NotePlayEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import kotlin.random.Random
 
 
 class BlockyBlockListener : Listener {
@@ -36,20 +35,19 @@ class BlockyBlockListener : Listener {
 
     @EventHandler
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        val blockyType = itemInHand.toGearyOrNull(player)?.get<BlockyType>() ?: return
-        val blockyItem = itemInHand.toGearyOrNull(player)?.get<BlockyInfo>() ?: return
-        if (blockyType.blockModelType == BlockModelType.ENTITY) return
+        itemInHand.toGearyOrNull(player)?.get<BlockyInfo>() ?: return
+        val blockyBlock = itemInHand.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
 
-        if (blockyType.blockType == BlockType.CUBE) {
-            block.blockData = block.getBlockyBlockDataFromItem(blockyItem.modelId.toInt())
+        if (blockyBlock.blockType == BlockType.CUBE) {
+            block.blockData = block.getBlockyBlockDataFromItem(blockyBlock.blockId)
             return
-        } else if (blockyType.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP)
+        } else if (blockyBlock.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP)
             block.setType(Material.TRIPWIRE, false)
-        else if (blockyType.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP)
+        else if (blockyBlock.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP)
             block.setType(Material.GLOW_LICHEN, false)
         else isCancelled = true
 
-        block.blockData = block.getBlockyDecorationDataFromItem(blockyItem.modelId.toInt())
+        block.blockData = block.getBlockyDecorationDataFromItem(blockyBlock.blockId)
     }
 
     //TODO Try and somehow do custom break-times depending on item in hand etc
@@ -84,13 +82,13 @@ class BlockyBlockListener : Listener {
         }*/
     }
 
-    @EventHandler
+    //TODO Make this into its own component
+    /*@EventHandler
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         val gearyBlock = block.getPrefabFromBlock() ?: return
-        val type = gearyBlock.get<BlockyType>() ?: return
+        val blocky = gearyBlock.get<BlockyBlock>() ?: return
         val info = gearyBlock.get<BlockyInfo>() ?: return
 
-        if (type.blockModelType == BlockModelType.ENTITY) return
         isDropItems = false
 
         info.blockDrop.map {
@@ -100,7 +98,7 @@ class BlockyBlockListener : Listener {
                     it.silkTouchedDrop.toItemStack()
                 else it.item.toItemStack()
 
-            //TODO Make fortune check here not ass
+
             val amount =
                 if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
                     Random.nextInt(it.minAmount, it.maxAmount) * Random.nextInt(
@@ -112,8 +110,8 @@ class BlockyBlockListener : Listener {
             for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
             expToDrop = it.exp
         }
-        if (type.blockType == BlockType.WALL) {
+        if (blocky.blockType == BlockType.WALL) {
             (block.blockData as GlowLichen).isWaterlogged = false
         }
-    }
+    }*/
 }
