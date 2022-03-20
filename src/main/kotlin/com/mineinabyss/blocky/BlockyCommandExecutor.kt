@@ -51,22 +51,26 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
         alias: String,
         args: Array<out String>
     ): List<String> {
-        return when (args.size) {
-            1 -> listOf("give", "menu").filter { it.startsWith(args[0]) }
-            2 -> {
-                when (args[0]) {
-                    "give" -> {
-                        BlockyTypeQuery
-                            .filter {
-                                val arg = args[1].lowercase()
-                                it.key.name.startsWith(arg) || it.key.key.startsWith(arg)
-                            }
-                            .map { it.key.toString() }
+        if (command.name == "blocky") {
+            return when (args.size) {
+                1 -> listOf("give", "menu")
+                2 -> {
+                    when (args[0]) {
+                        "give" -> {
+                            BlockyTypeQuery
+                                .filter {
+                                    val arg = args[1].lowercase()
+                                    it.key.name.startsWith(arg) || it.key.key.startsWith(arg)
+                                }
+                                .map { it.key.toString() }
+                        }
+                        "menu" -> emptyList()
+                        else -> emptyList()
                     }
-                    else -> listOf()
                 }
+                else -> emptyList()
             }
-            else -> listOf()
         }
+        else return emptyList()
     }
 }

@@ -1,4 +1,4 @@
-package com.mineinabyss.helpers.ui.composables
+package com.mineinabyss.blocky.helpers.ui.composables
 
 import androidx.compose.runtime.Composable
 import com.mineinabyss.guiy.components.canvases.LocalInventory

@@ -36,7 +36,7 @@ class BlockyEntityListener : Listener {
 
         if (blockEntity.collisionRadius > 0) {
             val iterations = blockEntity.collisionRadius
-            val locs: MutableList<Location> = ArrayList<Location>(iterations * iterations * iterations)
+            val locs: MutableList<Location> = ArrayList(iterations * iterations * iterations)
             for (x in -blockEntity.collisionRadius .. blockEntity.collisionRadius) {
                 for (y in -blockEntity.collisionRadius .. blockEntity.collisionRadius) {
                     for (z in -blockEntity.collisionRadius .. blockEntity.collisionRadius) {

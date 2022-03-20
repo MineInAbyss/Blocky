@@ -39,5 +39,5 @@ fun BlockyUIScope.BlockyDecorationMenu() {
             })
         }
     }
-    BackButton(Modifier.at(0, 4))
+    BackButton(Modifier.at(0, 5))
 }

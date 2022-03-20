@@ -39,5 +39,5 @@ fun BlockyUIScope.BlockyJavaEntityMenu() {
             })
         }
     }
-    BackButton(Modifier.at(0, 4))
+    BackButton(Modifier.at(0, 5))
 }
