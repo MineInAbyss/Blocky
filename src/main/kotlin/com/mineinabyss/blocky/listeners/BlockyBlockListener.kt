@@ -6,15 +6,17 @@ import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
 import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
 import com.mineinabyss.blocky.helpers.getPrefabFromBlock
+import com.mineinabyss.blocky.helpers.updateBlockyStates
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockDamageEvent
+import org.bukkit.event.block.BlockPhysicsEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.block.NotePlayEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -30,7 +32,15 @@ class BlockyBlockListener : Listener {
     @EventHandler
     fun PlayerInteractEvent.onChangingNote() {
         if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) isCancelled = true
-        if (action == Action.PHYSICAL && material == Material.TRIPWIRE) isCancelled = true
+    }
+
+    //TODO Correctly cancel powered/attached/disarmed
+    @EventHandler(priority = EventPriority.MONITOR)
+    fun BlockPhysicsEvent.cancelTripwire() {
+        if (changedType == Material.TRIPWIRE) {
+            isCancelled = true
+            block.updateBlockyStates()
+        }
     }
 
     @EventHandler
@@ -39,15 +49,19 @@ class BlockyBlockListener : Listener {
         val blockyBlock = itemInHand.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
 
         if (blockyBlock.blockType == BlockType.CUBE) {
-            block.blockData = block.getBlockyBlockDataFromItem(blockyBlock.blockId)
+            block.setBlockData(block.getBlockyBlockDataFromItem(blockyBlock.blockId), false)
             return
-        } else if (blockyBlock.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP)
+        } else if (blockyBlock.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP) {
             block.setType(Material.TRIPWIRE, false)
-        else if (blockyBlock.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP)
+            block.setBlockData(block.getBlockyDecorationDataFromItem(blockyBlock.blockId, blockyBlock.blockType), true)
+            blockAgainst.state.update(true, false)
+            blockPlaced.state.update(true, false)
+            return
+        } else if (blockyBlock.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP) {
             block.setType(Material.GLOW_LICHEN, false)
-        else isCancelled = true
-
-        block.blockData = block.getBlockyDecorationDataFromItem(blockyBlock.blockId)
+            block.setBlockData(block.getBlockyDecorationDataFromItem(blockyBlock.blockId, blockyBlock.blockType), true)
+        }
+        block.setBlockData(block.blockData, false)
     }
 
     //TODO Try and somehow do custom break-times depending on item in hand etc
@@ -56,30 +70,6 @@ class BlockyBlockListener : Listener {
         val gearyBlock = block.getPrefabFromBlock() ?: return
         val blocky = gearyBlock.get<BlockyInfo>() ?: return
         if (blocky.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-
-
-        //isCancelled = false
-
-        /*
-        val type = gearyBlock.get<BlockyType>() ?: return
-        val info = gearyBlock.get<BlockyInfo>() ?: return
-        var progress = 0F
-        var timePassed = 0F
-        val lastTime = System.currentTimeMillis()
-
-        if (type.blockModelType == BlockModelType.MODELENGINE) return
-        if (!info.canBeBroken && player.gameMode != GameMode.CREATIVE) return
-
-        blockyPlugin.schedule {
-            do {
-                player.addPotionEffect(PotionEffect(PotionEffectType.SLOW_DIGGING, -1, 1, false, false))
-                timePassed = lastTime - System.currentTimeMillis().toFloat()
-                progress = info.blockBreakTime.toFloat() - timePassed
-                player.sendBlockDamage(block.location, progress)
-                waitFor(1)
-            } while (progress < 1F)
-            player.removePotionEffect(PotionEffectType.SLOW_DIGGING)
-        }*/
     }
 
     //TODO Make this into its own component

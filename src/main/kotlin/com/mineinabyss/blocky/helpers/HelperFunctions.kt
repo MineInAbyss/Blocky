@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import org.bukkit.Instrument
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Note
 import org.bukkit.block.Block
@@ -55,24 +56,25 @@ fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
  *
  * [BlockType.WALL] -> Allows for 16 blockstates via Glow Lichen.
 */
-fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
+fun Block.getBlockyDecorationDataFromItem(blockId: Int, blockType: BlockType): BlockData {
     val blockyBlock = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyBlock>()?.blockId == blockId
+        it.entity.get<BlockyBlock>()?.blockId == blockId &&
+        it.entity.get<BlockyBlock>()?.blockType == blockType
     }?.entity?.get<BlockyBlock>() ?: return blockData
 
     when (blockyBlock.blockType) {
         BlockType.GROUND -> {
             setType(Material.TRIPWIRE, false)
             val data = blockData as Tripwire
-
             val inAttachedRange = blockId in 33..64
             val inPoweredRange = blockId in 17..32 || blockId in 49..64
+            val inDisarmedRange = blockId in 65..128
             val northRange = 2..64
             val southRange = 5..64
             val eastRange = 3..64
             val westRange = 9..64
 
-            data.isDisarmed = true
+            if (inDisarmedRange) data.isDisarmed = true
             if (inAttachedRange) data.isAttached = true
             if (inPoweredRange) data.isPowered = true
             if (blockId in northRange step 2) data.setFace(BlockFace.NORTH, true)
@@ -88,7 +90,7 @@ fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
             }
 
             for (i in eastRange) {
-                if (blockId in i..i + 1) eastRange step 2
+                if (blockId !in i..i + 1) eastRange step 2
                 else data.setFace(BlockFace.EAST, true)
             }
             blockData = data
@@ -134,4 +136,27 @@ fun Block.getPrefabFromBlock(): GearyEntity? {
     }?.entity ?: return null
 
     return blockyBlock
+}
+
+fun Block.updateBlockyStates() {
+    val locs: MutableList<Location> = ArrayList(5 * 5 * 5)
+    for (x in -5..5) {
+        for (y in -5..5) {
+            for (z in -5..5) {
+                locs.add(
+                    Location(
+                        location.world,
+                        location.x + x.toDouble(),
+                        location.y + y.toDouble(),
+                        location.z + z.toDouble()
+                    )
+                )
+            }
+        }
+    }
+    locs.forEach {
+        if (it.block.type == Material.STRING || it.block.type == Material.TRIPWIRE || it.block.type == Material.GLOW_LICHEN || it.block.type == Material.NOTE_BLOCK) {
+            it.block.state.update(true, false)
+        }
+    }
 }
