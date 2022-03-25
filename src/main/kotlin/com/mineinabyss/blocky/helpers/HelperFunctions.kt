@@ -21,30 +21,8 @@ val blockMap: MutableMap<BlockData, Int> = mutableMapOf()
 fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
     setType(Material.NOTE_BLOCK, false)
     val data = blockData as NoteBlock
-    val instrumentId = blockId / 25
-    val noteId = instrumentId * 25
-
-    data.instrument = when (instrumentId) {
-        0 -> Instrument.BASS_DRUM
-        1 -> Instrument.PIANO
-        2 -> Instrument.SNARE_DRUM
-        3 -> Instrument.STICKS
-        4 -> Instrument.BASS_GUITAR
-        5 -> Instrument.FLUTE
-        6 -> Instrument.BELL
-        7 -> Instrument.GUITAR
-        8 -> Instrument.CHIME
-        9 -> Instrument.XYLOPHONE
-        10 -> Instrument.IRON_XYLOPHONE
-        11 -> Instrument.COW_BELL
-        12 -> Instrument.DIDGERIDOO
-        13 -> Instrument.BIT
-        14 -> Instrument.BANJO
-        15 -> Instrument.PLING
-        else -> Instrument.PIANO
-    }
-
-    data.note = Note((blockId - noteId))
+    data.instrument = Instrument.getByType((blockId / 25 % 400).toByte()) ?: return blockData
+    data.note = Note((blockId % 25))
     blockMap.putIfAbsent(data, blockId)
     return data
 }
