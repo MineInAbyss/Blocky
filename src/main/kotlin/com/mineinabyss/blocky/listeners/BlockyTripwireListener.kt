@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
@@ -38,6 +39,11 @@ class BlockyTripwireListener : Listener {
         if (blockPlaced.type == Material.TRIPWIRE) {
             block.state.update(true, false)
         }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun EntityInsideBlockEvent.onEnterTripwire() {
+        if (block.type == Material.TRIPWIRE) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
