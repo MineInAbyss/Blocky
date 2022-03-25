@@ -6,7 +6,7 @@ import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.helpers.getBlockyBlockDataFromItem
 import com.mineinabyss.blocky.helpers.getBlockyDecorationDataFromItem
 import com.mineinabyss.blocky.helpers.getPrefabFromBlock
-import com.mineinabyss.blocky.helpers.updateBlockyStates
+import com.mineinabyss.blocky.helpers.handleBlockyDrops
 import com.mineinabyss.blocky.systems.BlockBreakingSystem
 import com.mineinabyss.blocky.systems.BlockHardnessModifiers
 import com.mineinabyss.idofront.entities.rightClicked
@@ -16,19 +16,19 @@ import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.type.GlowLichen
-import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.*
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockPhysicsEvent
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.NotePlayEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.ItemStack
-import kotlin.random.Random
 
 
-class BlockyBlockListener : Listener {
+class BlockyNoteBlockListener : Listener {
 
     @EventHandler
     fun NotePlayEvent.cancelBlockyNotes() {
@@ -40,25 +40,16 @@ class BlockyBlockListener : Listener {
         if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) isCancelled = true
     }
 
-    //TODO Correctly cancel powered/attached/disarmed
-    @EventHandler(priority = EventPriority.MONITOR)
-    fun BlockPhysicsEvent.cancelTripwire() {
-        if (changedType == Material.TRIPWIRE) {
-            isCancelled = true
-            block.updateBlockyStates()
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun onBlockPhysics(event: BlockPhysicsEvent) {
-        val aboveBlock = event.block.location.add(0.0, 1.0, 0.0).block
+    fun BlockPhysicsEvent.onBlockPhysics() {
+        val aboveBlock = block.location.add(0.0, 1.0, 0.0).block
         if (aboveBlock.type == Material.NOTE_BLOCK) {
-            updateAndCheck(event.block.location)
-            event.isCancelled = true
+            isCancelled = true
+            updateAndCheck(block.location)
         }
-        if (event.block.type == Material.NOTE_BLOCK) {
-            event.isCancelled = true
-            event.block.state.update(true, false)
+        if (block.type == Material.NOTE_BLOCK) {
+            isCancelled = true
+            block.state.update(true, false)
         }
     }
 
@@ -84,12 +75,12 @@ class BlockyBlockListener : Listener {
     }
 
     //TODO Try and somehow do custom break-times depending on item in hand etc
-    @EventHandler
-    fun BlockDamageEvent.onMiningBlockyBlock() {
-        val gearyBlock = block.getPrefabFromBlock() ?: return
-        val blocky = gearyBlock.get<BlockyInfo>() ?: return
-        if (blocky.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-    }
+//    @EventHandler
+//    fun BlockDamageEvent.onMiningBlockyBlock() {
+//        val gearyBlock = block.getPrefabFromBlock() ?: return
+//        val blocky = gearyBlock.get<BlockyInfo>() ?: return
+//        if (blocky.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
+//    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyBlock() {
@@ -98,41 +89,14 @@ class BlockyBlockListener : Listener {
         val prefab = block.getPrefabFromBlock() ?: return
         val blockyInfo = prefab.get<BlockyInfo>() ?: return
 
+        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
+
         BlockBreakingSystem().MODIFIERS.add(getBreakModifier())
 
         block.world.playSound(block.location, blockyInfo.breakSound, 1.0f, 0.8f)
         isDropItems = false
         handleBlockyDrops(block, player)
         getBreakModifier()
-    }
-
-    private fun handleBlockyDrops(block: Block, player: Player) {
-        val gearyBlock = block.getPrefabFromBlock() ?: return
-        val blocky = gearyBlock.get<BlockyBlock>() ?: return
-        val info = gearyBlock.get<BlockyInfo>() ?: return
-
-        info.blockDrop.map {
-            val hand = player.inventory.itemInMainHand
-            val item =
-                if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
-                    it.silkTouchedDrop.toItemStack()
-                else it.item.toItemStack()
-
-
-            val amount =
-                if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
-                    Random.nextInt(it.minAmount, it.maxAmount) * Random.nextInt(
-                        1,
-                        hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1
-                    )
-                else Random.nextInt(it.minAmount, it.maxAmount)
-
-            for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
-            //expToDrop = it.exp
-        }
-        if (blocky.blockType == BlockType.WALL) {
-            (block.blockData as GlowLichen).isWaterlogged = false
-        }
     }
 
     private fun updateAndCheck(loc: Location) {

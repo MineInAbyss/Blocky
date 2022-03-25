@@ -1,9 +1,6 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.listeners.BlockyBlockListener
-import com.mineinabyss.blocky.listeners.BlockyEntityListener
-import com.mineinabyss.blocky.listeners.PlayerListener
-import com.mineinabyss.blocky.listeners.WorldEditListener
+import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.blocky.systems.BlockBreakingSystem
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -36,7 +33,7 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
 
-        registerEvents(PlayerListener(), BlockyBlockListener(), BlockyEntityListener(), WorldEditListener())
+        registerEvents(PlayerListener(), BlockyNoteBlockListener(), BlockyTripwireListener(), BlockyEntityListener(), WorldEditListener())
         BlockBreakingSystem().registerListener()
 
         gearyAddon {
