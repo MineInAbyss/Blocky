@@ -97,7 +97,7 @@ class BlockBreakingSystem {
                         if (!blockBreakEvent.isCancelled) {
                             moreModifiers.breakBlocky(player, block, item)
                             val playerItemDamageEvent = PlayerItemDamageEvent(player, item, 1)
-                            Bukkit.getPluginManager().callEvent(playerItemDamageEvent)
+                            playerItemDamageEvent.callEvent()
                         }
                         Bukkit.getScheduler().runTask(blockyPlugin, Runnable {
                             player.removePotionEffect(PotionEffectType.SLOW_DIGGING)

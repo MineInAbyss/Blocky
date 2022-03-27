@@ -18,6 +18,12 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
 
+val REPLACEABLE_BLOCKS =
+    listOf(
+        Material.SNOW, Material.VINE, Material.GRASS, Material.TALL_GRASS, Material.SEAGRASS, Material.FERN,
+        Material.LARGE_FERN
+    )
+
 fun handleBlockyDrops(block: Block, player: Player) {
     val gearyBlock = block.getPrefabFromBlock() ?: return
     val blocky = gearyBlock.get<BlockyBlock>() ?: return

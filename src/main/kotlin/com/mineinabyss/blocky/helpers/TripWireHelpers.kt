@@ -107,12 +107,6 @@ fun BlockyBlock.getBlockyGlowLichenDataFromPrefab() : BlockData {
     return blockData
 }
 
-val REPLACEABLE_BLOCKS =
-    listOf(
-        Material.SNOW, Material.VINE, Material.GRASS, Material.TALL_GRASS, Material.SEAGRASS, Material.FERN,
-        Material.LARGE_FERN
-    )
-
 fun isStandingInside(player: Player, block: Block): Boolean {
     val playerLocation = player.location
     val blockLocation = block.location

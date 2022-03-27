@@ -33,7 +33,14 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
 
-        registerEvents(PlayerListener(), BlockyNoteBlockListener(), BlockyTripwireListener(), BlockyEntityListener(), WorldEditListener())
+        registerEvents(
+            PlayerListener(),
+            BlockyNoteBlockListener(),
+            BlockyTripwireListener(),
+            //BlockyEntityListener(),
+            WorldEditListener(),
+            BlockyItemFrameListener()
+        )
         BlockBreakingSystem().registerListener()
 
         gearyAddon {
