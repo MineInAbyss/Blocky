@@ -2,17 +2,12 @@ package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import org.bukkit.Bukkit
-import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
-import org.bukkit.block.data.BlockData
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -21,8 +16,6 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPhysicsEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
-import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.ItemStack
 
 class BlockyTripwireListener : Listener {
 
@@ -38,6 +31,7 @@ class BlockyTripwireListener : Listener {
     fun BlockPlaceEvent.onPlacingTripwire() {
         if (blockPlaced.type == Material.TRIPWIRE) {
             block.state.update(true, false)
+            isCancelled = true
         }
     }
 
@@ -79,6 +73,7 @@ class BlockyTripwireListener : Listener {
         block.world.playSound(block.location, blockyInfo.breakSound, 1.0f, 0.8f)
         isDropItems = false
         handleBlockyDrops(block, player)
+        block.state.update(true, false)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -88,8 +83,7 @@ class BlockyTripwireListener : Listener {
         val blockyWire = item?.toGearyOrNull(player) ?: return
         val info = blockyWire.get<BlockyInfo>() ?: return
         val wire = blockyWire.get<BlockyBlock>() ?: return
-        wire.getBlockyTripWireDataFromPrefab().broadcastVal()
-
+        val lightLevel = blockyWire.get<BlockyLight>()?.lightLevel
 
         val placedWire =
             placeBlockyBlock(
@@ -102,41 +96,7 @@ class BlockyTripwireListener : Listener {
             ) ?: return
 
         placedWire.world.playSound(placedWire.location, info.placeSound, 1.0f, 0.8f)
+        if (blockyWire.has<BlockyLight>()) createBlockLight(placedWire.location, lightLevel!!)
         isCancelled = true
-    }
-
-    fun placeBlockyBlock(
-        player: Player,
-        hand: EquipmentSlot,
-        item: ItemStack,
-        against: Block,
-        face: BlockFace,
-        newData: BlockData
-    ): Block? {
-        val targetBlock: Block
-
-        if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
-        else {
-            targetBlock = against.getRelative(face)
-            if (!targetBlock.type.isAir && targetBlock.type != Material.WATER && targetBlock.type != Material.LAVA) return null
-        }
-
-        if (isStandingInside(player, targetBlock)) return null
-
-        val currentData = targetBlock.blockData
-        targetBlock.setBlockData(newData, false)
-
-        val currentBlockState = targetBlock.state
-
-        val blockPlaceEvent = BlockPlaceEvent(targetBlock, currentBlockState, against, item, player, true, hand)
-        Bukkit.getPluginManager().callEvent(blockPlaceEvent)
-
-        if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
-            targetBlock.setBlockData(currentData, false) // false to cancel physic
-            return null
-        }
-
-        if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
-        return targetBlock
     }
 }

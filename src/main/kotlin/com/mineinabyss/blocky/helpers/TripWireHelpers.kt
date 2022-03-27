@@ -14,9 +14,6 @@ import org.bukkit.entity.Player
 
 val blockMap: MutableMap<BlockData, Int> = mutableMapOf()
 
-
-
-
 /**
  * Calculates the correct BlockState-data for the custom-block tied to this item.
  *

@@ -52,6 +52,7 @@ dependencies {
     compileOnly("com.comphenix.protocol:ProtocolLib:4.7.0")
     compileOnly("com.fastasyncworldedit:FAWE-Bukkit:1.17-47") { isTransitive = false }
     compileOnly("com.fastasyncworldedit:FAWE-Core:1.17-47")
+    compileOnly("com.github.BeYkeRYkt:LightAPI:5.2.0-Bukkit")
     compileOnly(Deps.minecraft.headlib)
     compileOnly(Deps.minecraft.anvilgui)
 

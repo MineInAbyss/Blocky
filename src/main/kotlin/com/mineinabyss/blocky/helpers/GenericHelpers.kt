@@ -3,10 +3,19 @@ package com.mineinabyss.blocky.helpers
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.systems.BlockHardnessModifiers
+import org.bukkit.Bukkit
+import org.bukkit.GameMode
+import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
+import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.GlowLichen
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
 
 fun handleBlockyDrops(block: Block, player: Player) {
@@ -36,4 +45,60 @@ fun handleBlockyDrops(block: Block, player: Player) {
     if (blocky.blockType == BlockType.WALL) {
         (block.blockData as GlowLichen).isWaterlogged = false
     }
+}
+
+fun getBreakModifier(): BlockHardnessModifiers {
+    return object : BlockHardnessModifiers {
+        override fun isTriggered(player: Player, block: Block, tool: ItemStack): Boolean {
+            if (block.type != Material.NOTE_BLOCK) return false
+            return block.getPrefabFromBlock() != null
+        }
+
+        override fun breakBlocky(player: Player, block: Block, tool: ItemStack) {
+            block.type = Material.AIR
+        }
+
+        override fun getBreakTime(player: Player, block: Block, tool: ItemStack): Long {
+            val prefab = block.getPrefabFromBlock() ?: return 0L
+            val info = prefab.get<BlockyInfo>() ?: return 0L
+            val period: Long = info.blockBreakTime.toLong()
+            val modifier = 1.0
+            return (period * modifier).toLong()
+        }
+    }
+}
+
+fun placeBlockyBlock(
+    player: Player,
+    hand: EquipmentSlot,
+    item: ItemStack,
+    against: Block,
+    face: BlockFace,
+    newData: BlockData
+): Block? {
+    val targetBlock: Block
+
+    if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
+    else {
+        targetBlock = against.getRelative(face)
+        if (!targetBlock.type.isAir && targetBlock.type != Material.WATER && targetBlock.type != Material.LAVA) return null
+    }
+
+    if (isStandingInside(player, targetBlock)) return null
+
+    val currentData = targetBlock.blockData
+    targetBlock.setBlockData(newData, false)
+
+    val currentBlockState = targetBlock.state
+
+    val blockPlaceEvent = BlockPlaceEvent(targetBlock, currentBlockState, against, item, player, true, hand)
+    Bukkit.getPluginManager().callEvent(blockPlaceEvent)
+
+    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
+        targetBlock.setBlockData(currentData, false) // false to cancel physic
+        return null
+    }
+
+    if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
+    return targetBlock
 }

@@ -20,5 +20,4 @@ data class BlockyInfo (
     val breakSound: Sound,
     val canBeDebugged: Boolean = true,
     val blockDrop: List<BlockDrops> = listOf(),
-    val hasBlockLight: Boolean = false,
 )
