@@ -1,9 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockyBarrierHitbox
-import com.mineinabyss.blocky.components.BlockyEntity
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.EntityType
+import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
@@ -11,6 +8,7 @@ import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -31,8 +29,8 @@ class BlockyItemFrameListener : Listener {
     @EventHandler
     fun HangingPlaceEvent.onPlacingItemFrame() {
         val player = player ?: return
-        if (itemStack?.toGearyOrNull(player)?.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME) isCancelled =
-            true
+        val item = itemStack?.toGearyOrNull(player) ?: return
+        if (item.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -59,7 +57,7 @@ class BlockyItemFrameListener : Listener {
 
         if (!blockyEntity.hasEnoughSpace(frameYaw, targetBlock.location)) {
             blockyPlace.isCancelled = true
-            player.error("There is not enough space for this block here.")
+            player.error("There is not enough space to place this block here.")
         }
         blockyPlace.callEvent()
 
@@ -82,13 +80,23 @@ class BlockyItemFrameListener : Listener {
     fun BlockBreakEvent.onBreakingBarrier() {
         if (block.type != Material.BARRIER || player.gameMode != GameMode.CREATIVE) return
 
-        val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 20.0)
+        val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 10.0)
         frames.forEach { frame ->
             if (frame.checkFrameHitbox(block.location)) {
-                frame.toGeary().get<BlockyBarrierHitbox>()?.barriers?.forEach {
-                    it.block.type = Material.AIR
-                    removeBlockLight(it)
+                frame.toGeary().get<BlockyBarrierHitbox>()?.barriers?.forEach { barrierLoc ->
+                    barrierLoc.block.type = Material.AIR
+                    removeBlockLight(barrierLoc)
                 }
+                if (frame.toGeary().has<BlockySeatLocations>()) {
+                    frame.toGeary().get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
+                        seatLoc.getNearbyEntitiesByType(ArmorStand::class.java, 1.0).forEach seat@{ stand ->
+                            stand.remove()
+                            return@seat
+                        }
+                        return@seatLoc
+                    }
+                }
+                removeBlockLight(frame.location)
                 frame.remove()
                 return
             }
@@ -111,14 +119,20 @@ class BlockyItemFrameListener : Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    fun PlayerInteractEvent.onInteractFrame() {
+    fun PlayerInteractEvent.onSitting() {
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
         val block = clickedBlock ?: return
 
         if (block.type != Material.BARRIER || player.isSneaking) return
 
-        val frame = getFrame(block.location)
-        //TODO Implement sititng
+        val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 20.0)
+        frames.forEach { frame ->
+            if (frame.checkFrameHitbox(block.location) && frame.toGeary().has<BlockySeatLocations>()) {
+                val stand =
+                    block.location.getNearbyEntitiesByType(ArmorStand::class.java, 1.0).firstOrNull() ?: return@forEach
+                if (stand.passengers.isEmpty()) stand.addPassenger(player)
+            }
+        }
     }
 
 }
