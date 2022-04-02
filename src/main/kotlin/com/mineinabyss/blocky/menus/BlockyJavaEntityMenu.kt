@@ -19,7 +19,8 @@ import org.bukkit.inventory.ItemStack
 fun BlockyUIScope.BlockyJavaEntityMenu() {
     Grid(Modifier.size(5, 5)) {
         val miscs = BlockyTypeQuery.filter {
-            it.entity.get<BlockyEntity>()?.entityType == EntityType.JAVA
+            it.entity.get<BlockyEntity>()?.entityType == EntityType.JAVA ||
+            it.entity.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME
 
         }
         miscs.forEach {

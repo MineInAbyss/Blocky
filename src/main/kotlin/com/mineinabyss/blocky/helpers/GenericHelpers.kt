@@ -4,7 +4,6 @@ import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.systems.BlockHardnessModifiers
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -35,6 +34,8 @@ fun handleBlockyDrops(block: Block, player: Player) {
             if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
                 it.silkTouchedDrop.toItemStack()
             else it.item.toItemStack()
+
+        if (player.gameMode == GameMode.CREATIVE) return
 
 
         val amount =
@@ -98,7 +99,7 @@ fun placeBlockyBlock(
     val currentBlockState = targetBlock.state
 
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, currentBlockState, against, item, player, true, hand)
-    Bukkit.getPluginManager().callEvent(blockPlaceEvent)
+    blockPlaceEvent.callEvent()
 
     if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic

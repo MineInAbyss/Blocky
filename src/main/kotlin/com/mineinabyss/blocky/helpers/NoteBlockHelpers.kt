@@ -13,7 +13,7 @@ fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
     val data = blockData as NoteBlock
     data.instrument = Instrument.getByType((blockId / 25 % 400).toByte()) ?: return blockData
     data.note = Note((blockId % 25))
-    data.isPowered = blockId in 0..399
+    data.isPowered = blockId !in 0..399
     blockMap.putIfAbsent(data, blockId)
     return data
 }
@@ -22,7 +22,6 @@ fun Block.getPrefabFromBlock(): GearyEntity? {
     val blockyBlock = BlockyTypeQuery.firstOrNull {
         it.entity.get<BlockyBlock>()?.blockId == blockMap[blockData]
     }?.entity ?: return null
-
     return blockyBlock
 }
 

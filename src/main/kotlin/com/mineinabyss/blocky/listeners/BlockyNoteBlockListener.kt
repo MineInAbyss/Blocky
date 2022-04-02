@@ -1,21 +1,24 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyLight
+import com.comphenix.protocol.ProtocolLibrary
+import com.comphenix.protocol.ProtocolManager
+import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.systems.BlockyBreakingPacketAdapter
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.okkero.skedule.schedule
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
 import org.bukkit.event.player.PlayerInteractEvent
 
+val protocolManager: ProtocolManager = ProtocolLibrary.getProtocolManager()
 
 class BlockyNoteBlockListener : Listener {
 
@@ -24,9 +27,16 @@ class BlockyNoteBlockListener : Listener {
         isCancelled = true
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
-        if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) isCancelled = true
+        if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) {
+            isCancelled = true
+            if (player.inventory.itemInMainHand.type == Material.AIR) return
+            else if (item!!.type.isBlock) {
+                placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
+                    ?: return
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -47,15 +57,17 @@ class BlockyNoteBlockListener : Listener {
         val gearyItem = player.inventory.itemInMainHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyInfo = gearyItem.get<BlockyInfo>() ?: return
-        val blockyLight = gearyItem.get<BlockyLight>()!!.lightLevel
+        val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
+        val blockySound = gearyItem.get<BlockySound>()
         if (action != Action.RIGHT_CLICK_BLOCK) return
+        if (blockyBlock.blockType != BlockType.CUBE) return
 
         val against = clickedBlock ?: return
         val placed =
             placeBlockyBlock(player, hand!!, item!!, against, blockFace, blockyBlock.getBlockyNoteBlockDataFromPrefab())
                 ?: return
-        placed.world.playSound(placed.location, blockyInfo.placeSound, 1.0f,  0.8f)
-        if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight)
+        if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f,  0.8f)
+        if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
         isCancelled = true
 
     }
@@ -68,17 +80,7 @@ class BlockyNoteBlockListener : Listener {
 
         if (blockyBlock.blockType == BlockType.CUBE) {
             block.setBlockData(block.getBlockyBlockDataFromItem(blockyBlock.blockId), false)
-        } else if (blockyBlock.blockType == BlockType.GROUND && blockAgainst.getFace(blockPlaced) == BlockFace.UP) {
-            block.setType(Material.TRIPWIRE, false)
-            block.setBlockData(block.getBlockyDecorationDataFromItem(blockyBlock.blockId, blockyBlock.blockType), true)
-            blockAgainst.state.update(true, false)
-            blockPlaced.state.update(true, false)
-            return
-        } else if (blockyBlock.blockType == BlockType.WALL && blockAgainst.getFace(blockPlaced) != BlockFace.UP) {
-            block.setType(Material.GLOW_LICHEN, false)
-            block.setBlockData(block.getBlockyDecorationDataFromItem(blockyBlock.blockId, blockyBlock.blockType), true)
         }
-        block.setBlockData(block.blockData, false)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -87,10 +89,17 @@ class BlockyNoteBlockListener : Listener {
 
         val prefab = block.getPrefabFromBlock() ?: return
         val blockyInfo = prefab.get<BlockyInfo>() ?: return
+        val blockySound = prefab.get<BlockySound>()
 
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
 
-        block.world.playSound(block.location, blockyInfo.breakSound, 1.0f, 0.8f)
+        blockyPlugin.schedule {
+            protocolManager.addPacketListener(
+                BlockyBreakingPacketAdapter(player, mutableMapOf(Pair(block.location, this.scheduler)))
+            )
+        }
+
+        if (prefab.has<BlockySound>()) block.world.playSound(block.location, blockySound!!.breakSound, 1.0f,  0.8f)
         isDropItems = false
         handleBlockyDrops(block, player)
         removeBlockLight(block.location)

@@ -73,7 +73,7 @@ class BlockyItemFrameListener : Listener {
     @EventHandler
     fun HangingBreakEvent.onBreakHanging() {
         if (cause == HangingBreakEvent.RemoveCause.ENTITY) return
-        if (entity.toGearyOrNull()?.has<BlockyEntity>() == true) isCancelled = true
+        if (entity.toGearyOrNull()?.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -124,6 +124,7 @@ class BlockyItemFrameListener : Listener {
         val block = clickedBlock ?: return
 
         if (block.type != Material.BARRIER || player.isSneaking) return
+        if (player.inventory.itemInMainHand.type != Material.AIR) return
 
         val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 20.0)
         frames.forEach { frame ->
