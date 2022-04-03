@@ -129,6 +129,7 @@ fun spawnSeat(loc: Location, yaw: Float, heightOffset: Double) {
         isSilent = true
         isSmall = true
         setGravity(false)
+        toGeary().getOrSetPersisting { BlockySeat() }
 
         this.location.yaw = yaw
         this.location.apply { y += heightOffset }

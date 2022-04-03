@@ -90,7 +90,7 @@ class BlockyItemFrameListener : Listener {
                 if (frame.toGeary().has<BlockySeatLocations>()) {
                     frame.toGeary().get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
                         seatLoc.getNearbyEntitiesByType(ArmorStand::class.java, 1.0).forEach seat@{ stand ->
-                            stand.remove()
+                            if (stand.toGeary().has<BlockySeat>()) stand.remove()
                             return@seat
                         }
                         return@seatLoc
