@@ -30,7 +30,7 @@ class WorldEditListener : Listener {
                 block.blockId,
                 true
             )
-            else -> getDecorationData(block.blockId, block.blockType)
+            else -> getDecorationData(block.blockId)
         }
         message = message.replace(blockyID.toString(), blockData, true)
     }
@@ -58,64 +58,33 @@ private fun getInstrument(id: Int): String {
     }
 }
 
-private fun getDecorationData(blockId: Int, blockType: BlockType): String {
-    when (blockType) {
-        BlockType.GROUND -> {
-            val inAttachedRange = blockId in 33..64
-            val inPoweredRange = blockId in 17..32 || blockId in 49..64
-            val northRange = 2..64
-            val southRange = 5..64
-            val eastRange = 3..64
-            val westRange = 9..64
-            var north = false
-            var east = false
-            var south = false
-            var west = false
+private fun getDecorationData(blockId: Int): String {
+    val inAttachedRange = blockId in 33..64
+    val inPoweredRange = blockId in 17..32 || blockId in 49..64
+    val northRange = 2..64
+    val southRange = 5..64
+    val eastRange = 3..64
+    val westRange = 9..64
+    var north = false
+    var east = false
+    var south = false
+    var west = false
 
-            if (blockId in northRange step 2) north = true
+    if (blockId in northRange step 2) north = true
 
-            for (i in westRange) {
-                if (blockId !in i..i + 7) westRange step 8
-                else west = true
-            }
-
-            for (i in southRange) {
-                if (blockId !in i..i + 4) southRange step 4
-                else south = true
-            }
-
-            for (i in eastRange) {
-                if (blockId in i..i + 1) eastRange step 2
-                else east = true
-            }
-            return "trip_wire[north=$north,east=$east,south=$south,west=$west,attached=$inAttachedRange,disarmed=true,powered=$inPoweredRange]"
-        }
-        BlockType.WALL -> {
-            val inUpRange = blockId in 17..32
-            val inNorthRange = blockId in 2..32 step 2
-            val southRange = 5..32
-            val eastRange = 3..32
-            val westRange = 9..32
-            var east = false
-            var south = false
-            var west = false
-
-            for (i in westRange) {
-                if (blockId !in i..i + 7) westRange step 8
-                else west = true
-            }
-
-            for (i in southRange) {
-                if (blockId !in i..i + 4) southRange step 4
-                else south = true
-            }
-
-            for (i in eastRange) {
-                if (blockId in i..i + 1) eastRange step 2
-                else east = true
-            }
-            return "glow_lichen[up=$inUpRange,north=$inNorthRange,east=$east,south=$south,west=$west,waterlogged=true]"
-        }
-        else -> return ""
+    for (i in westRange) {
+        if (blockId !in i..i + 7) westRange step 8
+        else west = true
     }
+
+    for (i in southRange) {
+        if (blockId !in i..i + 4) southRange step 4
+        else south = true
+    }
+
+    for (i in eastRange) {
+        if (blockId in i..i + 1) eastRange step 2
+        else east = true
+    }
+    return "trip_wire[north=$north,east=$east,south=$south,west=$west,attached=$inAttachedRange,disarmed=true,powered=$inPoweredRange]"
 }

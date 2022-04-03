@@ -23,6 +23,17 @@ val protocolManager: ProtocolManager = ProtocolLibrary.getProtocolManager()
 class BlockyNoteBlockListener : Listener {
 
     @EventHandler
+    fun BlockPistonExtendEvent.cancelBlockyPiston() {
+        if (blocks.stream().anyMatch { it.type == Material.NOTE_BLOCK }) isCancelled = true
+
+    }
+
+    @EventHandler
+    fun BlockPistonRetractEvent.cancelBlockyPiston() {
+        if (blocks.stream().anyMatch { it.type == Material.NOTE_BLOCK }) isCancelled = true
+    }
+
+    @EventHandler
     fun NotePlayEvent.cancelBlockyNotes() {
         isCancelled = true
     }
@@ -87,7 +98,7 @@ class BlockyNoteBlockListener : Listener {
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         if (block.type != Material.NOTE_BLOCK || isCancelled || !isDropItems) return
 
-        val prefab = block.getPrefabFromBlock() ?: return
+        val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
         val blockyInfo = prefab.get<BlockyInfo>() ?: return
         val blockySound = prefab.get<BlockySound>()
 

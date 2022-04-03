@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.BlockyLight
 import com.mineinabyss.blocky.components.BlockySound
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import org.bukkit.Bukkit
@@ -12,13 +13,21 @@ import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
-import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.block.BlockPhysicsEvent
-import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.*
 import org.bukkit.event.player.PlayerInteractEvent
 
 class BlockyTripwireListener : Listener {
+
+    @EventHandler
+    fun BlockPistonExtendEvent.cancelBlockyPiston() {
+        val wireList = blocks.stream().filter{ it.type == Material.TRIPWIRE }.toList()
+
+        wireList.forEach { wire ->
+            val gearyEntity = wire.getPrefabFromBlock() ?: return@forEach
+            wire.world.dropItemNaturally(wire.location, LootyFactory.createFromPrefab(gearyEntity)!!)
+            wire.type = Material.AIR
+        }
+    }
 
     @EventHandler(priority = EventPriority.MONITOR)
     fun BlockPhysicsEvent.cancelTripwirePhysics() {
@@ -32,10 +41,8 @@ class BlockyTripwireListener : Listener {
     @EventHandler(priority = EventPriority.HIGH)
     fun BlockPlaceEvent.onPlacingTripwire() {
         if (blockPlaced.type == Material.TRIPWIRE) {
-            //isCancelled = true
             block.state.update(true, false)
             blockAgainst.state.update(true, false)
-            updateAndCheck(block.location)
         }
     }
 
@@ -71,14 +78,13 @@ class BlockyTripwireListener : Listener {
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         if (block.type != Material.TRIPWIRE || !isDropItems) return
 
-        val blockyWire = block.getPrefabFromBlock() ?: return
+        val blockyWire = block.getPrefabFromBlock()?.toEntity() ?: return
         val blockyInfo = blockyWire.get<BlockyInfo>() ?: return
         val blockySound = blockyWire.get<BlockySound>()
         block.state.update(true, false)
 
         if (blockyWire.has<BlockySound>()) block.world.playSound(block.location, blockySound!!.placeSound, 1.0f,  0.8f)
         if (blockyWire.has<BlockyLight>()) removeBlockLight(block.location)
-
         isDropItems = false
         handleBlockyDrops(block, player)
     }

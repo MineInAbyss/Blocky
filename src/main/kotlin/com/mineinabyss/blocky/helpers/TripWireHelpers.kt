@@ -21,23 +21,14 @@ val blockMap: MutableMap<BlockData, Int> = mutableMapOf()
  *
  * [BlockType.WALL] -> Allows for 16 blockstates via Glow Lichen.
 */
-fun Block.getBlockyDecorationDataFromItem(blockId: Int, blockType: BlockType): BlockData {
+fun Block.getBlockyDecorationDataFromItem(blockId: Int): BlockData {
     val blockyBlock = BlockyTypeQuery.firstOrNull {
         it.entity.get<BlockyBlock>()?.blockId == blockId &&
-        it.entity.get<BlockyBlock>()?.blockType == blockType
+        it.entity.get<BlockyBlock>()?.blockType == BlockType.GROUND
     }?.entity?.get<BlockyBlock>() ?: return blockData
 
-    blockData = when (blockyBlock.blockType) {
-        BlockType.GROUND -> {
-            setType(Material.TRIPWIRE, false)
-            blockyBlock.getBlockyTripWireDataFromPrefab() ?: return blockData
-        }
-        BlockType.WALL -> {
-            setType(Material.GLOW_LICHEN, false)
-            blockyBlock.getBlockyGlowLichenDataFromPrefab()
-        }
-        else -> return blockData
-    }
+    setType(Material.TRIPWIRE, false)
+    blockData = blockyBlock.getBlockyTripWireDataFromPrefab() ?: return blockData
     blockMap.putIfAbsent(blockData, blockId)
     return blockData
 }
@@ -73,6 +64,7 @@ fun BlockyBlock.getBlockyTripWireDataFromPrefab() : BlockData? {
         else data.setFace(BlockFace.EAST, true)
     }
     blockData = data
+    blockMap.putIfAbsent(data, blockId)
     return blockData
 }
 

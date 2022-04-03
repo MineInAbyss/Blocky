@@ -1,15 +1,17 @@
 package com.mineinabyss.blocky.helpers
 
+import com.mineinabyss.blocky.BlockyTypeQuery
+import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.systems.BlockHardnessModifiers
+import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.GlowLichen
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockPlaceEvent
@@ -24,7 +26,7 @@ val REPLACEABLE_BLOCKS =
     )
 
 fun handleBlockyDrops(block: Block, player: Player) {
-    val gearyBlock = block.getPrefabFromBlock() ?: return
+    val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
     val blocky = gearyBlock.get<BlockyBlock>() ?: return
     val info = gearyBlock.get<BlockyInfo>() ?: return
 
@@ -49,9 +51,6 @@ fun handleBlockyDrops(block: Block, player: Player) {
         for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
         //expToDrop = it.exp
     }
-    if (blocky.blockType == BlockType.WALL) {
-        (block.blockData as GlowLichen).isWaterlogged = false
-    }
 }
 
 fun getBreakModifier(): BlockHardnessModifiers {
@@ -66,13 +65,29 @@ fun getBreakModifier(): BlockHardnessModifiers {
         }
 
         override fun getBreakTime(player: Player, block: Block, tool: ItemStack): Long {
-            val prefab = block.getPrefabFromBlock() ?: return 0L
+            val prefab = block.getPrefabFromBlock()?.toEntity() ?: return 0L
             val info = prefab.get<BlockyInfo>() ?: return 0L
             val period: Long = info.blockBreakTime.toLong()
             val modifier = 1.0
             return (period * modifier).toLong()
         }
     }
+}
+
+fun Block.getPrefabFromBlock(): PrefabKey? {
+
+    val type =
+        when (type) {
+            Material.NOTE_BLOCK -> BlockType.CUBE
+            Material.TRIPWIRE -> BlockType.GROUND
+            else -> return null
+        }
+
+    val blockyBlock = BlockyTypeQuery.firstOrNull {
+        it.entity.get<BlockyBlock>()?.blockId == blockMap[blockData] &&
+                it.entity.get<BlockyBlock>()?.blockType == type
+    }?.key ?: return null
+    return blockyBlock
 }
 
 fun placeBlockyBlock(

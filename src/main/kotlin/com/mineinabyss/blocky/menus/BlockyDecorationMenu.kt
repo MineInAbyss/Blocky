@@ -19,7 +19,6 @@ import org.bukkit.inventory.ItemStack
 fun BlockyUIScope.BlockyDecorationMenu() {
     Grid(Modifier.size(5, 5)) {
         val passthroughs = BlockyTypeQuery.filter {
-            it.entity.get<BlockyBlock>()?.blockType == BlockType.WALL ||
             it.entity.get<BlockyBlock>()?.blockType == BlockType.GROUND
         }
         passthroughs.forEach {

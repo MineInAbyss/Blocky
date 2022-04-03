@@ -45,7 +45,7 @@ class BlockyBreakingPacketAdapter(
         val pos = tempData.values[0]
         val block = player.world.getBlockAt(pos.toLocation(player.world))
         if (block.type != Material.NOTE_BLOCK) return
-        val period = block.getPrefabFromBlock()?.get<BlockyInfo>()!!.blockBreakTime.toLong()
+        val period = block.getPrefabFromBlock()?.toEntity()?.get<BlockyInfo>()!!.blockBreakTime.toLong()
 
         e.isCancelled = true
 
@@ -68,7 +68,7 @@ class BlockyBreakingPacketAdapter(
                 //TODO Doesnt work
                 fun accept(bukkitTask: BukkitTask) {
                     if (!breakerLocations.containsKey(block.location)) {
-                        bukkitTask.cancel()//
+                        bukkitTask.cancel()
                         return
                     }
 
