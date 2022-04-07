@@ -55,7 +55,7 @@ class BlockyNoteBlockListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyBlock() {
         val gearyItem = player.inventory.itemInMainHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
@@ -64,23 +64,19 @@ class BlockyNoteBlockListener : Listener {
         val blockySound = gearyItem.get<BlockySound>()
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (blockyBlock.blockType != BlockType.CUBE) return
-
         val against = clickedBlock ?: return
         val placed =
             placeBlockyBlock(player, hand!!, item!!, against, blockFace, blockyBlock.getBlockyNoteBlockDataFromPrefab())
                 ?: return
         if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f,  0.8f)
         if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
-        isCancelled = true
-
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyInfo = gearyItem.get<BlockyInfo>() ?: return
-
         if (blockyBlock.blockType == BlockType.CUBE) {
             block.setBlockData(block.getBlockyBlockDataFromItem(blockyBlock.blockId), false)
         }

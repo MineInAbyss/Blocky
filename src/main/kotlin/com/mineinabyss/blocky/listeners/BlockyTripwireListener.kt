@@ -34,7 +34,6 @@ class BlockyTripwireListener : Listener {
         if (changedType == Material.TRIPWIRE) {
             isCancelled = true
             block.state.update(true, false)
-            sourceBlock.state.update(true, false)
         }
     }
 

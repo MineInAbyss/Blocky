@@ -11,7 +11,6 @@ import com.mineinabyss.looty.LootyFactory
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.Rotation
-import org.bukkit.World
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
@@ -54,7 +53,6 @@ fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFa
     val blockyEntity = get<BlockyEntity>() ?: return null
     if (!blockyEntity.hasEnoughSpace(yaw, loc)) return null
     val lootyItem = LootyFactory.createFromPrefab(this.prefabKeys.first()) ?: return null
-    val hasBlockLight = has<BlockyLight>()
     val blockyLight = get<BlockyLight>()?.lightLevel
     val newFrame =
         loc.spawn<ItemFrame>()?.apply {
@@ -63,6 +61,7 @@ fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFa
             isPersistent = true
             itemDropChance = 0F
             isCustomNameVisible = false
+            setItem(lootyItem)
             setRotation(rotation)
             setFacingDirection(facing, true)
         }
@@ -75,14 +74,14 @@ fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFa
             val block = adjacentLoc.block
             block.setType(Material.BARRIER, false)
             gearyFrame.get<BlockyBarrierHitbox>()?.barriers?.add(block.location)
-            if (hasBlockLight) createBlockLight(adjacentLoc, blockyLight!!)
+            if (has<BlockyLight>()) createBlockLight(adjacentLoc, blockyLight!!)
             if (has<BlockySeat>()) {
                 gearyFrame.getOrSetPersisting { BlockySeatLocations() }
                 spawnSeat(adjacentLoc, get<BlockySeat>()!!.yaw, get<BlockySeat>()!!.heightOffset)
                 gearyFrame.get<BlockySeatLocations>()?.seats?.add(adjacentLoc)
             }
         }
-    } else if (hasBlockLight) createBlockLight(loc, blockyLight!!)
+    } else if (has<BlockyLight>()) createBlockLight(loc, blockyLight!!)
 
     return newFrame
 }
@@ -91,34 +90,6 @@ fun ItemFrame.checkFrameHitbox(destination: Location): Boolean {
     val barrierBox = toGeary().get<BlockyBarrierHitbox>()?.barriers ?: return false
     barrierBox.forEach { barrierLoc -> if (barrierLoc == destination) return true }
     return false
-}
-
-fun removeSolid(world: World, blockLoc: BlockLocation, rotation: Float, gearyEntity: GearyEntity): Boolean {
-    val baseLoc = blockLoc.toLocation(world)
-    val blockyEntity = gearyEntity.get<BlockyEntity>() ?: return false
-    val hasBlockLight = gearyEntity.has<BlockyLight>()
-
-    for (loc in getLocations(rotation, baseLoc, blockyEntity.getHitbox())) {
-        if (hasBlockLight) removeBlockLight(loc)
-        loc.block.type = Material.AIR
-    }
-
-    var tempBool = false
-    for (frame in baseLoc.world.getNearbyEntities(baseLoc, 1.0, 1.0, 1.0)) {
-        if (frame is ItemFrame &&
-            frame.location.blockX == baseLoc.blockX &&
-            frame.location.blockY == baseLoc.blockY &&
-            frame.location.blockZ == baseLoc.blockZ &&
-            frame.toGearyOrNull()?.has<BlockyEntity>() == true
-        ) {
-            frame.remove()
-            if (frame.toGearyOrNull()?.has<BlockyLight>() == true) removeBlockLight(baseLoc)
-            baseLoc.block.type = Material.AIR
-            tempBool = true
-            break
-        }
-    }
-    return tempBool
 }
 
 fun spawnSeat(loc: Location, yaw: Float, heightOffset: Double) {
