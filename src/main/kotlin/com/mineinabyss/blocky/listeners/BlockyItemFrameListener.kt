@@ -10,7 +10,6 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemFrame
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -26,14 +25,14 @@ import org.bukkit.inventory.EquipmentSlot
 
 class BlockyItemFrameListener : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun HangingPlaceEvent.onPlacingItemFrame() {
         val player = player ?: return
         val item = itemStack?.toGearyOrNull(player) ?: return
         if (item.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME) isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     fun PlayerInteractEvent.prePlacingItemFrame() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
@@ -106,10 +105,11 @@ class BlockyItemFrameListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun EntityDamageByEntityEvent.onBreakingFrame() {
         if (entity !is ItemFrame) return
-        if (damager !is Player) return
         val gearyEntity = entity.toGearyOrNull() ?: return
         val blockyEntity = gearyEntity.get<BlockyEntity>() ?: return
         val blockyInfo = gearyEntity.get<BlockyInfo>() ?: return
+
+        if (blockyInfo.isUnbreakable) isCancelled = true
     }
 
 

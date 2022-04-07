@@ -6,7 +6,6 @@ import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.helpers.prefabKeys
-import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import org.bukkit.Location
@@ -63,7 +62,7 @@ fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFa
             isFixed = false
             isPersistent = true
             itemDropChance = 0F
-            setItem(lootyItem.editItemMeta { setDisplayName("") })
+            isCustomNameVisible = false
             setRotation(rotation)
             setFacingDirection(facing, true)
         }

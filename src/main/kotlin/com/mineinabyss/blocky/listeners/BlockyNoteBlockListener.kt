@@ -9,7 +9,6 @@ import com.mineinabyss.blocky.systems.BlockyBreakingPacketAdapter
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import com.okkero.skedule.schedule
-import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
@@ -40,14 +39,7 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
-        if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) {
-            isCancelled = true
-            if (player.inventory.itemInMainHand.type == Material.AIR) return
-            else if (item!!.type.isBlock) {
-                placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
-                    ?: return
-            }
-        }
+        if (clickedBlock?.type == Material.NOTE_BLOCK && rightClicked) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -63,7 +55,7 @@ class BlockyNoteBlockListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyBlock() {
         val gearyItem = player.inventory.itemInMainHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
