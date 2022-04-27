@@ -41,8 +41,8 @@ class BlockyPlugin : JavaPlugin() {
             BlockyItemFrameListener()
         )
 
-        gearyAddon {
-            autoScanComponents()
+        gearyAddon("com.mineinabyss") {
+            autoScanAll()
             loadPrefabs(blocksDir)
         }
 

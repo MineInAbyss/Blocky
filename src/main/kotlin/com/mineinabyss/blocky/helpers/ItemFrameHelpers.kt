@@ -5,7 +5,6 @@ import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.ecs.api.entities.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
-import com.mineinabyss.geary.prefabs.helpers.prefabKeys
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import org.bukkit.Location
@@ -52,7 +51,7 @@ fun BlockyEntity.hasEnoughSpace(yaw: Float, loc: Location): Boolean {
 fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFace, loc: Location): ItemFrame? {
     val blockyEntity = get<BlockyEntity>() ?: return null
     if (!blockyEntity.hasEnoughSpace(yaw, loc)) return null
-    val lootyItem = LootyFactory.createFromPrefab(this.prefabKeys.first()) ?: return null
+    val lootyItem = blockyEntity.entityPrefab?.let { LootyFactory.createFromPrefab(it) } ?: return null
     val blockyLight = get<BlockyLight>()?.lightLevel
     val newFrame =
         loc.spawn<ItemFrame>()?.apply {
