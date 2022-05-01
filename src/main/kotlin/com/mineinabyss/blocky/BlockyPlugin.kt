@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.listeners.*
+import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.getService
@@ -41,9 +42,10 @@ class BlockyPlugin : JavaPlugin() {
             BlockyItemFrameListener()
         )
 
-        gearyAddon("com.mineinabyss") {
-            autoScanAll()
-            loadPrefabs(blocksDir)
+        gearyAddon {
+            autoscan("com.mineinabyss") {
+                all()
+            }
         }
 
     }

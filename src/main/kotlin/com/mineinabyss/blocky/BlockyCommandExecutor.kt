@@ -61,7 +61,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                             BlockyTypeQuery
                                 .filter {
                                     val arg = args[1].lowercase()
-                                    it.key.name.startsWith(arg) || it.key.key.startsWith(arg)
+                                    it.key.namespace.startsWith(arg) || it.key.key.startsWith(arg)
                                 }
                                 .map { it.key.toString() }
                         }

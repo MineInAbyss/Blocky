@@ -3,7 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.geary.papermc.toPrefabKey
+import com.mineinabyss.geary.papermc.helpers.toPrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Material
 import org.bukkit.event.EventHandler

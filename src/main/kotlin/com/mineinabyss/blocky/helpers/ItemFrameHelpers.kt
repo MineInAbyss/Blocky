@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.systems.BlockLocation
-import com.mineinabyss.geary.ecs.api.entities.GearyEntity
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.idofront.spawning.spawn
