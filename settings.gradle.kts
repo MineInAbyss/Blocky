@@ -31,7 +31,10 @@ dependencyResolutionManagement {
         maven("https://repo.mineinabyss.com/releases")
     }
 
-    versionCatalogs.create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+    versionCatalogs {
+        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("blockylibs").from(files("gradle/blockylibs.versions.toml"))
+    }
 }
 
 val pluginName: String by settings

@@ -78,7 +78,7 @@ class BlockyTripwireListener : Listener {
         if (block.type != Material.TRIPWIRE || !isDropItems) return
 
         val blockyWire = block.getPrefabFromBlock()?.toEntity() ?: return
-        val blockyInfo = blockyWire.get<BlockyInfo>() ?: return
+        blockyWire.get<BlockyInfo>() ?: return
         val blockySound = blockyWire.get<BlockySound>()
         block.state.update(true, false)
 

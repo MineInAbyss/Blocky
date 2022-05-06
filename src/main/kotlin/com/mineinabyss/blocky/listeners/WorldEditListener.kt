@@ -20,7 +20,7 @@ class WorldEditListener : Listener {
         val args: List<String> = message.split(" ")
         val blockyID = args.firstOrNull { it.contains("mineinabyss:") }?.toMCKey()?.toPrefabKey() ?: return
         val block = blockyID.toEntity()?.get<BlockyBlock>() ?: return
-        val info = blockyID.toEntity()?.get<BlockyInfo>() ?: return
+        blockyID.toEntity()?.get<BlockyInfo>() ?: return
 
         val blockData = when (block.blockType) {
             BlockType.CUBE -> String.format(

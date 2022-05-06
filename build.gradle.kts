@@ -31,21 +31,20 @@ dependencies {
     compileOnly(libs.kotlinx.serialization.json)
     compileOnly(libs.kotlinx.serialization.kaml)
     compileOnly(libs.kotlinx.coroutines)
-    compileOnly(libs.minecraft.skedule)
+    compileOnly(libs.minecraft.mccoroutine)
 
     // Geary platform
-    compileOnly(platform("com.mineinabyss:geary-platform:$gearyPlatformVersion"))
-    compileOnly("com.mineinabyss:geary-papermc-core")
-    compileOnly("com.mineinabyss:geary-commons-papermc")
-    compileOnly("com.mineinabyss:looty")
+    compileOnly(blockylibs.geary.papermc.core)
+    compileOnly(blockylibs.geary.commons.papermc)
+    compileOnly(blockylibs.looty)
 
     // Other plugins
     compileOnly("com.mineinabyss:deeperworld:$deeperworldVersion")
     compileOnly("com.mineinabyss:guiy-compose:$guiyVersion")
     compileOnly("com.ticxo.modelengine:api:$modelengineVersion")
-    compileOnly("com.comphenix.protocol:ProtocolLib:4.8.0")
-    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Bukkit:2.1.1") { isTransitive = false }
-    compileOnly("com.fastasyncworldedit:FastAsyncWorldEdit-Core:2.1.1")
+    compileOnly(libs.minecraft.plugin.fawe.core)
+    compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
+    compileOnly(libs.minecraft.plugin.protocollib)
     compileOnly("com.github.BeYkeRYkt:LightAPI:5.2.0-Bukkit")
     compileOnly(libs.minecraft.headlib)
     compileOnly(libs.minecraft.anvilgui)

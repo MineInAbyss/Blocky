@@ -40,7 +40,7 @@ class BlockyItemFrameListener : Listener {
         val blockyEntity = gearyItem.get<BlockyEntity>() ?: return
         val against = clickedBlock ?: return
         val targetBlock = getTargetBlock(against, blockFace) ?: return
-        val targetData = targetBlock.blockData;
+        val targetData = targetBlock.blockData
 
         if (blockyEntity.entityType != EntityType.ITEM_FRAME) return
 
@@ -63,7 +63,6 @@ class BlockyItemFrameListener : Listener {
             targetBlock.setBlockData(targetData, false)
             return
         }
-
         gearyItem.placeBlockyFrame(frameRotation, frameYaw, blockFace, targetBlock.location)
         if (player.gameMode != GameMode.CREATIVE) item!!.subtract()
     }
@@ -105,9 +104,9 @@ class BlockyItemFrameListener : Listener {
     fun EntityDamageByEntityEvent.onBreakingFrame() {
         if (entity !is ItemFrame) return
         val gearyEntity = entity.toGearyOrNull() ?: return
-        val blockyEntity = gearyEntity.get<BlockyEntity>() ?: return
         val blockyInfo = gearyEntity.get<BlockyInfo>() ?: return
 
+        gearyEntity.get<BlockyEntity>() ?: return
         if (blockyInfo.isUnbreakable) isCancelled = true
     }
 

@@ -2,13 +2,10 @@ package com.mineinabyss.blocky.listeners
 
 import com.comphenix.protocol.ProtocolLibrary
 import com.comphenix.protocol.ProtocolManager
-import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.systems.BlockyBreakingPacketAdapter
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import com.okkero.skedule.schedule
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
@@ -59,9 +56,10 @@ class BlockyNoteBlockListener : Listener {
     fun PlayerInteractEvent.onPrePlacingBlockyBlock() {
         val gearyItem = player.inventory.itemInMainHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val blockyInfo = gearyItem.get<BlockyInfo>() ?: return
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val blockySound = gearyItem.get<BlockySound>()
+
+        gearyItem.get<BlockyInfo>() ?: return
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (blockyBlock.blockType != BlockType.CUBE) return
         val against = clickedBlock ?: return
@@ -76,7 +74,8 @@ class BlockyNoteBlockListener : Listener {
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val blockyInfo = gearyItem.get<BlockyInfo>() ?: return
+
+        gearyItem.get<BlockyInfo>() ?: return
         if (blockyBlock.blockType == BlockType.CUBE) {
             block.setBlockData(block.getBlockyBlockDataFromItem(blockyBlock.blockId), false)
         }
@@ -91,12 +90,6 @@ class BlockyNoteBlockListener : Listener {
         val blockySound = prefab.get<BlockySound>()
 
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-
-        blockyPlugin.schedule {
-            protocolManager.addPacketListener(
-                BlockyBreakingPacketAdapter(player, mutableMapOf(Pair(block.location, this.scheduler)))
-            )
-        }
 
         if (prefab.has<BlockySound>()) block.world.playSound(block.location, blockySound!!.breakSound, 1.0f,  0.8f)
         isDropItems = false
