@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
+import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import org.bukkit.Location
@@ -51,7 +52,7 @@ fun BlockyEntity.hasEnoughSpace(yaw: Float, loc: Location): Boolean {
 fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFace, loc: Location): ItemFrame? {
     val blockyEntity = get<BlockyEntity>() ?: return null
     if (!blockyEntity.hasEnoughSpace(yaw, loc)) return null
-    val lootyItem = blockyEntity.entityPrefab?.let { LootyFactory.createFromPrefab(it) } ?: return null
+    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return null
     val blockyLight = get<BlockyLight>()?.lightLevel
     val newFrame =
         loc.spawn<ItemFrame>()?.apply {
@@ -92,15 +93,14 @@ fun ItemFrame.checkFrameHitbox(destination: Location): Boolean {
 }
 
 fun spawnSeat(loc: Location, yaw: Float, heightOffset: Double) {
-    loc.toCenterLocation().spawn<ArmorStand>()?.apply {
+    loc.add(0.0, heightOffset, 0.0)
+    loc.yaw = yaw
+    val stand = loc.toCenterLocation().spawn<ArmorStand>()?.apply {
         isVisible = false
         isMarker = true
         isSilent = true
         isSmall = true
         setGravity(false)
-        toGeary().getOrSetPersisting { BlockySeat() }
-
-        this.location.yaw = yaw
-        this.location.apply { y += heightOffset }
-    }
+    } ?: return
+    stand.toGeary().getOrSetPersisting { BlockySeat() }
 }

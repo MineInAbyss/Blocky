@@ -58,12 +58,12 @@ class BlockyItemFrameListener : Listener {
             player.error("There is not enough space to place this block here.")
         }
         blockyPlace.callEvent()
-
-        if (!blockyPlace.canBuild() || blockyPlace.isCancelled) {
+        if (!blockyPlace.canBuild()) {
             targetBlock.setBlockData(targetData, false)
             return
         }
         gearyItem.placeBlockyFrame(frameRotation, frameYaw, blockFace, targetBlock.location)
+        player.swingMainHand()
         if (player.gameMode != GameMode.CREATIVE) item!!.subtract()
     }
 
@@ -86,7 +86,7 @@ class BlockyItemFrameListener : Listener {
                 }
                 if (frame.toGeary().has<BlockySeatLocations>()) {
                     frame.toGeary().get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
-                        seatLoc.getNearbyEntitiesByType(ArmorStand::class.java, 1.0).forEach seat@{ stand ->
+                        seatLoc.getNearbyEntitiesByType(ArmorStand::class.java, frame.toGeary().get<BlockySeat>()?.heightOffset ?: 1.0).forEach seat@{ stand ->
                             if (stand.toGeary().has<BlockySeat>()) stand.remove()
                             return@seat
                         }

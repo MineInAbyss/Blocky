@@ -26,7 +26,7 @@ val REPLACEABLE_BLOCKS =
 
 fun handleBlockyDrops(block: Block, player: Player) {
     val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
-    val blocky = gearyBlock.get<BlockyBlock>() ?: return
+    gearyBlock.get<BlockyBlock>() ?: return
     val info = gearyBlock.get<BlockyInfo>() ?: return
 
     info.blockDrop.map {
@@ -94,7 +94,7 @@ fun placeBlockyBlock(
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, currentBlockState, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
-    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
+    if (!blockPlaceEvent.canBuild()) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
