@@ -1,28 +1,29 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.BlockyDirectional
+import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.*
-import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 
-fun Block.getBlockyBlockDataFromItem(blockId: Int): BlockData {
-    setType(Material.NOTE_BLOCK, false)
-    val data = blockData as NoteBlock
-    data.instrument = Instrument.getByType((blockId / 25 % 400).toByte()) ?: return blockData
-    data.note = Note((blockId % 25))
-    data.isPowered = blockId !in 0..399
-    blockMap.putIfAbsent(data, blockId)
-    return data
-}
+fun GearyEntity.getBlockyNoteBlockDataFromPrefab(face: BlockFace) : BlockData {
+    val data = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+    val blockyBlock = get<BlockyBlock>() ?: return data
+    val directional = get<BlockyDirectional>()
+    var id = blockyBlock.blockId
 
-fun BlockyBlock.getBlockyNoteBlockDataFromPrefab() : BlockData {
-    val blockData = Bukkit.createBlockData(Material.NOTE_BLOCK)
-    val data = blockData as NoteBlock
-    data.instrument = Instrument.getByType((blockId / 25 % 400).toByte()) ?: return data
-    data.note = Note((blockId % 25))
-    data.isPowered = blockId in 0..399
-    blockMap.putIfAbsent(data, blockId)
+    if (has<BlockyDirectional>()) {
+        if (directional?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN)) id = directional.yBlockId
+        else if (directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH)) id = directional.xBlockId
+        else if (directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST)) id = directional.zBlockId
+    }
+
+    data.instrument = Instrument.getByType((id / 25 % 400).toByte()) ?: return data
+    data.note = Note((id % 25))
+    data.isPowered = id !in 0..399
+    blockMap.putIfAbsent(data, id)
     return data
 }
 

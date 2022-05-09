@@ -8,6 +8,7 @@ import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -64,7 +65,7 @@ class BlockyNoteBlockListener : Listener {
         if (blockyBlock.blockType != BlockType.CUBE) return
         val against = clickedBlock ?: return
         val placed =
-            placeBlockyBlock(player, hand!!, item!!, against, blockFace, blockyBlock.getBlockyNoteBlockDataFromPrefab())
+            placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlockDataFromPrefab(blockFace))
                 ?: return
         if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f,  0.8f)
         if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
@@ -74,10 +75,11 @@ class BlockyNoteBlockListener : Listener {
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.NORTH
 
         gearyItem.get<BlockyInfo>() ?: return
         if (blockyBlock.blockType == BlockType.CUBE) {
-            block.setBlockData(block.getBlockyBlockDataFromItem(blockyBlock.blockId), false)
+            block.setBlockData(gearyItem.getBlockyNoteBlockDataFromPrefab(blockFace), false)
         }
     }
 
