@@ -4,6 +4,7 @@ import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.BlockyDirectional
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.GameMode
@@ -61,11 +62,18 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
             else -> return null
         }
 
-    val blockyBlock = BlockyTypeQuery.firstOrNull {
-        it.entity.get<BlockyBlock>()?.blockId == blockMap[blockData] &&
-                it.entity.get<BlockyBlock>()?.blockType == type
+    return BlockyTypeQuery.firstOrNull {
+        if (it.entity.has<BlockyDirectional>()) {
+            (it.entity.get<BlockyDirectional>()?.yBlockId == blockMap[blockData] ||
+                    it.entity.get<BlockyDirectional>()?.xBlockId == blockMap[blockData] ||
+                    it.entity.get<BlockyDirectional>()?.zBlockId == blockMap[blockData]) &&
+                    it.entity.get<BlockyBlock>()?.blockType == type
+        }
+        else {
+            it.entity.get<BlockyBlock>()?.blockId == blockMap[blockData] &&
+                    it.entity.get<BlockyBlock>()?.blockType == type
+        }
     }?.key ?: return null
-    return blockyBlock
 }
 
 fun placeBlockyBlock(
