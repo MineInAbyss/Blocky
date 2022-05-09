@@ -34,7 +34,6 @@ class BlockyTripwireListener : Listener {
         if (changedType == Material.TRIPWIRE) {
             isCancelled = true
             block.state.update(true, false)
-            sourceBlock.state.update(true, false)
         }
     }
 
@@ -51,7 +50,7 @@ class BlockyTripwireListener : Listener {
         if (block.type == Material.TRIPWIRE) isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH)
     fun PlayerInteractEvent.onInteract() {
         if (action == Action.RIGHT_CLICK_BLOCK && clickedBlock?.type == Material.TRIPWIRE) {
             isCancelled = true
@@ -60,7 +59,7 @@ class BlockyTripwireListener : Listener {
             if (item.type.isInteractable) return
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
-            if (type == Material.TRIPWIRE || type == Material.STRING|| type.isBlock) {
+            if (type == Material.TRIPWIRE || type == Material.STRING || type.isBlock) {
                 placeBlockyBlock(
                     player,
                     hand!!,
@@ -79,7 +78,7 @@ class BlockyTripwireListener : Listener {
         if (block.type != Material.TRIPWIRE || !isDropItems) return
 
         val blockyWire = block.getPrefabFromBlock()?.toEntity() ?: return
-        val blockyInfo = blockyWire.get<BlockyInfo>() ?: return
+        blockyWire.get<BlockyInfo>() ?: return
         val blockySound = blockyWire.get<BlockySound>()
         block.state.update(true, false)
 
@@ -94,7 +93,7 @@ class BlockyTripwireListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
-        val info = blockyWire.get<BlockyInfo>() ?: return
+        blockyWire.get<BlockyInfo>() ?: return
         val wire = blockyWire.get<BlockyBlock>() ?: return
         val lightLevel = blockyWire.get<BlockyLight>()?.lightLevel
         val sound = blockyWire.get<BlockySound>()

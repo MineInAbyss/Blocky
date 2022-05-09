@@ -10,7 +10,6 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.LootyFactory
-import com.mineinabyss.looty.ecs.components.itemcontexts.PlayerInventoryContext
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -31,9 +30,6 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     player.inventory.setItem(slot, LootyFactory.createFromPrefab(PrefabKey.of(type)))
-                    LootyFactory.loadFromPlayerInventory(
-                        context = PlayerInventoryContext(player, slot)
-                    )
                 }
             }
             "menu" {
@@ -60,7 +56,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                             BlockyTypeQuery
                                 .filter {
                                     val arg = args[1].lowercase()
-                                    it.key.name.startsWith(arg) || it.key.key.startsWith(arg)
+                                    it.key.namespace.startsWith(arg) || it.key.key.startsWith(arg)
                                 }
                                 .map { it.key.toString() }
                         }

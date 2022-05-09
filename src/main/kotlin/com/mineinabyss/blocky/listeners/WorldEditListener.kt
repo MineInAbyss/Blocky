@@ -3,7 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.geary.papermc.toPrefabKey
+import com.mineinabyss.geary.papermc.helpers.toPrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
@@ -20,7 +20,7 @@ class WorldEditListener : Listener {
         val args: List<String> = message.split(" ")
         val blockyID = args.firstOrNull { it.contains("mineinabyss:") }?.toMCKey()?.toPrefabKey() ?: return
         val block = blockyID.toEntity()?.get<BlockyBlock>() ?: return
-        val info = blockyID.toEntity()?.get<BlockyInfo>() ?: return
+        blockyID.toEntity()?.get<BlockyInfo>() ?: return
 
         val blockData = when (block.blockType) {
             BlockType.CUBE -> String.format(

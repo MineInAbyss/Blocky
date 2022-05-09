@@ -11,7 +11,6 @@ import org.bukkit.Material
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
-import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
@@ -25,14 +24,14 @@ import org.bukkit.inventory.EquipmentSlot
 
 class BlockyItemFrameListener : Listener {
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
     fun HangingPlaceEvent.onPlacingItemFrame() {
         val player = player ?: return
         val item = itemStack?.toGearyOrNull(player) ?: return
         if (item.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME) isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingItemFrame() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
@@ -41,7 +40,7 @@ class BlockyItemFrameListener : Listener {
         val blockyEntity = gearyItem.get<BlockyEntity>() ?: return
         val against = clickedBlock ?: return
         val targetBlock = getTargetBlock(against, blockFace) ?: return
-        val targetData = targetBlock.blockData;
+        val targetData = targetBlock.blockData
 
         if (blockyEntity.entityType != EntityType.ITEM_FRAME) return
 
@@ -59,13 +58,12 @@ class BlockyItemFrameListener : Listener {
             player.error("There is not enough space to place this block here.")
         }
         blockyPlace.callEvent()
-
-        if (!blockyPlace.canBuild() || blockyPlace.isCancelled) {
+        if (!blockyPlace.canBuild()) {
             targetBlock.setBlockData(targetData, false)
             return
         }
-
         gearyItem.placeBlockyFrame(frameRotation, frameYaw, blockFace, targetBlock.location)
+        player.swingMainHand()
         if (player.gameMode != GameMode.CREATIVE) item!!.subtract()
     }
 
@@ -88,7 +86,7 @@ class BlockyItemFrameListener : Listener {
                 }
                 if (frame.toGeary().has<BlockySeatLocations>()) {
                     frame.toGeary().get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
-                        seatLoc.getNearbyEntitiesByType(ArmorStand::class.java, 1.0).forEach seat@{ stand ->
+                        seatLoc.getNearbyEntitiesByType(ArmorStand::class.java, frame.toGeary().get<BlockySeat>()?.heightOffset ?: 1.0).forEach seat@{ stand ->
                             if (stand.toGeary().has<BlockySeat>()) stand.remove()
                             return@seat
                         }
@@ -106,9 +104,9 @@ class BlockyItemFrameListener : Listener {
     fun EntityDamageByEntityEvent.onBreakingFrame() {
         if (entity !is ItemFrame) return
         val gearyEntity = entity.toGearyOrNull() ?: return
-        val blockyEntity = gearyEntity.get<BlockyEntity>() ?: return
         val blockyInfo = gearyEntity.get<BlockyInfo>() ?: return
 
+        gearyEntity.get<BlockyEntity>() ?: return
         if (blockyInfo.isUnbreakable) isCancelled = true
     }
 

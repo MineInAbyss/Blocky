@@ -3,8 +3,8 @@ version: ${plugin_version}
 main: com.mineinabyss.blocky.BlockyPlugin
 api-version: 1.17
 authors: [ boy0000 ]
-depend: [ Geary, Mobzy ]
-softdepend: [ Looty, Guiy, FastAsyncWorldEdit, LightAPI ]
+depend: [ Geary, Looty ]
+softdepend: [ Guiy, FastAsyncWorldEdit, LightAPI ]
 
 commands:
   blocky:
