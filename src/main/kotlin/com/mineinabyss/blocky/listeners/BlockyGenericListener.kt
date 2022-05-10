@@ -77,6 +77,7 @@ class BlockyGenericListener : Listener {
         } else if (blockyBlock.blockType == BlockType.CUBE) {
             block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
         }
+        player.swingMainHand()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

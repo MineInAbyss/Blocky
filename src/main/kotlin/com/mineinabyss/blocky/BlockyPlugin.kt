@@ -33,7 +33,6 @@ class BlockyPlugin : JavaPlugin() {
         BlockyConfig.load()
 
         // Generates a filled blockMap
-        blockMap = createBlockMap()
 
         BlockyCommandExecutor()
 
@@ -52,6 +51,7 @@ class BlockyPlugin : JavaPlugin() {
                 all()
             }
         }
+        blockMap = createBlockMap()
 
     }
 }

@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.helpers
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyDirectional
@@ -53,7 +52,6 @@ fun handleBlockyDrops(block: Block, player: Player) {
             else Random.nextInt(it.minAmount, it.maxAmount)
 
         for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
-        //expToDrop = it.exp
     }
 }
 
@@ -118,41 +116,18 @@ fun placeBlockyBlock(
 }
 
 fun createBlockMap(): Map<BlockData, Int> {
-    blockyPlugin.logger.fine("Generating blockMap...")
     val blockMap = mutableMapOf<BlockData, Int>()
 
     // Calculates tripwire states
-    for (i in 1..128) {
+    for (i in 0..127) {
         val tripWireData = Bukkit.createBlockData(Material.TRIPWIRE) as Tripwire
-        val inAttachedRange = i !in 1..32 && i !in 65..96
-        val inPoweredRange = i !in 1..16 && i !in 33..48 && i !in 65..80 && i !in 97..113
-        val inDisarmedRange = i !in 1..64
-        val northRange = 2..128
-        val southRange = 5..128
-        val eastRange = 3..128
-        val westRange = 9..128
-
-        if (inDisarmedRange) tripWireData.isDisarmed = true
-        if (inAttachedRange) tripWireData.isAttached = true
-        if (inPoweredRange) tripWireData.isPowered = true
-        if (i in northRange step 2) {
-            tripWireData.setFace(BlockFace.NORTH, true)
-        }
-
-        for (n in westRange) {
-            if (i !in n..n + 7) westRange step 8
-            else tripWireData.setFace(BlockFace.WEST, true)
-        }
-
-        for (n in southRange) {
-            if (i !in n..n + 4) southRange step 4
-            else tripWireData.setFace(BlockFace.SOUTH, true)
-        }
-
-        for (n in eastRange) {
-            if (i !in n..n + 1) eastRange step 2
-            else tripWireData.setFace(BlockFace.EAST, true)
-        }
+        if (i and 1 == 1) tripWireData.setFace(BlockFace.NORTH, true)
+        if (i shr 1 and 1 == 1) tripWireData.setFace(BlockFace.EAST, true)
+        if (i shr 2 and 1 == 1) tripWireData.setFace(BlockFace.SOUTH, true)
+        if (i shr 3 and 1 == 1) tripWireData.setFace(BlockFace.WEST, true)
+        if (i shr 4 and 1 == 1) tripWireData.isPowered = true
+        if (i shr 5 and 1 == 1) tripWireData.isAttached = true
+        if (i shr 6 and 1 == 1) tripWireData.isDisarmed = true
 
         blockMap.putIfAbsent(tripWireData, i)
     }
@@ -169,39 +144,17 @@ fun createBlockMap(): Map<BlockData, Int> {
     }
 
     // Calculates chorus plant states
-    for (k in 1..64) {
+    for (k in 0..63) {
         val chorusData = Bukkit.createBlockData(Material.CHORUS_PLANT) as MultipleFacing
-        val inUpRange = k !in 1..32
-        val inDownRange = k !in 1..16 && k !in 33..48
-        val northRange = 2..64
-        val southRange = 5..64
-        val eastRange = 3..64
-        val westRange = 9..64
-
-        if (inUpRange) chorusData.setFace(BlockFace.UP, true)
-        if (inDownRange) chorusData.setFace(BlockFace.DOWN, true)
-        if (k in northRange step 2) {
-            chorusData.setFace(BlockFace.NORTH, true)
-        }
-
-        for (n in westRange) {
-            if (k !in n..n + 7) westRange step 8
-            else chorusData.setFace(BlockFace.WEST, true)
-        }
-
-        for (n in southRange) {
-            if (k !in n..n + 4) southRange step 4
-            else chorusData.setFace(BlockFace.SOUTH, true)
-        }
-
-        for (n in eastRange) {
-            if (k !in n..n + 1) eastRange step 2
-            else chorusData.setFace(BlockFace.EAST, true)
-        }
+        if (k and 1 == 1) chorusData.setFace(BlockFace.NORTH, true)
+        if (k shr 1 and 1 == 1) chorusData.setFace(BlockFace.EAST, true)
+        if (k shr 2 and 1 == 1) chorusData.setFace(BlockFace.SOUTH, true)
+        if (k shr 3 and 1 == 1) chorusData.setFace(BlockFace.WEST, true)
+        if (k shr 4 and 1 == 1) chorusData.setFace(BlockFace.UP, true)
+        if (k shr 5 and 1 == 1) chorusData.setFace(BlockFace.DOWN, true)
 
         blockMap.putIfAbsent(chorusData, k)
     }
 
-    blockyPlugin.logger.fine("Finished generating blockMap!")
     return blockMap
 }

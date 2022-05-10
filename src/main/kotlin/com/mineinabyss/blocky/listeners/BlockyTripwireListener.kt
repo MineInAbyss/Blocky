@@ -43,20 +43,22 @@ class BlockyTripwireListener : Listener {
     @EventHandler(priority = EventPriority.HIGH)
     fun BlockPlaceEvent.onPlacingTripwire() {
         if (blockPlaced.type == Material.TRIPWIRE) {
+
             block.state.update(true, false)
             blockAgainst.state.update(true, false)
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun EntityInsideBlockEvent.onEnterTripwire() {
         if (block.type == Material.TRIPWIRE) isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerInteractEvent.onInteract() {
         if (action == Action.RIGHT_CLICK_BLOCK && clickedBlock?.type == Material.TRIPWIRE) {
-            isCancelled = true
+            if (hand != EquipmentSlot.HAND) return
+
             val item = item ?: return
             item.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
             var type = item.type
@@ -80,6 +82,7 @@ class BlockyTripwireListener : Listener {
                     }
                 } ?: return
             }
+            player.swingMainHand()
         }
     }
 
@@ -101,7 +104,7 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyWire() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
@@ -127,7 +130,7 @@ class BlockyTripwireListener : Listener {
             0.8f
         )
         if (blockyWire.has<BlockyLight>()) createBlockLight(placedWire.location, lightLevel!!)
-        isCancelled = true
+
         blockyPlugin.launch {
             delay(1)
             fixClientsideUpdate(placedWire.location)
