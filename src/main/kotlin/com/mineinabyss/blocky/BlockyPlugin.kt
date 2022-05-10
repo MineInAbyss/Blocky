@@ -1,15 +1,17 @@
 package com.mineinabyss.blocky
 
+import com.mineinabyss.blocky.helpers.createBlockMap
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
 import com.mineinabyss.idofront.plugin.getService
 import com.mineinabyss.idofront.plugin.registerEvents
+import org.bukkit.block.data.BlockData
 import org.bukkit.plugin.java.JavaPlugin
-import java.io.File
 
 val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::class.java) }
+var blockMap: Map<BlockData, Int> = emptyMap()
 
 interface BlockyContext {
     companion object : BlockyContext by getService()
@@ -20,7 +22,6 @@ interface BlockyContext {
 }
 
 class BlockyPlugin : JavaPlugin() {
-    val blocksDir = File(dataFolder, "blocks")
 
     override fun onLoad() {
         IdofrontPlatforms.load(this, "mineinabyss")
@@ -31,15 +32,18 @@ class BlockyPlugin : JavaPlugin() {
         reloadConfig()
         BlockyConfig.load()
 
+        // Generates a filled blockMap
+
         BlockyCommandExecutor()
 
         registerEvents(
             PlayerListener(),
+            BlockyGenericListener(),
             BlockyNoteBlockListener(),
             BlockyTripwireListener(),
-            //BlockyEntityListener(),
-            WorldEditListener(),
-            BlockyItemFrameListener()
+            BlockyChorusPlantListener(),
+            BlockyItemFrameListener(),
+            WorldEditListener()
         )
 
         gearyAddon {
@@ -47,6 +51,7 @@ class BlockyPlugin : JavaPlugin() {
                 all()
             }
         }
+        blockMap = createBlockMap()
 
     }
 }

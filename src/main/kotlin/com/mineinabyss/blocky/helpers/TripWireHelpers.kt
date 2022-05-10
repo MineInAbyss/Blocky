@@ -1,49 +1,58 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.components.BlockyBlock
-import org.bukkit.Bukkit
+import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.components.*
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.entity.Player
 
-val blockMap: MutableMap<BlockData, Int> = mutableMapOf()
+fun BlockyBlock.getBlockyTripWire(): BlockData {
+    return blockMap.filter { it.key is Tripwire && it.key.material == Material.TRIPWIRE && it.value == blockId }.keys.first() as Tripwire
+}
 
-fun BlockyBlock.getBlockyTripWireDataFromPrefab() : BlockData? {
-    var blockData = Bukkit.createBlockData(Material.TRIPWIRE)
-    val data = blockData as? Tripwire ?: return null
-    val inAttachedRange = blockId in 33..64
-    val inPoweredRange = blockId in 17..32 || blockId in 49..64
-    val inDisarmedRange = blockId in 65..128
-    val northRange = 2..64
-    val southRange = 5..64
-    val eastRange = 3..64
-    val westRange = 9..64
+fun fixClientsideUpdate(blockLoc: Location) {
+    val blockBelow = blockLoc.clone().subtract(0.0, 1.0, 0.0).block
+    val blockAbove = blockLoc.clone().add(0.0, 1.0, 0.0).block
+    var loc = blockLoc.add(5.0, 0.0, 5.0)
+    val players = blockLoc.world.getNearbyPlayers(blockLoc, 20.0)
 
-    if (inDisarmedRange) data.isDisarmed = true
-    if (inAttachedRange) data.isAttached = true
-    if (inPoweredRange) data.isPowered = true
-    if (blockId in northRange step 2) data.setFace(BlockFace.NORTH, true)
-
-    for (i in westRange) {
-        if (blockId !in i..i + 7) westRange step 8
-        else data.setFace(BlockFace.WEST, true)
+    if (blockBelow.type == Material.TRIPWIRE) {
+        players.forEach {
+            it.sendBlockChange(blockBelow.location, blockBelow.blockData)
+        }
+    }
+    if (blockAbove.type == Material.TRIPWIRE) {
+        players.forEach {
+            it.sendBlockChange(blockBelow.location, blockBelow.blockData)
+        }
     }
 
-    for (i in southRange) {
-        if (blockId !in i..i + 4) southRange step 4
-        else data.setFace(BlockFace.SOUTH, true)
+    for (i in 0..8) {
+        for (j in 0..8) {
+            if (loc.block.type == Material.TRIPWIRE) {
+                players.forEach {
+                    it.sendBlockChange(blockBelow.location, blockBelow.blockData)
+                }
+            }
+            loc = loc.subtract(0.0, 0.0, 1.0)
+        }
+        loc = loc.add(-1.0, 0.0, 9.0)
     }
+}
 
-    for (i in eastRange) {
-        if (blockId !in i..i + 1) eastRange step 2
-        else data.setFace(BlockFace.EAST, true)
-    }
-    blockData = data
-    blockMap.putIfAbsent(data, blockId)
-    return blockData
+fun breakTripwireBlock(block: Block, player: Player) {
+    val blockyWire = block.getPrefabFromBlock()?.toEntity() ?: return
+    val blockySound = blockyWire.get<BlockySound>()
+    blockyWire.get<BlockyInfo>() ?: return
+    block.state.update(true, false)
+
+    block.setType(Material.AIR, false)
+    if (blockyWire.has<BlockySound>()) block.world.playSound(block.location, blockySound!!.placeSound, 1.0f, 0.8f)
+    if (blockyWire.has<BlockyLight>()) removeBlockLight(block.location)
+    if (blockyWire.has<BlockDrops>()) handleBlockyDrops(block, player)
 }
 
 fun isStandingInside(player: Player, block: Block): Boolean {

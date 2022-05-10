@@ -2,17 +2,14 @@ package com.mineinabyss.blocky.listeners
 
 import com.comphenix.protocol.ProtocolLibrary
 import com.comphenix.protocol.ProtocolManager
-import com.mineinabyss.blocky.components.*
-import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.updateAndCheck
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.looty.tracking.toGearyOrNull
-import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.*
+import org.bukkit.event.block.BlockPhysicsEvent
+import org.bukkit.event.block.NotePlayEvent
 import org.bukkit.event.player.PlayerInteractEvent
 
 val protocolManager: ProtocolManager = ProtocolLibrary.getProtocolManager()
@@ -20,20 +17,7 @@ val protocolManager: ProtocolManager = ProtocolLibrary.getProtocolManager()
 class BlockyNoteBlockListener : Listener {
 
     @EventHandler
-    fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        if (blocks.stream().anyMatch { it.type == Material.NOTE_BLOCK }) isCancelled = true
-
-    }
-
-    @EventHandler
-    fun BlockPistonRetractEvent.cancelBlockyPiston() {
-        if (blocks.stream().anyMatch { it.type == Material.NOTE_BLOCK }) isCancelled = true
-    }
-
-    @EventHandler
-    fun NotePlayEvent.cancelBlockyNotes() {
-        isCancelled = true
-    }
+    fun NotePlayEvent.cancelBlockyNotes() { isCancelled = true }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
@@ -51,51 +35,5 @@ class BlockyNoteBlockListener : Listener {
             isCancelled = true
             block.state.update(true, false)
         }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun PlayerInteractEvent.onPrePlacingBlockyBlock() {
-        val gearyItem = player.inventory.itemInMainHand.toGearyOrNull(player) ?: return
-        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
-        val blockySound = gearyItem.get<BlockySound>()
-
-        gearyItem.get<BlockyInfo>() ?: return
-        if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (blockyBlock.blockType != BlockType.CUBE) return
-        val against = clickedBlock ?: return
-        val placed =
-            placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlockDataFromPrefab(blockFace))
-                ?: return
-        if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f,  0.8f)
-        if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        val gearyItem = itemInHand.toGearyOrNull(player) ?: return
-        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.NORTH
-
-        gearyItem.get<BlockyInfo>() ?: return
-        if (blockyBlock.blockType == BlockType.CUBE) {
-            block.setBlockData(gearyItem.getBlockyNoteBlockDataFromPrefab(blockFace), false)
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingBlockyBlock() {
-        if (block.type != Material.NOTE_BLOCK || isCancelled || !isDropItems) return
-
-        val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
-        val blockyInfo = prefab.get<BlockyInfo>() ?: return
-        val blockySound = prefab.get<BlockySound>()
-
-        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-
-        if (prefab.has<BlockySound>()) block.world.playSound(block.location, blockySound!!.breakSound, 1.0f,  0.8f)
-        isDropItems = false
-        handleBlockyDrops(block, player)
-        removeBlockLight(block.location)
     }
 }

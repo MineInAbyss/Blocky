@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.BlockyTypeQuery.key
+import com.mineinabyss.blocky.helpers.createBlockMap
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.inventory.guiy
@@ -37,6 +38,10 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     val player = sender as Player
                     guiy { BlockyMainMenu(player) }
                 }
+            }
+            "map" {
+                blockMap.toMutableMap().clear()
+                blockMap = createBlockMap()
             }
         }
     }
