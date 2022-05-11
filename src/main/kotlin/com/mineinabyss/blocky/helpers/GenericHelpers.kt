@@ -126,8 +126,8 @@ fun createBlockMap(): Map<BlockData, Int> {
         if (i shr 2 and 1 == 1) tripWireData.setFace(BlockFace.SOUTH, true)
         if (i shr 3 and 1 == 1) tripWireData.setFace(BlockFace.WEST, true)
         if (i shr 4 and 1 == 1) tripWireData.isPowered = true
-        if (i shr 5 and 1 == 1) tripWireData.isAttached = true
-        if (i shr 6 and 1 == 1) tripWireData.isDisarmed = true
+        if (i shr 5 and 1 == 1) tripWireData.isDisarmed = true
+        if (i shr 6 and 1 == 1) tripWireData.isAttached = true
 
         blockMap.putIfAbsent(tripWireData, i)
     }

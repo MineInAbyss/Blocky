@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.*
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.entity.Player
@@ -14,8 +15,8 @@ fun BlockyBlock.getBlockyTripWire(): BlockData {
 }
 
 fun fixClientsideUpdate(blockLoc: Location) {
-    val blockBelow = blockLoc.clone().subtract(0.0, 1.0, 0.0).block
-    val blockAbove = blockLoc.clone().add(0.0, 1.0, 0.0).block
+    val blockBelow = blockLoc.block.getRelative(BlockFace.DOWN)
+    val blockAbove = blockLoc.block.getRelative(BlockFace.UP)
     var loc = blockLoc.add(5.0, 0.0, 5.0)
     val players = blockLoc.world.getNearbyPlayers(blockLoc, 20.0)
 
@@ -26,7 +27,7 @@ fun fixClientsideUpdate(blockLoc: Location) {
     }
     if (blockAbove.type == Material.TRIPWIRE) {
         players.forEach {
-            it.sendBlockChange(blockBelow.location, blockBelow.blockData)
+            it.sendBlockChange(blockAbove.location, blockAbove.blockData)
         }
     }
 
@@ -34,7 +35,7 @@ fun fixClientsideUpdate(blockLoc: Location) {
         for (j in 0..8) {
             if (loc.block.type == Material.TRIPWIRE) {
                 players.forEach {
-                    it.sendBlockChange(blockBelow.location, blockBelow.blockData)
+                    it.sendBlockChange(loc, blockLoc.block.blockData)
                 }
             }
             loc = loc.subtract(0.0, 0.0, 1.0)
