@@ -1,11 +1,15 @@
 package com.mineinabyss.blocky.listeners
 
+import com.jeff_media.customblockdata.CustomBlockData
+import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.BlockData
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -76,6 +80,16 @@ class BlockyGenericListener : Listener {
             block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
         } else if (blockyBlock.blockType == BlockType.CUBE) {
             block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
+            if (gearyItem.has<VanillaNoteBlock>()) {
+                val map = mutableMapOf<BlockData?, Int?>()
+                map[block.blockData] = 0
+                CustomBlockData(block, blockyPlugin).set(
+                    gearyItem.get<VanillaNoteBlock>()?.key!!,
+                    DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER),
+                    map
+                )
+            }
+
         }
         player.swingMainHand()
     }

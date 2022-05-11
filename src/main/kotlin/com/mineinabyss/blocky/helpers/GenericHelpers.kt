@@ -1,13 +1,14 @@
 package com.mineinabyss.blocky.helpers
 
+import com.jeff_media.customblockdata.CustomBlockData
+import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyDirectional
-import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.components.*
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -89,12 +90,21 @@ fun placeBlockyBlock(
     newData: BlockData
 ): Block? {
     val targetBlock: Block
+    val gearyItem = item.toGearyOrNull(player)
 
     if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
     else {
         targetBlock = against.getRelative(face)
         if (!targetBlock.type.isAir && targetBlock.type != Material.WATER && targetBlock.type != Material.LAVA) return null
     }
+
+    if (gearyItem?.has<VanillaNoteBlock>() == true)
+        CustomBlockData(targetBlock, blockyPlugin).set(
+            gearyItem.get<VanillaNoteBlock>()?.key!!,
+            DataType.BLOCK_DATA,
+            newData
+        )
+    updateBlockyNote(targetBlock)
 
     if (isStandingInside(player, targetBlock)) return null
 
@@ -135,7 +145,7 @@ fun createBlockMap(): Map<BlockData, Int> {
     // Calculates noteblock states
     for (j in 0..799) {
         val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
-        if (j >= 400) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
+        if (j >= 399) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
         else noteBlockData.instrument = Instrument.getByType((j / 25 % 400).toByte()) ?: continue
         noteBlockData.note = Note((j % 25))
         noteBlockData.isPowered = j !in 0..399

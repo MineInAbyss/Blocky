@@ -11,3 +11,8 @@ geary-commons-papermc = { module = "com.mineinabyss:geary-commons-papermc", vers
 looty = { module = "com.mineinabyss:looty", version.ref = "looty" }
 deeperworld = { module = "com.mineinabyss:deeperworld", version.ref = "deeperworld" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
+
+minecraft-plugin-customblockdata = "com.jeff_media:CustomBlockData:1.0.5"
+minecraft-plugin-morepersistentdatatypes = "com.jeff_media:MorePersistentDataTypes:2.3.1"
+minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.2.0-Bukkit"
+minecraft-plugin-modelengine = "com.ticxo.modelengine:api:R2.5.0"

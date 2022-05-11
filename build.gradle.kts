@@ -22,6 +22,7 @@ repositories {
     maven("https://repo.dmulloy2.net/nexus/repository/public/") //ProtocolLib
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI
+    maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
     maven("https://jitpack.io")
 }
 
@@ -37,19 +38,23 @@ dependencies {
     compileOnly(blockylibs.geary.papermc.core)
     compileOnly(blockylibs.geary.commons.papermc)
     compileOnly(blockylibs.looty)
+    compileOnly(blockylibs.deeperworld)
+    compileOnly(blockylibs.guiy)
 
     // Other plugins
-    compileOnly("com.mineinabyss:deeperworld:$deeperworldVersion")
-    compileOnly("com.mineinabyss:guiy-compose:$guiyVersion")
-    compileOnly("com.ticxo.modelengine:api:$modelengineVersion")
+    compileOnly(libs.minecraft.plugin.modelengine)
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(libs.minecraft.plugin.protocollib)
-    compileOnly("com.github.BeYkeRYkt:LightAPI:5.2.0-Bukkit")
     compileOnly(libs.minecraft.headlib)
     compileOnly(libs.minecraft.anvilgui)
+    compileOnly(blockylibs.minecraft.plugin.lightapi)
+    compileOnly(blockylibs.minecraft.plugin.modelengine)
+    implementation(blockylibs.minecraft.plugin.customblockdata)
+    implementation(blockylibs.minecraft.plugin.morepersistentdatatypes)
 
-    // Shaded
-    implementation("com.mineinabyss:idofront:$idofrontVersion")
-
+    implementation(libs.idofront.core)
+    implementation(libs.idofront.autoscan) {
+        exclude("org.reflections")
+    }
 }
