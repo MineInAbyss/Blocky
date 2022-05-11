@@ -15,11 +15,11 @@ import org.bukkit.ChatColor
 import org.bukkit.entity.Player
 
 sealed class BlockyScreen(val title: String, val height: Int) {
-    object Default : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 5)
-    object NoteBlock : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 6)
-    object Decoration : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 6)
-    object JavaEntity : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 6)
-    object AnimatedEntity : BlockyScreen("${Space.of(-18)}${ChatColor.WHITE}:something:", 6)
+    object Default : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 5)
+    object NoteBlock : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
+    object Decoration : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
+    object JavaEntity : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
+    object AnimatedEntity : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
 
 }
 
@@ -38,7 +38,7 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
         nav.withScreen(setOf(player), onEmpty = ::exit) { screen ->
             Chest(setOf(player), screen.title,
                 Modifier.height(screen.height),
-                onClose = { nav.back() ?: exit() }) {
+                onClose = { player.closeInventory() }) {
                 when (screen) {
                     BlockyScreen.Default -> BlockyMenu()
                     BlockyScreen.NoteBlock -> BlockyNoteBlockMenu()
