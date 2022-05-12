@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.blockyBlock
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
@@ -16,8 +16,8 @@ fun BlockyUIScope.BlockyNoteBlockMenu() {
     Grid(Modifier.size(9, 5)) {
         BlockyTypeQuery.filter {
             remember {
-                it.entity.get<BlockyBlock>()?.blockType == BlockType.CUBE ||
-                        it.entity.get<BlockyBlock>()?.blockType == BlockType.TRANSPARENT
+                it.entity.blockyBlock?.blockType == BlockType.CUBE ||
+                        it.entity.blockyBlock?.blockType == BlockType.TRANSPARENT
             }
         }.sortedBy { it.key.key }.forEach { handleMenuClicks(it.key, player) }
     }

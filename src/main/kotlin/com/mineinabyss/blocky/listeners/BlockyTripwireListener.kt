@@ -8,7 +8,6 @@ import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -60,21 +59,19 @@ class BlockyTripwireListener : Listener {
             if (hand != EquipmentSlot.HAND) return
 
             val item = item ?: return
-            item.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
+            val blockyBlock = item.toGearyOrNull(player)?.blockyBlock ?: return
             var type = item.type
-            if (item.type.isInteractable) return
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
             if (type == Material.TRIPWIRE || type == Material.STRING || type.isBlock) {
-                interactionPoint?.subtract(0.0, 1.0, 0.0)?.block?.let { block ->
+                clickedBlock?.getRelative(BlockFace.DOWN)?.let { block ->
                     placeBlockyBlock(
                         player,
                         hand!!,
                         item,
                         block,
                         blockFace,
-                        item.toGearyOrNull(player)?.get<BlockyBlock>()?.getBlockyTripWire()
-                            ?: Bukkit.createBlockData(type)
+                        blockyBlock.getBlockyTripWire()
                     )
                     blockyPlugin.launch {
                         delay(1)
@@ -90,12 +87,9 @@ class BlockyTripwireListener : Listener {
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         val blockAbove = block.getRelative(BlockFace.UP)
 
-        if (block.type == Material.TRIPWIRE) {
-            breakTripwireBlock(block, player)
-        }
-        if (blockAbove.type == Material.TRIPWIRE) {
-            breakTripwireBlock(blockAbove, player)
-        } else return
+        if (block.type == Material.TRIPWIRE) breakTripwireBlock(block, player)
+        if (blockAbove.type == Material.TRIPWIRE) breakTripwireBlock(blockAbove, player)
+        else return
 
         isDropItems = false
         blockyPlugin.launch {
@@ -114,22 +108,21 @@ class BlockyTripwireListener : Listener {
         }
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
-        blockyWire.get<BlockyInfo>() ?: return
-        val wireBlock = blockyWire.get<BlockyBlock>() ?: return
+        val wireBlock = blockyWire.blockyBlock ?: return
         if (wireBlock.blockType != BlockType.GROUND) return
+        if (!blockyWire.hasBlockyInfo) return
 
-        val lightLevel = blockyWire.get<BlockyLight>()?.lightLevel
-        val sound = blockyWire.get<BlockySound>()
+        val lightLevel = blockyWire.blockyLight?.lightLevel
         val placedWire =
             placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
-        if (blockyWire.has<BlockySound>()) placedWire.world.playSound(
+        if (blockyWire.hasBlockySound) placedWire.world.playSound(
             placedWire.location,
-            sound!!.placeSound,
+            blockyWire.blockySound!!.placeSound,
             1.0f,
             0.8f
         )
-        if (blockyWire.has<BlockyLight>()) createBlockLight(placedWire.location, lightLevel!!)
+        if (blockyWire.hasBlockyLight) createBlockLight(placedWire.location, lightLevel!!)
 
         blockyPlugin.launch {
             delay(1)

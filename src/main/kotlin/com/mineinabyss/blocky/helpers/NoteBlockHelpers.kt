@@ -4,9 +4,10 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyDirectional
-import com.mineinabyss.blocky.components.VanillaNoteBlock
+import com.mineinabyss.blocky.components.blockyBlock
+import com.mineinabyss.blocky.components.directional
+import com.mineinabyss.blocky.components.getVanillaNoteBlock
+import com.mineinabyss.blocky.components.isDirectional
 import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.*
 import org.bukkit.block.Block
@@ -16,16 +17,15 @@ import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.entity.Player
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
-    val directional = get<BlockyDirectional>()
-    var id = get<BlockyBlock>()?.blockId
+    var id = blockyBlock?.blockId
 
-    if (has<BlockyDirectional>()) {
-        if (directional?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN)) id =
-            directional.yBlockId
-        else if (directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH)) id =
-            directional.xBlockId
-        else if (directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST)) id =
-            directional.zBlockId
+    if (isDirectional) {
+        if (directional?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN))
+            id = directional?.yBlockId
+        else if (directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH))
+            id = directional?.xBlockId
+        else if (directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST))
+            id = directional?.zBlockId
     }
 
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == id }.keys.first() as NoteBlock
@@ -39,7 +39,7 @@ fun updateAndCheck(loc: Location) {
 }
 
 fun updateBlockyNote(block: Block) {
-    val noteBlock = block.getPrefabFromBlock()?.toEntity()?.get<VanillaNoteBlock>()?.key ?: return
+    val noteBlock = block.getVanillaNoteBlock?.key ?: return
     val pdc = CustomBlockData(block, blockyPlugin)
     val map = pdc.get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER)) ?: return
     val data = map.entries.first().key as NoteBlock
@@ -53,7 +53,7 @@ fun updateBlockyNote(block: Block) {
 }
 
 fun playBlockyNoteBlock(block: Block, player: Player) {
-    val noteBlock = block.getPrefabFromBlock()?.toEntity()?.get<VanillaNoteBlock>()?.key ?: return
+    val noteBlock = block.getVanillaNoteBlock?.key ?: return
     val map = CustomBlockData(block, blockyPlugin).get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER))
         ?: return
     val data = map.entries.first().key as NoteBlock

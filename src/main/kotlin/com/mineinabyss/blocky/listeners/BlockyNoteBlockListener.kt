@@ -1,11 +1,10 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.components.isVanillaNoteBlock
 import com.mineinabyss.blocky.helpers.playBlockyNoteBlock
 import com.mineinabyss.blocky.helpers.updateAndCheck
 import com.mineinabyss.blocky.helpers.updateBlockyNote
-import com.mineinabyss.idofront.entities.leftClicked
 import com.mineinabyss.idofront.entities.rightClicked
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
@@ -27,13 +26,9 @@ class BlockyNoteBlockListener : Listener {
         val block = clickedBlock ?: return
 
         if (block.type == Material.NOTE_BLOCK) {
-            if (rightClicked) {
-                isCancelled = true
-                updateBlockyNote(block)
-                playBlockyNoteBlock(block, player)
-
-            } else if (leftClicked && player.gameMode != GameMode.CREATIVE) {
-                isCancelled = true
+            isCancelled = true
+            if (block.isVanillaNoteBlock) {
+                if (rightClicked) updateBlockyNote(block)
                 playBlockyNoteBlock(block, player)
             }
         }

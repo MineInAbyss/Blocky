@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.components.BlockyEntity
 import com.mineinabyss.blocky.components.EntityType
+import com.mineinabyss.blocky.components.blockyEntity
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
@@ -16,8 +16,8 @@ fun BlockyUIScope.BlockyJavaEntityMenu() {
     Grid(Modifier.size(9, 5)) {
         BlockyTypeQuery.filter {
             remember {
-                it.entity.get<BlockyEntity>()?.entityType == EntityType.JAVA ||
-                        it.entity.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME
+                it.entity.blockyEntity?.entityType == EntityType.JAVA ||
+                        it.entity.blockyEntity?.entityType == EntityType.ITEM_FRAME
             }
         }.sortedBy { it.key.key }.forEach { handleMenuClicks(it.key, player) }
     }

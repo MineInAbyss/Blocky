@@ -30,11 +30,9 @@ val REPLACEABLE_BLOCKS =
     )
 
 fun handleBlockyDrops(block: Block, player: Player) {
-    val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
-    gearyBlock.get<BlockyBlock>() ?: return
-    val info = gearyBlock.get<BlockyInfo>() ?: return
+    if (!block.isBlockyBlock) return
 
-    info.blockDrop.map {
+    block.blockyInfo?.blockDrop?.map {
         val hand = player.inventory.itemInMainHand
         val item =
             if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
@@ -53,11 +51,10 @@ fun handleBlockyDrops(block: Block, player: Player) {
             else Random.nextInt(it.minAmount, it.maxAmount)
 
         for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
-    }
+    } ?: return
 }
 
 fun Block.getPrefabFromBlock(): PrefabKey? {
-
     val type =
         when (type) {
             Material.NOTE_BLOCK -> BlockType.CUBE
@@ -67,17 +64,13 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
         }
 
     return BlockyTypeQuery.firstOrNull {
-        val directional = it.entity.get<BlockyDirectional>()
-        val blocky = it.entity.get<BlockyBlock>()
-        if (it.entity.has<BlockyDirectional>()) {
+        val directional = it.entity.directional
+        if (it.entity.isDirectional) {
             (directional?.yBlockId == blockMap[blockData] ||
                     directional?.xBlockId == blockMap[blockData] ||
                     directional?.zBlockId == blockMap[blockData]) &&
-                    blocky?.blockType == type
-        } else {
-            blocky?.blockId == blockMap[blockData] &&
-                    blocky?.blockType == type
-        }
+                    blockyBlock?.blockType == type
+        } else it.entity.blockyBlock?.blockId == blockMap[blockData] && it.entity.blockyBlock?.blockType == type
     }?.key ?: return null
 }
 
@@ -95,14 +88,13 @@ fun placeBlockyBlock(
     if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
     else {
         targetBlock = against.getRelative(face)
-        if (!targetBlock.type.isAir && targetBlock.type != Material.WATER && targetBlock.type != Material.LAVA) return null
+        if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
     }
 
-    if (against.getPrefabFromBlock()?.toEntity()?.has<VanillaNoteBlock>() == true) return null
-
-    if (gearyItem?.has<VanillaNoteBlock>() == true)
+    if (against.isVanillaNoteBlock) return null
+    if (gearyItem?.isVanillaNoteBlock == true)
         CustomBlockData(targetBlock, blockyPlugin).set(
-            gearyItem.get<VanillaNoteBlock>()?.key!!,
+            gearyItem.getVanillaNoteBlock?.key!!,
             DataType.BLOCK_DATA,
             newData
         )
@@ -111,11 +103,10 @@ fun placeBlockyBlock(
     if (isStandingInside(player, targetBlock)) return null
 
     val currentData = targetBlock.blockData
-    targetBlock.setBlockData(newData, false)
+    val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
+    targetBlock.setBlockData(newData, isFlowing)
 
-    val currentBlockState = targetBlock.state
-
-    val blockPlaceEvent = BlockPlaceEvent(targetBlock, currentBlockState, against, item, player, true, hand)
+    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
     if (!blockPlaceEvent.canBuild()) {
@@ -123,7 +114,17 @@ fun placeBlockyBlock(
         return null
     }
 
-    if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
+    val sound =
+        if (isFlowing) {
+            if (newData.material == Material.WATER) Sound.ITEM_BUCKET_EMPTY
+            else Sound.valueOf("ITEM_BUCKET_EMPTY_" + newData.material)
+        } else newData.soundGroup.placeSound
+
+    if (player.gameMode != GameMode.CREATIVE) {
+        if (item.type.toString().contains("BUCKET")) item.type = Material.BUCKET
+        else item.amount = item.amount - 1
+    }
+    player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     return targetBlock
 }
 

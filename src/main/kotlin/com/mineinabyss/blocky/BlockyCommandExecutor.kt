@@ -1,7 +1,5 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.helpers.createBlockMap
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -21,7 +19,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands: CommandHolder = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "give" {
-                val type by optionArg(options = BlockyTypeQuery.filter { it.entity.has<BlockyInfo>() }.map { it.key.toString() }) {
+                val type by optionArg(options = blockyQuery) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
                 playerAction {
@@ -58,15 +56,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 1 -> listOf("give", "menu")
                 2 -> {
                     when (args[0]) {
-                        "give" -> {
-                            BlockyTypeQuery
-                                .filter {
-                                    val arg = args[1].lowercase()
-                                    it.key.toEntity()?.has<BlockyInfo>() == true &&
-                                            (it.key.namespace.startsWith(arg) || it.key.key.startsWith(arg))
-                                }
-                                .map { it.key.toString() }
-                        }
+                        "give" -> blockyQuery
                         "menu" -> emptyList()
                         else -> emptyList()
                     }

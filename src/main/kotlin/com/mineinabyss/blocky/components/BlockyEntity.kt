@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.components
 
 import com.mineinabyss.blocky.systems.BlockLocation
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -15,6 +16,9 @@ data class BlockyEntity(
     val canBeInAir: Boolean = false,
     val canBeRotated: Boolean = true
 )
+
+val GearyEntity.blockyEntity get() = get<BlockyEntity>()
+val GearyEntity.isBlockyEntity get() = blockyEntity != null
 
 enum class EntityType {
     MODEL_ENGINE, JAVA, ITEM_FRAME

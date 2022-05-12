@@ -45,15 +45,13 @@ fun fixClientsideUpdate(blockLoc: Location) {
 }
 
 fun breakTripwireBlock(block: Block, player: Player) {
-    val blockyWire = block.getPrefabFromBlock()?.toEntity() ?: return
-    val blockySound = blockyWire.get<BlockySound>()
-    blockyWire.get<BlockyInfo>() ?: return
+    if (block.hasBlockyInfo == false || block.isBlockyBlock == false) return
     block.state.update(true, false)
 
     block.setType(Material.AIR, false)
-    if (blockyWire.has<BlockySound>()) block.world.playSound(block.location, blockySound!!.placeSound, 1.0f, 0.8f)
-    if (blockyWire.has<BlockyLight>()) removeBlockLight(block.location)
-    if (blockyWire.has<BlockDrops>()) handleBlockyDrops(block, player)
+    if (block.hasBlockySound) block.world.playSound(block.location, block.blockySound!!.placeSound, 1.0f, 0.8f)
+    if (block.hasBlockyLight) removeBlockLight(block.location)
+    if (block.hasBlockyDrops) handleBlockyDrops(block, player)
 }
 
 fun isStandingInside(player: Player, block: Block): Boolean {

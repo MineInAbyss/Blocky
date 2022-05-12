@@ -1,14 +1,16 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.blockyQueryBlocks
 import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.blockyBlock
+import com.mineinabyss.blocky.components.hasBlockyInfo
 import com.mineinabyss.geary.papermc.helpers.toPrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerCommandPreprocessEvent
+import org.bukkit.event.server.TabCompleteEvent
 
 
 class WorldEditListener : Listener {
@@ -16,11 +18,10 @@ class WorldEditListener : Listener {
     @EventHandler
     fun PlayerCommandPreprocessEvent.commandStuff() {
         if (!message.startsWith("//")) return
-        //if (!isFAWELoaded) return
         val args: List<String> = message.split(" ")
         val blockyID = args.firstOrNull { it.contains("mineinabyss:") }?.toMCKey()?.toPrefabKey() ?: return
-        val block = blockyID.toEntity()?.get<BlockyBlock>() ?: return
-        blockyID.toEntity()?.get<BlockyInfo>() ?: return
+        val block = blockyID.toEntity()?.blockyBlock ?: return
+        if (blockyID.toEntity()?.hasBlockyInfo == false) return
 
         val blockData = when (block.blockType) {
             BlockType.CUBE -> String.format(
@@ -33,6 +34,12 @@ class WorldEditListener : Listener {
             else -> getDecorationData(block.blockId)
         }
         message = message.replace(blockyID.toString(), blockData, true)
+    }
+
+    @EventHandler
+    fun TabCompleteEvent.tabCompleteBlocky() {
+        if (!isCommand || !buffer.startsWith("//")) return
+        completions.addAll(blockyQueryBlocks)
     }
 }
 

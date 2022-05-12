@@ -37,7 +37,6 @@ class BlockyPlugin : JavaPlugin() {
         BlockyCommandExecutor()
 
         registerEvents(
-            PlayerListener(),
             BlockyGenericListener(),
             BlockyNoteBlockListener(),
             BlockyTripwireListener(),
