@@ -98,6 +98,8 @@ fun placeBlockyBlock(
         if (!targetBlock.type.isAir && targetBlock.type != Material.WATER && targetBlock.type != Material.LAVA) return null
     }
 
+    if (against.getPrefabFromBlock()?.toEntity()?.has<VanillaNoteBlock>() == true) return null
+
     if (gearyItem?.has<VanillaNoteBlock>() == true)
         CustomBlockData(targetBlock, blockyPlugin).set(
             gearyItem.get<VanillaNoteBlock>()?.key!!,

@@ -52,6 +52,8 @@ fun BlockyEntity.hasEnoughSpace(yaw: Float, loc: Location): Boolean {
 fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFace, loc: Location): ItemFrame? {
     val blockyEntity = get<BlockyEntity>() ?: return null
     if (!blockyEntity.hasEnoughSpace(yaw, loc)) return null
+    if (loc.block.getRelative(BlockFace.DOWN).getPrefabFromBlock()?.toEntity()?.has<VanillaNoteBlock>() == true) return null
+
     val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return null
     val blockyLight = get<BlockyLight>()?.lightLevel
     val newFrame =
