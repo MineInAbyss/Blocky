@@ -64,12 +64,11 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
         }
 
     return BlockyTypeQuery.firstOrNull {
-        val directional = it.entity.directional ?: return null
         if (it.entity.isDirectional) {
-            (directional.yBlockId == blockMap[blockData] ||
-                    directional.xBlockId == blockMap[blockData] ||
-                    directional.zBlockId == blockMap[blockData]) &&
-                    blockyBlock?.blockType == type
+            (it.entity.directional?.yBlockId == blockMap[blockData] ||
+                    it.entity.directional?.xBlockId == blockMap[blockData] ||
+                    it.entity.directional?.zBlockId == blockMap[blockData]) &&
+                    it.entity.blockyBlock?.blockType == type
         } else it.entity.blockyBlock?.blockId == blockMap[blockData] && it.entity.blockyBlock?.blockType == type
     }?.key ?: return null
 }

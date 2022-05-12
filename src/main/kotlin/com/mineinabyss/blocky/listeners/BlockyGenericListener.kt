@@ -44,7 +44,7 @@ class BlockyGenericListener : Listener {
         ) isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onInteractBlockyBlock() {
         val block = clickedBlock ?: return
         val blockAbove = block.getRelative(BlockFace.UP)

@@ -21,12 +21,12 @@ class BlockyNoteBlockListener : Listener {
         isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
 
         if (block.type == Material.NOTE_BLOCK) {
-            isCancelled = true
+            if (rightClicked) isCancelled = true
             if (block.isVanillaNoteBlock) {
                 if (rightClicked) updateBlockyNote(block)
                 playBlockyNoteBlock(block, player)

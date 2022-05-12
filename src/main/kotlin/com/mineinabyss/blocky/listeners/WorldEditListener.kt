@@ -44,19 +44,19 @@ class WorldEditListener : Listener {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.DOWN)
                 else prefab.getBlockyTransparent(BlockFace.DOWN)
-            } else if (argId.endsWith("[direction=west]")) {
+            } else if (argId.endsWith("[direction=north]")) {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.NORTH)
                 else prefab.getBlockyTransparent(BlockFace.NORTH)
-            } else if (argId.endsWith("[direction=east]")) {
+            } else if (argId.endsWith("[direction=south]")) {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.SOUTH)
                 else prefab.getBlockyTransparent(BlockFace.SOUTH)
-            } else if (argId.endsWith("[direction=north]")) {
+            } else if (argId.endsWith("[direction=west]")) {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.WEST)
                 else prefab.getBlockyTransparent(BlockFace.WEST)
-            } else if (argId.endsWith("[direction=south]")) {
+            } else if (argId.endsWith("[direction=east]")) {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.EAST)
                 else prefab.getBlockyTransparent(BlockFace.EAST)
