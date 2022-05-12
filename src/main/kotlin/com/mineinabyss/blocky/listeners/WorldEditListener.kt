@@ -3,13 +3,11 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.components.blockyBlock
-import com.mineinabyss.blocky.components.directional
 import com.mineinabyss.blocky.components.isDirectional
 import com.mineinabyss.blocky.helpers.getBlockyNoteBlock
 import com.mineinabyss.blocky.helpers.getBlockyTransparent
 import com.mineinabyss.blocky.helpers.getBlockyTripWire
 import com.mineinabyss.geary.papermc.helpers.toPrefabKey
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -27,49 +25,71 @@ class WorldEditListener : Listener {
 
     @EventHandler
     fun PlayerCommandPreprocessEvent.commandStuff() {
-        var note = 0
         if (!message.startsWith("//")) return
         val args: List<String> = message.split(" ")
         val argId = args.firstOrNull { it.contains("mineinabyss:") } ?: return
-        val newPrefab = (argId.replace("[direction=x]", "")
-            .replace("[direction=y]", "")
-            .replace("[direction=z]", "").toMCKey().toPrefabKey())
+        val newPrefab = (argId.replace("[direction=up]", "")
+            .replace("[direction=down]", "")
+            .replace("[direction=north]", "")
+            .replace("[direction=south]", "")
+            .replace("[direction=west]", "")
+            .replace("[direction=east]", "").toMCKey().toPrefabKey())
         val type = newPrefab.toEntity()?.blockyBlock?.blockType
         var data: BlockData
         if (newPrefab.toEntity()?.isDirectional == true) {
-            if (argId.contains("[direction=")) {
-                if (argId.endsWith("[direction=x]")) {
-                    data = blockMap.entries.elementAt(newPrefab.toEntity()?.directional?.xBlockId!!).key
-                    note = blockMap[data]?.rem(25)!!
-                } else if (argId.endsWith("[direction=y]")) {
-                    data = blockMap.entries.elementAt(newPrefab.toEntity()?.directional?.yBlockId!!).key
-                    note = blockMap[data]?.rem(25)!!
-                } else if (argId.endsWith("[direction=z]")) {
-                    data = blockMap.entries.elementAt(newPrefab.toEntity()?.directional?.zBlockId!!).key
-                    note = blockMap[data]?.rem(25)!!
-                }
+            if (argId.endsWith("[direction=up]")) {
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.UP)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.UP)
+            } else if (argId.endsWith("[direction=down]")) {
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.DOWN)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.DOWN)
+            } else if (argId.endsWith("[direction=west]")) {
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.NORTH)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.NORTH)
+            } else if (argId.endsWith("[direction=east]")) {
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.SOUTH)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.SOUTH)
+            } else if (argId.endsWith("[direction=north]")) {
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.WEST)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.WEST)
+            } else if (argId.endsWith("[direction=south]")) {
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.EAST)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.EAST)
             } else {
-                data = blockMap.entries.elementAt(newPrefab.toEntity()?.directional?.yBlockId!!).key
-                note = blockMap[data]?.rem(25)!!
+                data =
+                    if (type == BlockType.CUBE)
+                        newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.UP)
+                    else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.UP)
             }
         } else {
-            data = newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.UP)
-            note = blockMap[data]?.rem(25)!!
+            data =
+                if (type == BlockType.CUBE)
+                    newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.UP)
+                else newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.UP)
         }
 
         val blockData =
             if (type == BlockType.CUBE) {
-                data = newPrefab.toEntity()!!.getBlockyNoteBlock(BlockFace.UP)
                 String.format(
                     "%s[instrument=%s,note=%s,powered=%s]",
-                    data.material.toString().lowercase(),
+                    Material.NOTE_BLOCK.toString().lowercase(),
                     getInstrument((data as NoteBlock).instrument),
-                    note,
+                    blockMap[data]?.rem(25)!!,
                     data.isPowered
                 )
             } else if (type == BlockType.TRANSPARENT) {
-                broadcast(newPrefab.toEntity()?.blockyBlock!!.blockId)
-                data = newPrefab.toEntity()!!.getBlockyTransparent(BlockFace.NORTH)
                 String.format(
                     "%s[north=%s,south=%s,west=%s,east=%s,up=%s,down=%s]",
                     Material.CHORUS_PLANT.toString(),
