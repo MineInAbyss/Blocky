@@ -45,7 +45,7 @@ class BlockyItemFrameListener : Listener {
 
         targetBlock.setType(Material.AIR, false)
         val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item!!, player, true, hand!!)
-        val frameRotation = getRotation(player.eyeLocation.yaw, blockyEntity.hasBarrierCollision())
+        val frameRotation = getRotation(player.eyeLocation.yaw, blockyEntity.collisionHitbox.isNotEmpty())
         val frameYaw = getYaw(frameRotation)
 
         if (!blockyEntity.hasEnoughSpace(targetBlock.location, frameYaw)) {

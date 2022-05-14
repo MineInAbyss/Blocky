@@ -26,10 +26,6 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
     }
 }
 
-fun BlockyEntity.hasBarrierCollision() = (collisionHitbox.isNotEmpty())
-
-fun BlockyEntity.getHitbox(): List<BlockLocation> = collisionHitbox
-
 fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): List<Location> {
     val output: MutableList<Location> = ArrayList()
     for (modifier in relativeCoordinates) output.add(modifier.groundRotate(rotation).add(center))
@@ -47,8 +43,8 @@ fun getYaw(rotation: Rotation): Float {
 }
 
 fun BlockyEntity.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
-    return if (!hasBarrierCollision()) true
-    else getHitbox().let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
+    return if (collisionHitbox.isEmpty()) true
+    else collisionHitbox.let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
 }
 
 fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFace, loc: Location): ItemFrame? {
@@ -71,8 +67,8 @@ fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFa
     val gearyFrame = newFrame?.toGearyOrNull() ?: return null
     gearyFrame.setAll(this.getComponents())
 
-    if (gearyFrame.blockyEntity?.hasBarrierCollision() == true) {
-        getLocations(yaw, loc, gearyFrame.blockyEntity?.getHitbox()!!).forEach {adjacentLoc ->
+    if (gearyFrame.blockyEntity?.collisionHitbox?.isNotEmpty() == true) {
+        getLocations(yaw, loc, gearyFrame.blockyEntity?.collisionHitbox!!).forEach {adjacentLoc ->
             gearyFrame.getOrSetPersisting { BlockyBarrierHitbox() }
             val block = adjacentLoc.block
             block.setType(Material.BARRIER, false)
