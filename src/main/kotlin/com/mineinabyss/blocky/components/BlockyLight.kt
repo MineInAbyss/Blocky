@@ -13,7 +13,7 @@ data class BlockyLight (
 )
 
 val GearyEntity.blockyLight get() = get<BlockyLight>()
-val GearyEntity.hasBlockyLight get() = has<BlockyLight>()
+val GearyEntity.hasBlockyLight get() = blockyLight != null
 
 val Block.blockyLight get() = getPrefabFromBlock()?.toEntity()?.get<BlockyLight>()
 val Block.hasBlockyLight get() = blockyLight != null

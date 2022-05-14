@@ -56,7 +56,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 1 -> listOf("give", "menu")
                 2 -> {
                     when (args[0]) {
-                        "give" -> blockyQuery
+                        "give" ->
+                            blockyQuery.filter { it.startsWith(args[1]) || it.replace("mineinabyss:", "").startsWith(args[1]) }
                         "menu" -> emptyList()
                         else -> emptyList()
                     }

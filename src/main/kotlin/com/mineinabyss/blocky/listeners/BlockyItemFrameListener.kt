@@ -45,22 +45,20 @@ class BlockyItemFrameListener : Listener {
 
         targetBlock.setType(Material.AIR, false)
         val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item!!, player, true, hand!!)
-        val frameRotation =
-            getRotation(
-                player.eyeLocation.yaw,
-                blockyEntity.hasBarrierCollision() && blockyEntity.collisionHitbox.size > 1
-            )
+        val frameRotation = getRotation(player.eyeLocation.yaw, blockyEntity.hasBarrierCollision())
         val frameYaw = getYaw(frameRotation)
 
-        if (!blockyEntity.hasEnoughSpace(frameYaw, targetBlock.location)) {
+        if (!blockyEntity.hasEnoughSpace(targetBlock.location, frameYaw)) {
             blockyPlace.isCancelled = true
             player.error("There is not enough space to place this block here.")
+            return
         }
         blockyPlace.callEvent()
-        if (!blockyPlace.canBuild()) {
+        if (!blockyPlace.canBuild() || blockyPlace.isCancelled) {
             targetBlock.setBlockData(targetData, false)
             return
         }
+
         gearyItem.placeBlockyFrame(frameRotation, frameYaw, blockFace, targetBlock.location)
         player.swingMainHand()
         if (player.gameMode != GameMode.CREATIVE) item!!.subtract()
@@ -88,12 +86,11 @@ class BlockyItemFrameListener : Listener {
                     gearyFrame.blockySeatLoc?.seats?.forEach seatLoc@{ seatLoc ->
                         seatLoc.getNearbyEntitiesByType(
                             ArmorStand::class.java,
-                            gearyFrame.blockySeat?.heightOffset ?: 1.0
-                        )
-                            .forEach seat@{ stand ->
-                                if (stand.toGeary().hasBlockySeat) stand.remove()
-                                return@seat
-                            }
+                            gearyFrame.blockySeat?.heightOffset?.times(2)!!
+                        ).forEach seat@{ stand ->
+                            if (stand.toGeary().hasBlockySeat) stand.remove()
+                            return@seat
+                        }
                         return@seatLoc
                     }
                 }

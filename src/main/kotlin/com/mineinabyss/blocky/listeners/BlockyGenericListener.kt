@@ -53,7 +53,7 @@ class BlockyGenericListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
         if (block.type != Material.NOTE_BLOCK) return
-        isCancelled = true
+
         if (item.type == Material.BUCKET && blockAbove.isLiquid) {
             val sound =
                 if (blockAbove.type == Material.WATER) Sound.ITEM_BUCKET_FILL
@@ -102,13 +102,13 @@ class BlockyGenericListener : Listener {
         var newData = clickedBlock!!.blockData
 
         if (!gearyItem.hasBlockyInfo) return
-        if (gearyItem.blockyBlock?.blockType == BlockType.GROUND) return
+        if (gearyItem.blockyBlock?.blockType != BlockType.CUBE &&
+            gearyItem.blockyBlock?.blockType != BlockType.TRANSPARENT) return
 
         if (gearyItem.blockyBlock?.blockType == BlockType.TRANSPARENT)
             newData = gearyItem.getBlockyTransparent(blockFace)
         else if (gearyItem.blockyBlock?.blockType == BlockType.CUBE)
             newData = gearyItem.getBlockyNoteBlock(blockFace)
-
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, newData) ?: return
 
         if (gearyItem.hasBlockySound) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f, 0.8f)
