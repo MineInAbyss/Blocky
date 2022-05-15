@@ -12,10 +12,10 @@ import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.MultipleFacing
-import org.bukkit.block.data.type.NoteBlock
-import org.bukkit.block.data.type.Tripwire
+import org.bukkit.block.Sign
+import org.bukkit.block.Skull
+import org.bukkit.block.data.*
+import org.bukkit.block.data.type.*
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockPlaceEvent
@@ -108,10 +108,25 @@ fun placeBlockyBlock(
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
-    if (!blockPlaceEvent.canBuild()) {
+
+    // Handle sign & double blocks before event due to option for cancelling everything
+    if (targetBlock.blockData is Door || targetBlock.blockData is Bed || targetBlock.blockData is Bisected)
+        if (!targetBlock.handleDoubleBlocks(player)) blockPlaceEvent.isCancelled = true
+
+    if (targetBlock.state is Sign && face == BlockFace.DOWN) blockPlaceEvent.isCancelled = true
+    if ((targetBlock.state is Skull || targetBlock.state is Sign) && face != BlockFace.DOWN && face != BlockFace.UP)
+        targetBlock.handleSignAndSkull(player, face)
+
+    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
+
+    if (targetBlock.blockData !is Door && (targetBlock.blockData is Bisected || targetBlock.blockData is Slab))
+        targetBlock.handleHalfBlocks(player)
+
+    if (targetBlock.blockData is Rotatable)
+        targetBlock.handleRotatableBlocks(player)
 
     val sound =
         if (isFlowing) {
@@ -125,6 +140,112 @@ fun placeBlockyBlock(
     }
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     return targetBlock
+}
+
+private fun Block.handleSignAndSkull(player: Player, face: BlockFace) {
+    if (state is Sign) player.openSign(state as Sign)
+    type =
+        if (type.toString().endsWith("SIGN"))
+            Material.valueOf(type.toString().replace("_SIGN", "_WALL_SIGN"))
+        else if (type.toString().endsWith("SKULL"))
+            Material.valueOf(type.toString().replace("_SKULL", "_WALL_SKULL"))
+        else Material.valueOf(type.toString().replace("_HEAD", "_WALL_HEAD"))
+
+    val data = Bukkit.createBlockData(type) as Directional
+    data.facing = face
+    setBlockData(data, false)
+}
+
+private fun Block.handleDoubleBlocks(player: Player): Boolean {
+    when (val blockData = blockData) {
+        is Door -> {
+            if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
+            val top = getRelative(BlockFace.UP)
+
+            val leftBlock = when (player.facing) {
+                BlockFace.NORTH -> player.world.getBlockAt(location.clone().subtract(1.0, 0.0, 0.0))
+                BlockFace.SOUTH -> player.world.getBlockAt(location.clone().add(1.0, 0.0, 0.0))
+                BlockFace.WEST -> player.world.getBlockAt(location.clone().add(0.0, 0.0, 1.0))
+                BlockFace.EAST -> player.world.getBlockAt(location.clone().subtract(0.0, 0.0, 1.0))
+                else -> this
+            }
+
+            if (leftBlock.blockData is Door)
+                blockData.hinge = Door.Hinge.RIGHT
+            else blockData.hinge = Door.Hinge.LEFT
+
+            blockData.facing = player.facing
+            blockData.half = Bisected.Half.TOP
+            top.setBlockData(blockData, false)
+            blockData.half = Bisected.Half.BOTTOM
+
+            setBlockData(blockData, false)
+        }
+        is Bed -> {
+            if (getRelative(player.facing).type.isSolid || !getRelative(player.facing).isReplaceable) return false
+            getRelative(player.facing).setBlockData(blockData, false)
+            val nextBlock = getRelative(player.facing)
+            val nextData = nextBlock.blockData as Bed
+
+            blockData.part = Bed.Part.FOOT
+            nextData.part = Bed.Part.HEAD
+            blockData.facing = player.facing
+            nextData.facing = player.facing
+            nextBlock.blockData = nextData
+            setBlockData(blockData, false)
+        }
+        is Bisected -> {
+            if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
+            val top = getRelative(BlockFace.UP)
+
+            blockData.half = Bisected.Half.TOP
+            top.setBlockData(blockData, false)
+            blockData.half = Bisected.Half.BOTTOM
+        }
+        else -> {
+            setBlockData(Bukkit.createBlockData(Material.AIR), false)
+            return false
+        }
+    }
+    return true
+}
+
+private fun Block.handleHalfBlocks(player: Player) {
+    val eye = player.rayTraceBlocks(5.0, FluidCollisionMode.NEVER) ?: return
+    val data = blockData
+    //TODO Stair interactions are still abit unlike vanilla when it comes to connecting around corners etc
+    //TODO Making double slabs doesnt work if second slab is attempted placed on CB
+    when (data) {
+        is TrapDoor -> {
+            data.facing = player.facing.oppositeFace
+            if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.half = Bisected.Half.BOTTOM
+            else data.half = Bisected.Half.TOP
+        }
+        is Stairs -> {
+            data.facing = player.facing
+            if (eye.hitPosition.y <= eye.hitBlock?.location?.clone()?.apply { y += 0.75 }?.y!!)
+                data.half = Bisected.Half.BOTTOM
+            else data.half = Bisected.Half.TOP
+        }
+        is Slab -> {
+            if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.type = Slab.Type.BOTTOM
+            else data.type = Slab.Type.TOP
+        }
+    }
+    setBlockData(data, false)
+}
+
+private fun Block.handleRotatableBlocks(player: Player) {
+    val data = blockData
+    //TODO Support full facing spectrum not just N/S/W/E
+    when (data) {
+        is Rotatable -> {
+            data.rotation = player.facing
+            if (this.state is Sign) player.openSign(this.state as Sign)
+        }
+
+    }
+    setBlockData(data, false)
 }
 
 fun createBlockMap(): Map<BlockData, Int> {
