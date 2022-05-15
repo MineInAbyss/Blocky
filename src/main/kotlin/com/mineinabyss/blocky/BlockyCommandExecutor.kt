@@ -51,8 +51,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
         alias: String,
         args: Array<out String>
     ): List<String> {
-        if (command.name == "blocky") {
-            return when (args.size) {
+        return if (command.name == "blocky") {
+            when (args.size) {
                 1 -> listOf("give", "menu")
                 2 -> {
                     when (args[0]) {
@@ -64,7 +64,6 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 }
                 else -> emptyList()
             }
-        }
-        else return emptyList()
+        } else emptyList()
     }
 }
