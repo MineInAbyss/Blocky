@@ -17,17 +17,7 @@ import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.entity.Player
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
-    var id = blockyBlock?.blockId
-
-    if (isDirectional) {
-        if (directional?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN))
-            id = directional?.yBlockId
-        else if (directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH))
-            id = directional?.xBlockId
-        else if (directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST))
-            id = directional?.zBlockId
-    }
-
+    val id = getDirectionalId(face)
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == id }.keys.first() as NoteBlock
 }
 

@@ -45,7 +45,7 @@ fun fixClientsideUpdate(blockLoc: Location) {
 }
 
 fun breakTripwireBlock(block: Block, player: Player) {
-    if (block.hasBlockyInfo == false || block.isBlockyBlock == false) return
+    if (!block.hasBlockyInfo || !block.isBlockyBlock) return
     block.state.update(true, false)
 
     block.setType(Material.AIR, false)

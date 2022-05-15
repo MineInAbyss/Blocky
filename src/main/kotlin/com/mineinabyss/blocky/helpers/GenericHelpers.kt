@@ -7,6 +7,7 @@ import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
+import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
@@ -290,4 +291,12 @@ fun createBlockMap(): Map<BlockData, Int> {
     }
 
     return blockMap
+}
+
+fun GearyEntity.getDirectionalId(face: BlockFace): Int? = when {
+    !isDirectional -> blockyBlock?.blockId
+    directional?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN) -> directional?.yBlockId
+    directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH) -> directional?.xBlockId
+    directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST) -> directional?.zBlockId
+    else -> null
 }

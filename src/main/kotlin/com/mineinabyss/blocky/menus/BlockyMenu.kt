@@ -46,7 +46,7 @@ fun BlockyUIScope.BlockyMenu() {
 }
 
 @Composable
-fun handleMenuClicks(key: PrefabKey, player: Player) {
+fun HandleMenuClicks(key: PrefabKey, player: Player) {
     val block = LootyFactory.createFromPrefab(key)
     Item(block, Modifier.clickable {
         when (clickType) {

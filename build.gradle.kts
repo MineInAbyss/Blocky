@@ -1,10 +1,3 @@
-val idofrontVersion: String by project
-val gearyPlatformVersion: String by project
-val deeperworldVersion: String by project
-val guiyVersion: String by project
-val modelengineVersion: String by project
-val composeVersion: String by project
-
 plugins {
     id("com.mineinabyss.conventions.kotlin")
     id("com.mineinabyss.conventions.copyjar")
