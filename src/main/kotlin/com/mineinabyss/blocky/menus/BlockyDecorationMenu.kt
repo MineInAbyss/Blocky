@@ -14,11 +14,11 @@ import com.mineinabyss.guiy.modifiers.size
 @Composable
 fun BlockyUIScope.BlockyDecorationMenu() {
     Grid(Modifier.size(9, 5)) {
-        BlockyTypeQuery.filter {
-            remember {
+        remember {
+            BlockyTypeQuery.filter {
                 it.entity.blockyBlock?.blockType == BlockType.GROUND
             }
-        }.sortedBy { it.key.key }.forEach { handleMenuClicks(it.key, player) }
+        }.sortedBy { it.key.key }.forEach { HandleMenuClicks(it.key, player) }
     }
     BackButton(Modifier.at(0, 5))
 }
