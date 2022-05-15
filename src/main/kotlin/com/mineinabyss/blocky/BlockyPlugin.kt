@@ -42,7 +42,8 @@ class BlockyPlugin : JavaPlugin() {
             BlockyTripwireListener(),
             BlockyChorusPlantListener(),
             BlockyItemFrameListener(),
-            WorldEditListener()
+            BlockyMiddleClickListener(),
+            WorldEditListener(),
         )
 
         gearyAddon {
