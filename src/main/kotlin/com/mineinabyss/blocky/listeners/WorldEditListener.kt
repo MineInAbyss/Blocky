@@ -79,7 +79,7 @@ class WorldEditListener : Listener {
                 BlockType.TRANSPARENT ->
                     String.format(
                         "%s[north=%s,south=%s,west=%s,east=%s,up=%s,down=%s]",
-                        Material.CHORUS_PLANT.toString(),
+                        Material.CHORUS_PLANT.toString().lowercase(),
                         (data as MultipleFacing).hasFace(BlockFace.NORTH),
                         data.hasFace(BlockFace.SOUTH),
                         data.hasFace(BlockFace.WEST),
@@ -90,7 +90,7 @@ class WorldEditListener : Listener {
                 BlockType.GROUND ->
                     String.format(
                         "%s[north=%s,south=%s,west=%s,east=%s,attached=%s,disarmed=%s,powered=%s]",
-                        Material.TRIPWIRE.toString(),
+                        Material.TRIPWIRE.toString().lowercase(),
                         (data as Tripwire).hasFace(BlockFace.NORTH),
                         data.hasFace(BlockFace.SOUTH),
                         data.hasFace(BlockFace.WEST),
