@@ -49,6 +49,7 @@ class BlockyGenericListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
         if (block.type != Material.NOTE_BLOCK) return
+        if (block.type.isInteractable && !player.isSneaking) return
 
         if (item.type == Material.BUCKET && blockAbove.isLiquid) {
             val sound =
@@ -90,6 +91,7 @@ class BlockyGenericListener : Listener {
     fun PlayerInteractEvent.onPrePlacingBlockyBlock() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
+        if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
 
         val gearyItem = item?.toGearyOrNull(player) ?: return
         val blockyLight = gearyItem.blockyLight?.lightLevel

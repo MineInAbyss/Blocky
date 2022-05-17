@@ -122,6 +122,7 @@ class BlockyTripwireListener : Listener {
             isCancelled = true
             return
         }
+        if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
         val wireBlock = blockyWire.blockyBlock ?: return
