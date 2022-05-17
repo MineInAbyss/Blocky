@@ -1,8 +1,5 @@
 package com.mineinabyss.blocky.listeners
 
-import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
@@ -11,7 +8,6 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.BlockData
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -103,7 +99,8 @@ class BlockyGenericListener : Listener {
 
         if (!gearyItem.hasBlockyInfo) return
         if (gearyItem.blockyBlock?.blockType != BlockType.CUBE &&
-            gearyItem.blockyBlock?.blockType != BlockType.TRANSPARENT) return
+            gearyItem.blockyBlock?.blockType != BlockType.TRANSPARENT
+        ) return
 
         if (gearyItem.blockyBlock?.blockType == BlockType.TRANSPARENT)
             newData = gearyItem.getBlockyTransparent(blockFace)
@@ -131,25 +128,15 @@ class BlockyGenericListener : Listener {
             block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
         } else if (gearyItem.blockyBlock?.blockType == BlockType.CUBE) {
             block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
-            if (gearyItem.isVanillaNoteBlock) {
-                val map = mutableMapOf<BlockData?, Int?>()
-                map[block.blockData] = 0
-                CustomBlockData(block, blockyPlugin).set(
-                    gearyItem.getVanillaNoteBlock?.key!!,
-                    DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER),
-                    map
-                )
-            }
         }
         player.swingMainHand()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyBlock() {
-        if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
-        val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
         val blockyInfo = block.blockyInfo ?: return
 
+        if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
         breakBlockyBlock(block, player)
         isDropItems = false
