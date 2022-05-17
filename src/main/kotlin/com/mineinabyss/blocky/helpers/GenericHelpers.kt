@@ -140,8 +140,8 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
     if (type.toString().contains("CORAL") && !type.toString()
-            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN
-    ) return false
+            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN) return false
+    if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
     if (data is Waterlogged) handleWaterlogged(face)
