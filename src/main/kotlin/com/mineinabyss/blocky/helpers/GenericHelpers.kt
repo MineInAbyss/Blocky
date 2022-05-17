@@ -108,16 +108,18 @@ fun placeBlockyBlock(
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
+    val data = targetBlock.blockData
+    val state = targetBlock.state
+    val blockPlaceEvent = BlockPlaceEvent(targetBlock, state, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
 
     // Handle sign & double blocks before event due to option for cancelling everything
-    if (targetBlock.blockData is Door || targetBlock.blockData is Bed || targetBlock.blockData is Bisected)
+    if (data is Door || data is Bed || data is Chest || data is Bisected)
         if (!targetBlock.handleDoubleBlocks(player)) blockPlaceEvent.isCancelled = true
 
-    if (targetBlock.state is Sign && face == BlockFace.DOWN) blockPlaceEvent.isCancelled = true
-    if ((targetBlock.state is Skull || targetBlock.state is Sign) && face != BlockFace.DOWN && face != BlockFace.UP)
+    if (state is Sign && face == BlockFace.DOWN) blockPlaceEvent.isCancelled = true
+    if ((state is Skull || state is Sign) && face != BlockFace.DOWN && face != BlockFace.UP)
         targetBlock.handleSignAndSkull(player, face)
 
     if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
@@ -125,11 +127,14 @@ fun placeBlockyBlock(
         return null
     }
 
-    if (targetBlock.blockData !is Door && (targetBlock.blockData is Bisected || targetBlock.blockData is Slab))
+    if (data !is Door && (data is Bisected || data is Slab))
         targetBlock.handleHalfBlocks(player)
 
-    if (targetBlock.blockData is Rotatable)
+    if (data is Rotatable)
         targetBlock.handleRotatableBlocks(player)
+
+    if (data is Directional || data is FaceAttachable)
+        targetBlock.handleDirectionalBlocks(player)
 
     val sound =
         if (isFlowing) {
@@ -165,15 +170,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
             val top = getRelative(BlockFace.UP)
 
-            val leftBlock = when (player.facing) {
-                BlockFace.NORTH -> player.world.getBlockAt(location.clone().subtract(1.0, 0.0, 0.0))
-                BlockFace.SOUTH -> player.world.getBlockAt(location.clone().add(1.0, 0.0, 0.0))
-                BlockFace.WEST -> player.world.getBlockAt(location.clone().add(0.0, 0.0, 1.0))
-                BlockFace.EAST -> player.world.getBlockAt(location.clone().subtract(0.0, 0.0, 1.0))
-                else -> this
-            }
-
-            if (leftBlock.blockData is Door)
+            if (getLeftBlock(player).blockData is Door)
                 blockData.hinge = Door.Hinge.RIGHT
             else blockData.hinge = Door.Hinge.LEFT
 
@@ -196,6 +193,16 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             nextData.facing = player.facing
             nextBlock.blockData = nextData
             setBlockData(blockData, false)
+        }
+        is Chest -> {
+            if (getLeftBlock(player).blockData is Chest)
+                blockData.type = Chest.Type.LEFT
+            else if (getRightBlock(player).blockData is Chest)
+                blockData.type = Chest.Type.RIGHT
+            else blockData.type = Chest.Type.SINGLE
+
+            blockData.facing = player.facing.oppositeFace
+            setBlockData(blockData, true)
         }
         is Bisected -> {
             if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
@@ -251,6 +258,24 @@ private fun Block.handleRotatableBlocks(player: Player) {
     setBlockData(data, false)
 }
 
+private fun Block.handleDirectionalBlocks(player: Player) {
+    val data = blockData
+    when (data) {
+        is Directional -> {
+            if (data is FaceAttachable) {
+                data.attachedFace =
+                    when (player.rayTraceBlocks(5.0, FluidCollisionMode.NEVER)?.hitBlockFace) {
+                        BlockFace.UP -> FaceAttachable.AttachedFace.FLOOR
+                        BlockFace.DOWN -> FaceAttachable.AttachedFace.CEILING
+                        else -> FaceAttachable.AttachedFace.WALL
+                    }
+            }
+            data.facing = player.facing.oppositeFace
+        }
+    }
+    setBlockData(data, false)
+}
+
 fun createBlockMap(): Map<BlockData, Int> {
     val blockMap = mutableMapOf<BlockData, Int>()
 
@@ -301,4 +326,28 @@ fun GearyEntity.getDirectionalId(face: BlockFace): Int? = when {
     directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH) -> directional?.xBlockId
     directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST) -> directional?.zBlockId
     else -> null
+}
+
+fun Block.getLeftBlock(player: Player): Block {
+    val leftBlock = when (player.facing) {
+        BlockFace.NORTH -> player.world.getBlockAt(location.clone().subtract(1.0, 0.0, 0.0))
+        BlockFace.SOUTH -> player.world.getBlockAt(location.clone().add(1.0, 0.0, 0.0))
+        BlockFace.WEST -> player.world.getBlockAt(location.clone().add(0.0, 0.0, 1.0))
+        BlockFace.EAST -> player.world.getBlockAt(location.clone().subtract(0.0, 0.0, 1.0))
+        else -> this
+    }
+    return if (leftBlock.blockData is Chest && (leftBlock.blockData as Chest).facing != player.facing.oppositeFace) this
+    else leftBlock
+}
+
+fun Block.getRightBlock(player: Player): Block {
+    val rightBlock = when (player.facing) {
+        BlockFace.NORTH -> player.world.getBlockAt(location.clone().add(1.0, 0.0, 0.0))
+        BlockFace.SOUTH -> player.world.getBlockAt(location.clone().subtract(1.0, 0.0, 0.0))
+        BlockFace.WEST -> player.world.getBlockAt(location.clone().subtract(0.0, 0.0, 1.0))
+        BlockFace.EAST -> player.world.getBlockAt(location.clone().add(0.0, 0.0, 1.0))
+        else -> this
+    }
+    return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) this
+    else rightBlock
 }

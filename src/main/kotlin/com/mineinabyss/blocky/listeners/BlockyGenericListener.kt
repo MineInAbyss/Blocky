@@ -114,7 +114,11 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        if (itemInHand.toGearyOrNull(player)?.isBlockyBlock != true)
+        if (itemInHand.toGearyOrNull(player)?.isBlockyBlock != true &&
+            itemInHand.type == Material.TRIPWIRE ||
+            itemInHand.type == Material.NOTE_BLOCK ||
+            itemInHand.type == Material.CHORUS_PLANT
+        )
             block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
 
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
