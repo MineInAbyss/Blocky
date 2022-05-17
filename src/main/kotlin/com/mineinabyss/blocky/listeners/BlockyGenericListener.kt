@@ -117,6 +117,9 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
+        if (itemInHand.toGearyOrNull(player)?.isBlockyBlock != true)
+            block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         if (!gearyItem.isBlockyBlock) return
         val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.UP
@@ -144,15 +147,11 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
-
         val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
         val blockyInfo = block.blockyInfo ?: return
 
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-
+        breakBlockyBlock(block, player)
         isDropItems = false
-        if (prefab.hasBlockySound) block.world.playSound(block.location, prefab.blockySound!!.breakSound, 1.0f, 1.0f)
-        if (prefab.hasBlockyLight) removeBlockLight(block.location)
-        if (prefab.hasBlockyDrops) handleBlockyDrops(block, player)
     }
 }

@@ -30,28 +30,32 @@ val REPLACEABLE_BLOCKS =
         Material.LARGE_FERN
     )
 
-fun handleBlockyDrops(block: Block, player: Player) {
+fun breakBlockyBlock(block: Block, player: Player?) {
+    val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
+
+    if (prefab.hasBlockySound) block.world.playSound(block.location, prefab.blockySound!!.breakSound, 1.0f, 1.0f)
+    if (prefab.hasBlockyLight) removeBlockLight(block.location)
+    if (prefab.hasBlockyDrops) handleBlockyDrops(block, player)
+}
+
+fun handleBlockyDrops(block: Block, player: Player?) {
     if (!block.isBlockyBlock) return
 
     block.blockyInfo?.blockDrop?.map {
-        val hand = player.inventory.itemInMainHand
+        val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
+        val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
             if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
                 it.silkTouchedDrop.toItemStack()
             else it.item.toItemStack()
 
-        if (player.gameMode == GameMode.CREATIVE) return
-
-
+        if (player?.gameMode == GameMode.CREATIVE) return
         val amount =
             if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
-                Random.nextInt(it.minAmount, it.maxAmount) * Random.nextInt(
-                    1,
-                    hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1
-                )
-            else Random.nextInt(it.minAmount, it.maxAmount)
+                tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
+            else tempAmount
 
-        for (j in 0..amount) block.location.world.dropItemNaturally(block.location, item)
+        for (j in 1..amount) block.location.world.dropItemNaturally(block.location, item)
     } ?: return
 }
 

@@ -20,8 +20,8 @@ data class BlockyDrops(
     val silkTouchedDrop: SerializableItemStack = ItemStack(Material.AIR).toSerializable()
 )
 
-val GearyEntity.blockyDrops get() = get<BlockyDrops>()
-val GearyEntity.hasBlockyDrops get() = has<BlockyDrops>()
+val GearyEntity.blockyDrops get() = get<BlockyInfo>()?.blockDrop
+val GearyEntity.hasBlockyDrops get() = !blockyDrops.isNullOrEmpty()
 
-val Block.blockyDrops get() = getPrefabFromBlock()?.toEntity()?.get<BlockyDrops>()
-val Block.hasBlockyDrops get() = blockyDrops != null
+val Block.blockyDrops get() = getPrefabFromBlock()?.toEntity()?.get<BlockyInfo>()?.blockDrop
+val Block.hasBlockyDrops get() = !blockyDrops.isNullOrEmpty()
