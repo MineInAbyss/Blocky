@@ -49,8 +49,7 @@ class BlockyGenericListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
         if (block.type != Material.NOTE_BLOCK) return
-        if (block.type.isInteractable && !player.isSneaking) return
-
+        if (block.type.isInteractable && !block.isBlockyBlock && !player.isSneaking) return
         if (item.type == Material.BUCKET && blockAbove.isLiquid) {
             val sound =
                 if (blockAbove.type == Material.WATER) Sound.ITEM_BUCKET_FILL
