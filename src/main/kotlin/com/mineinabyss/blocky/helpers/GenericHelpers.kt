@@ -86,7 +86,6 @@ fun placeBlockyBlock(
     newData: BlockData
 ): Block? {
     val targetBlock: Block
-
     if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
     else {
         targetBlock = against.getRelative(face)
@@ -103,38 +102,20 @@ fun placeBlockyBlock(
         )
     updateBlockyNote(targetBlock)
 
-
     val currentData = targetBlock.blockData
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val data = targetBlock.blockData
     val state = targetBlock.state
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, state, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
-
-    // Handle sign & double blocks before event due to option for cancelling everything
-    if (data is Door || data is Bed || data is Chest || data is Bisected)
-        if (!targetBlock.handleDoubleBlocks(player)) blockPlaceEvent.isCancelled = true
-
-    if (state is Sign && face == BlockFace.DOWN) blockPlaceEvent.isCancelled = true
-    if ((state is Skull || state is Sign) && face != BlockFace.DOWN && face != BlockFace.UP)
-        targetBlock.handleSignAndSkull(player, face)
+    if (!targetBlock.correctAllBlockStates(player, face)) blockPlaceEvent.isCancelled = true
 
     if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
-
-    if (data !is Door && (data is Bisected || data is Slab))
-        targetBlock.handleHalfBlocks(player)
-
-    if (data is Rotatable)
-        targetBlock.handleRotatableBlocks(player)
-
-    if (data is Directional || data is FaceAttachable)
-        targetBlock.handleDirectionalBlocks(player)
 
     val sound =
         if (isFlowing) {
@@ -150,10 +131,74 @@ fun placeBlockyBlock(
     return targetBlock
 }
 
-private fun Block.handleSignAndSkull(player: Player, face: BlockFace) {
+private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolean {
+    val data = blockData
+    if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
+    if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
+    if (type.toString().endsWith("TORCH") && face == BlockFace.DOWN) return false
+    if (state is Sign && face == BlockFace.DOWN) return false
+    if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
+    if (data is Rotatable) handleRotatableBlocks(player)
+    if (type.toString().contains("CORAL") && !type.toString()
+            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN
+    ) return false
+    if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
+        type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
+    if (data is Waterlogged) handleWaterlogged(face)
+    if (data is Ageable) {
+        Material.NETHER_SPROUTS
+        return if ((type == Material.WEEPING_VINES || type == Material.WEEPING_VINES_PLANT) && face != BlockFace.DOWN) false
+        else if ((type == Material.TWISTING_VINES || type == Material.TWISTING_VINES_PLANT) && face != BlockFace.UP) false
+        else false
+    }
+    if (data is Door || data is Bed || data is Chest || data is Bisected)
+        if (!handleDoubleBlocks(player)) return false
+    if ((state is Skull || state is Sign || type.toString()
+            .contains("TORCH")) && face != BlockFace.DOWN && face != BlockFace.UP
+    )
+        handleWallAttachable(player, face)
+
+    if (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable) {
+        if (data is MultipleFacing && face == BlockFace.UP) return false
+        if (data is CoralWallFan && face == BlockFace.DOWN) return false
+        handleDirectionalBlocks(face)
+    }
+
+    if (data is Orientable) {
+        data.axis = when {
+            (face == BlockFace.UP || face == BlockFace.DOWN) -> Axis.Y
+            (face == BlockFace.NORTH || face == BlockFace.SOUTH) -> Axis.Z
+            (face == BlockFace.WEST || face == BlockFace.EAST) -> Axis.X
+            else -> Axis.Y
+        }
+        setBlockData(data, false)
+    }
+
+    if (data is Lantern) {
+        if (face != BlockFace.DOWN) return false
+        data.isHanging = true
+        setBlockData(data, false)
+    }
+    return true
+}
+
+private fun Block.handleWaterlogged(face: BlockFace) {
+    val data = blockData
+    when (data) {
+        is Waterlogged -> {
+            if (data is Directional) data.facing = face
+            data.isWaterlogged = false
+        }
+    }
+    setBlockData(data, false)
+}
+
+private fun Block.handleWallAttachable(player: Player, face: BlockFace) {
     if (state is Sign) player.openSign(state as Sign)
     type =
-        if (type.toString().endsWith("SIGN"))
+        if (type.toString().endsWith("TORCH"))
+            Material.valueOf(type.toString().replace("TORCH", "WALL_TORCH"))
+        else if (type.toString().endsWith("SIGN"))
             Material.valueOf(type.toString().replace("_SIGN", "_WALL_SIGN"))
         else if (type.toString().endsWith("SKULL"))
             Material.valueOf(type.toString().replace("_SKULL", "_WALL_SKULL"))
@@ -168,15 +213,13 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
     when (val blockData = blockData) {
         is Door -> {
             if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
-            val top = getRelative(BlockFace.UP)
-
             if (getLeftBlock(player).blockData is Door)
                 blockData.hinge = Door.Hinge.RIGHT
             else blockData.hinge = Door.Hinge.LEFT
 
             blockData.facing = player.facing
             blockData.half = Bisected.Half.TOP
-            top.setBlockData(blockData, false)
+            getRelative(BlockFace.UP).setBlockData(blockData, false)
             blockData.half = Bisected.Half.BOTTOM
 
             setBlockData(blockData, false)
@@ -206,10 +249,9 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
         }
         is Bisected -> {
             if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
-            val top = getRelative(BlockFace.UP)
 
             blockData.half = Bisected.Half.TOP
-            top.setBlockData(blockData, false)
+            getRelative(BlockFace.UP).setBlockData(blockData, false)
             blockData.half = Bisected.Half.BOTTOM
         }
         else -> {
@@ -258,19 +300,28 @@ private fun Block.handleRotatableBlocks(player: Player) {
     setBlockData(data, false)
 }
 
-private fun Block.handleDirectionalBlocks(player: Player) {
+private fun Block.handleDirectionalBlocks(face: BlockFace) {
     val data = blockData
+
     when (data) {
         is Directional -> {
             if (data is FaceAttachable) {
-                data.attachedFace =
-                    when (player.rayTraceBlocks(5.0, FluidCollisionMode.NEVER)?.hitBlockFace) {
-                        BlockFace.UP -> FaceAttachable.AttachedFace.FLOOR
-                        BlockFace.DOWN -> FaceAttachable.AttachedFace.CEILING
-                        else -> FaceAttachable.AttachedFace.WALL
-                    }
+                when (face) {
+                    BlockFace.UP -> data.attachedFace = FaceAttachable.AttachedFace.FLOOR
+                    BlockFace.DOWN -> data.attachedFace = FaceAttachable.AttachedFace.CEILING
+                    else -> { data.facing = face }
+                }
+            } else data.facing = face
+        }
+        is MultipleFacing -> {
+            data.allowedFaces.forEach {
+                if (getRelative(it).type.isSolid) data.setFace(it, true)
+                else data.setFace(it, false)
             }
-            data.facing = player.facing.oppositeFace
+        }
+        is Attachable -> {
+            Material.SOUL_SOIL
+            data.isAttached = true
         }
     }
     setBlockData(data, false)

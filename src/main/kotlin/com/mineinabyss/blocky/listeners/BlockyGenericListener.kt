@@ -90,13 +90,13 @@ class BlockyGenericListener : Listener {
     fun PlayerInteractEvent.onPrePlacingBlockyBlock() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
-        if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
 
         val gearyItem = item?.toGearyOrNull(player) ?: return
         val blockyLight = gearyItem.blockyLight?.lightLevel
         val blockySound = gearyItem.blockySound
         val against = clickedBlock ?: return
         var newData = clickedBlock!!.blockData
+        if (against.type.isInteractable && !against.isBlockyBlock && !player.isSneaking) return
 
         if (!gearyItem.hasBlockyInfo) return
         if (gearyItem.blockyBlock?.blockType != BlockType.CUBE &&
