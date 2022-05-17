@@ -6,8 +6,10 @@ import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -39,18 +41,24 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    fun BlockPlaceEvent.onPlacingTripwire() {
-        if (blockPlaced.type == Material.TRIPWIRE) {
-
-            block.state.update(true, false)
-            blockAgainst.state.update(true, false)
-        }
-    }
-
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun EntityInsideBlockEvent.onEnterTripwire() {
         if (block.type == Material.TRIPWIRE) isCancelled = true
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    fun BlockPlaceEvent.onPlacingTripwire() {
+        if (blockPlaced.type == Material.TRIPWIRE) {
+            block.state.update(true, false)
+            blockAgainst.state.update(true, false)
+
+            if (itemInHand.toGearyOrNull(player)?.isBlockyBlock != true)
+                block.setBlockData(Bukkit.createBlockData(Material.TRIPWIRE), false)
+            blockyPlugin.launch {
+                delay(1)
+                fixClientsideUpdate(block.location)
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL)
@@ -95,6 +103,14 @@ class BlockyTripwireListener : Listener {
         blockyPlugin.launch {
             delay(1)
             fixClientsideUpdate(block.location)
+        }
+    }
+    
+    @EventHandler
+    fun BlockBreakBlockEvent.onWaterCollide() {
+        if (block.type == Material.TRIPWIRE) {
+            breakTripwireBlock(block, null)
+            drops.removeIf { it.type == Material.STRING }
         }
     }
 

@@ -1,5 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.helpers.breakBlockyBlock
+import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -23,7 +25,17 @@ class BlockyChorusPlantListener : Listener {
 
     @EventHandler
     fun BlockPhysicsEvent.onChorusPhysics() {
-        if (block.type == Material.CHORUS_FLOWER || block.type == Material.CHORUS_PLANT)
+        if (block.type == Material.CHORUS_FLOWER || block.type == Material.CHORUS_PLANT) {
+            if (sourceBlock.isLiquid) BlockBreakBlockEvent(block, sourceBlock, emptyList()).callEvent()
             isCancelled = true
+        }
+    }
+
+    @EventHandler
+    fun BlockBreakBlockEvent.onWaterCollide() {
+        if (block.type == Material.CHORUS_PLANT) {
+            breakBlockyBlock(block, null)
+            drops.removeIf { it.type == Material.CHORUS_FRUIT }
+        }
     }
 }
