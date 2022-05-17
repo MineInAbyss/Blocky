@@ -4,10 +4,6 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.blockyBlock
-import com.mineinabyss.blocky.components.directional
-import com.mineinabyss.blocky.components.getVanillaNoteBlock
-import com.mineinabyss.blocky.components.isDirectional
 import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.*
 import org.bukkit.block.Block
@@ -28,8 +24,12 @@ fun updateAndCheck(loc: Location) {
     if (nextBlock.type == Material.NOTE_BLOCK) updateAndCheck(block.location)
 }
 
+fun Block.isVanillaNoteBlock(): Boolean {
+    return blockData == Bukkit.createBlockData(Material.NOTE_BLOCK)
+}
+
 fun updateBlockyNote(block: Block) {
-    val noteBlock = block.getVanillaNoteBlock?.key ?: return
+    val noteBlock = NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase())
     val pdc = CustomBlockData(block, blockyPlugin)
     val map = pdc.get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER)) ?: return
     val data = map.entries.first().key as NoteBlock
@@ -43,15 +43,16 @@ fun updateBlockyNote(block: Block) {
 }
 
 fun playBlockyNoteBlock(block: Block, player: Player) {
-    val noteBlock = block.getVanillaNoteBlock?.key ?: return
-    val map = CustomBlockData(block, blockyPlugin).get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER))
-        ?: return
+    val noteBlock = NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase())
+    val map = CustomBlockData(block, blockyPlugin).get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER)) ?: return
     val data = map.entries.first().key as NoteBlock
     val color = (map.entries.first().value / 24f).toDouble()
     val loc = block.getRelative(BlockFace.UP).location.add(0.5, 0.0, 0.5)
 
-    player.playNote(loc, block.modifiesBlockyInstrument(), data.note)
-    player.spawnParticle(Particle.NOTE, loc, 0, color, 0.0, 1.0)
+    player.location.getNearbyPlayers(50.0).forEach {p ->
+        p.playNote(loc, block.modifiesBlockyInstrument(), data.note)
+        p.spawnParticle(Particle.NOTE, loc, 0, color, 0.0, 1.0)
+    }
 }
 
 fun Block.modifiesBlockyInstrument(): Instrument {

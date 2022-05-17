@@ -9,7 +9,6 @@ import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -87,7 +86,6 @@ fun placeBlockyBlock(
     newData: BlockData
 ): Block? {
     val targetBlock: Block
-    val gearyItem = item.toGearyOrNull(player)
 
     if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
     else {
@@ -95,16 +93,16 @@ fun placeBlockyBlock(
         if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
     }
 
-    if (against.isVanillaNoteBlock) return null
-    if (gearyItem?.isVanillaNoteBlock == true)
+    if (isStandingInside(player, targetBlock)) return null
+    if (against.isVanillaNoteBlock()) return null
+    if (targetBlock.isVanillaNoteBlock())
         CustomBlockData(targetBlock, blockyPlugin).set(
-            gearyItem.getVanillaNoteBlock?.key!!,
+            NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase()),
             DataType.BLOCK_DATA,
             newData
         )
     updateBlockyNote(targetBlock)
 
-    if (isStandingInside(player, targetBlock)) return null
 
     val currentData = targetBlock.blockData
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
