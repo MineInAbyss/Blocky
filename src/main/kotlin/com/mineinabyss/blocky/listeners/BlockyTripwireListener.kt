@@ -152,6 +152,10 @@ class BlockyTripwireListener : Listener {
         }
         if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
 
+        // Fixes tripwire updating when placing blocks next to it
+        if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.isBlockyBlock != true)
+            placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
+
         val blockyWire = item?.toGearyOrNull(player) ?: return
         val wireBlock = blockyWire.blockyBlock ?: return
         if (wireBlock.blockType != BlockType.GROUND) return
