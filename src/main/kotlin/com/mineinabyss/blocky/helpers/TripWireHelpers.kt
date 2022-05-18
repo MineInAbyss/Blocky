@@ -23,7 +23,7 @@ fun fixClientsideUpdate(blockLoc: Location) {
         for (z in (chunk.z shl 4)..chunk.z + 16)
             for (y in (blockLoc.y - 10).toInt()..(blockLoc.y + 10).toInt()) {
                 val block = blockLoc.world.getBlockAt(x, y, z)
-                if (blockLoc.world.getBlockAt(x, y, z).type == Material.TRIPWIRE)
+                if (block.type == Material.TRIPWIRE)
                     players.forEach {
                         it.sendBlockChange(block.location, block.blockData)
                     }
