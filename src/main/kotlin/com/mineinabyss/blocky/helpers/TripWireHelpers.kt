@@ -1,7 +1,10 @@
 package com.mineinabyss.blocky.helpers
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
+import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -52,6 +55,11 @@ fun breakTripwireBlock(block: Block, player: Player?) {
     if (block.hasBlockyLight) removeBlockLight(block.location)
     if (block.hasBlockyDrops) handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
+
+    blockyPlugin.launch {
+        delay(1)
+        fixClientsideUpdate(block.location)
+    }
 }
 
 fun isStandingInside(player: Player, block: Block): Boolean {
