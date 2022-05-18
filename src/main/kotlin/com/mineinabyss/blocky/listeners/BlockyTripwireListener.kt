@@ -10,6 +10,7 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -58,6 +59,19 @@ class BlockyTripwireListener : Listener {
                 delay(1)
                 fixClientsideUpdate(block.location)
             }
+        } else if (!blockPlaced.isBlockyBlock) {
+            BlockFace.values().forEach { face ->
+                val relative = blockPlaced.getRelative(face)
+                if (relative.type == Material.TRIPWIRE) {
+                    blockPlaced.state.update(true, false)
+                    relative.state.update(true, false)
+                    blockPlaced.setBlockData(blockPlaced.blockData, false)
+                    blockPlaced.getRelative(face).setBlockData(relative.blockData, false)
+                    fixClientsideUpdate(blockPlaced.location)
+                    blockPlaced.state.update(true, false)
+                    relative.state.update(true, false)
+                }
+            }
         }
     }
 
@@ -94,6 +108,20 @@ class BlockyTripwireListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         val blockAbove = block.getRelative(BlockFace.UP)
+        BlockFace.values().forEach { face ->
+            val relative = block.getRelative(face)
+            if (relative.type == Material.TRIPWIRE) {
+                if (!block.isBlockyBlock && player.gameMode != GameMode.CREATIVE)
+                    block.drops.forEach {
+                        player.world.dropItemNaturally(block.location, it)
+                    }
+                block.setType(Material.AIR, false)
+                block.state.update(true, false)
+                relative.setBlockData(relative.blockData, false)
+                relative.state.update(true, false)
+                fixClientsideUpdate(block.location)
+            }
+        }
 
         if (block.type == Material.TRIPWIRE) breakTripwireBlock(block, player)
         if (blockAbove.type == Material.TRIPWIRE) breakTripwireBlock(blockAbove, player)
@@ -105,7 +133,7 @@ class BlockyTripwireListener : Listener {
             fixClientsideUpdate(block.location)
         }
     }
-    
+
     @EventHandler
     fun BlockBreakBlockEvent.onWaterCollide() {
         if (block.type == Material.TRIPWIRE) {
