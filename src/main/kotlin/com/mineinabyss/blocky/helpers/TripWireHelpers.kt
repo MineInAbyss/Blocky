@@ -19,15 +19,14 @@ fun BlockyBlock.getBlockyTripWire(): BlockData {
 fun fixClientsideUpdate(blockLoc: Location) {
     val players = blockLoc.world.getNearbyPlayers(blockLoc, 20.0)
     val chunk = blockLoc.chunk
+    val map = mutableMapOf<Location, BlockData>()
     for (x in (chunk.x shl 4)..chunk.x + 16)
         for (z in (chunk.z shl 4)..chunk.z + 16)
             for (y in (blockLoc.y - 10).toInt()..(blockLoc.y + 10).toInt()) {
                 val block = blockLoc.world.getBlockAt(x, y, z)
-                if (block.type == Material.TRIPWIRE)
-                    players.forEach {
-                        it.sendBlockChange(block.location, block.blockData)
-                    }
+                if (block.type == Material.TRIPWIRE) map[block.location] = block.blockData
             }
+    players.forEach { it.sendMultiBlockChange(map) }
 }
 
 fun breakTripwireBlock(block: Block, player: Player?) {
