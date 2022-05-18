@@ -133,7 +133,7 @@ fun placeBlockyBlock(
 
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolean {
     val data = blockData
-    if (blockData is Tripwire) return true
+    if (blockData is Tripwire || type == Material.CHORUS_PLANT) return true
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
     if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
     if (type.toString().endsWith("TORCH") && face == BlockFace.DOWN) return false
