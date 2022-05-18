@@ -8,7 +8,6 @@ import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.entity.Player
@@ -18,33 +17,17 @@ fun BlockyBlock.getBlockyTripWire(): BlockData {
 }
 
 fun fixClientsideUpdate(blockLoc: Location) {
-    val blockBelow = blockLoc.block.getRelative(BlockFace.DOWN)
-    val blockAbove = blockLoc.block.getRelative(BlockFace.UP)
-    var loc = blockLoc.add(5.0, 0.0, 5.0)
     val players = blockLoc.world.getNearbyPlayers(blockLoc, 20.0)
-
-    if (blockBelow.type == Material.TRIPWIRE) {
-        players.forEach {
-            it.sendBlockChange(blockBelow.location, blockBelow.blockData)
-        }
-    }
-    if (blockAbove.type == Material.TRIPWIRE) {
-        players.forEach {
-            it.sendBlockChange(blockAbove.location, blockAbove.blockData)
-        }
-    }
-
-    for (i in 0..8) {
-        for (j in 0..8) {
-            if (loc.block.type == Material.TRIPWIRE) {
-                players.forEach {
-                    it.sendBlockChange(loc, blockLoc.block.blockData)
-                }
+    val chunk = blockLoc.chunk
+    for (x in (chunk.x shl 4)..chunk.x + 16)
+        for (z in (chunk.z shl 4)..chunk.z + 16)
+            for (y in (blockLoc.y - 10).toInt()..(blockLoc.y + 10).toInt()) {
+                val block = blockLoc.world.getBlockAt(x, y, z)
+                if (block.type == Material.TRIPWIRE)
+                    players.forEach {
+                        it.sendBlockChange(block.location, block.blockData)
+                    }
             }
-            loc = loc.subtract(0.0, 0.0, 1.0)
-        }
-        loc = loc.add(-1.0, 0.0, 9.0)
-    }
 }
 
 fun breakTripwireBlock(block: Block, player: Player?) {

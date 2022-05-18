@@ -10,6 +10,7 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -94,6 +95,16 @@ class BlockyTripwireListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         val blockAbove = block.getRelative(BlockFace.UP)
+        BlockFace.values().forEach { face ->
+            if (block.getRelative(face).type == Material.TRIPWIRE) {
+                if (!block.isBlockyBlock && player.gameMode != GameMode.CREATIVE)
+                    block.drops.forEach {
+                        player.world.dropItemNaturally(block.location, it)
+                    }
+                block.setType(Material.AIR, false)
+                fixClientsideUpdate(block.location)
+            }
+        }
 
         if (block.type == Material.TRIPWIRE) breakTripwireBlock(block, player)
         if (blockAbove.type == Material.TRIPWIRE) breakTripwireBlock(blockAbove, player)
@@ -105,7 +116,7 @@ class BlockyTripwireListener : Listener {
             fixClientsideUpdate(block.location)
         }
     }
-    
+
     @EventHandler
     fun BlockBreakBlockEvent.onWaterCollide() {
         if (block.type == Material.TRIPWIRE) {
@@ -123,6 +134,12 @@ class BlockyTripwireListener : Listener {
             return
         }
         if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
+
+        // Fixes tripwire updating when placing blocks next to it
+        if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.isBlockyBlock != true) {
+            placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
+            fixClientsideUpdate(clickedBlock!!.location)
+        }
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
         val wireBlock = blockyWire.blockyBlock ?: return
