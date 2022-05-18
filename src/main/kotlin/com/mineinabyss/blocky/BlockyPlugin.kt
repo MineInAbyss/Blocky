@@ -16,9 +16,6 @@ var blockMap: Map<BlockData, Int> = emptyMap()
 interface BlockyContext {
     companion object : BlockyContext by getService()
 
-    val isFAWELoaded: Boolean
-        get() = blockyPlugin.server.pluginManager.isPluginEnabled("FastAsyncWorldEdit")
-
 }
 
 class BlockyPlugin : JavaPlugin() {
@@ -42,6 +39,7 @@ class BlockyPlugin : JavaPlugin() {
             BlockyTripwireListener(),
             BlockyChorusPlantListener(),
             BlockyItemFrameListener(),
+            BlockyMiddleClickListener(),
             WorldEditListener()
         )
 
