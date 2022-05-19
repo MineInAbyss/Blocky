@@ -13,7 +13,7 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.plugin.java.JavaPlugin
 
 val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::class.java) }
-var blockMap: MutableMap<BlockData, Int> = mutableMapOf()
+var blockMap: Map<BlockData, Int> = mutableMapOf()
 var biomeMap: MutableMap<String,  Biome> = mutableMapOf()
 
 interface BlockyContext {
@@ -52,8 +52,7 @@ class BlockyPlugin : JavaPlugin() {
                 all()
             }
         }
-        createBlockMap()
+        blockMap = createBlockMap()
         createBiomeMap()
-
     }
 }

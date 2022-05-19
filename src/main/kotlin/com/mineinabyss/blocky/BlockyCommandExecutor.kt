@@ -9,6 +9,7 @@ import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.broadcast
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.LootyFactory
 import org.bukkit.FluidCollisionMode
@@ -43,7 +44,10 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             }
             "map" {
                 blockMap.toMutableMap().clear()
-                createBlockMap()
+                biomeMap.clear()
+                biomeMap.size.broadcastVal()
+                blockMap = createBlockMap()
+
             }
             "biome" {
                 playerAction {

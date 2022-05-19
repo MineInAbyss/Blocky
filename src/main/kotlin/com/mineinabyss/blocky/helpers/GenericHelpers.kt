@@ -329,6 +329,8 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
 }
 
 fun createBlockMap(): Map<BlockData, Int> {
+    val blockMap = mutableMapOf<BlockData, Int>()
+
     // Calculates tripwire states
     for (i in 0..127) {
         val tripWireData = Bukkit.createBlockData(Material.TRIPWIRE) as Tripwire

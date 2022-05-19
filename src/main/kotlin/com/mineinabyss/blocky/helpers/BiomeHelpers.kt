@@ -12,9 +12,7 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.server.dedicated.DedicatedServer
 import net.minecraft.world.level.Level
 import net.minecraft.world.level.biome.Biome
-import net.minecraft.world.level.biome.BiomeGenerationSettings
 import net.minecraft.world.level.biome.BiomeSpecialEffects
-import net.minecraft.world.level.biome.MobSpawnSettings
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.craftbukkit.v1_18_R2.CraftServer
@@ -24,21 +22,23 @@ import java.lang.reflect.Field
 
 fun addCustomBiome(biome: BlockyBiome) {
     val dedicatedServer = (Bukkit.getServer() as CraftServer).server
-    val mcKey: ResourceKey<Biome> = ResourceKey.create(Registry.BIOME_REGISTRY, ResourceLocation("minecraft", biome.mcName))
-    val customKey: ResourceKey<Biome> = ResourceKey.create(Registry.BIOME_REGISTRY, ResourceLocation("blocky", biome.customName))
-    val regWrite: WritableRegistry<Biome> = dedicatedServer.registryAccess().ownedRegistry(Registry.BIOME_REGISTRY).get() as WritableRegistry<Biome>
-    val mcBiome: Biome? = regWrite[mcKey]
-    val biomeHolder: Holder<Biome> = mcBiome?.let { Holder.direct(it) } as Holder<Biome>
+    val mcKey = ResourceKey.create(Registry.BIOME_REGISTRY, ResourceLocation("minecraft", biome.mcName))
+    val customKey = ResourceKey.create(Registry.BIOME_REGISTRY, ResourceLocation("blocky", biome.customName))
+    val regWrite = dedicatedServer.registryAccess().ownedRegistry(Registry.BIOME_REGISTRY).get() as WritableRegistry<Biome>
+    val mcBiome = regWrite[mcKey]
+    val biomeHolder = Holder.direct(mcBiome!!)
     val newBiome = Biome.BiomeBuilder()
     newBiome.biomeCategory(Biome.getBiomeCategory(biomeHolder))
     mcBiome.precipitation.let { newBiome.precipitation(it) }
-    val biomeSettingMobs: MobSpawnSettings = mcBiome.mobSettings
+    val biomeSettingMobs = mcBiome.mobSettings
     newBiome.mobSpawnSettings(biomeSettingMobs)
-    val biomeSettingGen: BiomeGenerationSettings = mcBiome.generationSettings
+
+    val biomeSettingGen = mcBiome.generationSettings
     newBiome.generationSettings(biomeSettingGen)
     newBiome.temperature(biome.temperature)
     newBiome.downfall(biome.downfall)
     newBiome.temperatureAdjustment(if (biome.isFrozen) Biome.TemperatureModifier.NONE else Biome.TemperatureModifier.FROZEN)
+
     val newFog = BiomeSpecialEffects.Builder()
     newFog.grassColorModifier(BiomeSpecialEffects.GrassColorModifier.NONE)
     newFog.fogColor(biome.fogColour)
@@ -48,6 +48,7 @@ fun addCustomBiome(biome: BlockyBiome) {
     newFog.foliageColorOverride(biome.foliageColour)
     newFog.grassColorOverride(biome.grassColour)
     newBiome.specialEffects(newFog.build())
+
     val b: Biome = newBiome.build()
     biomeMap[biome.customName] = b
     changeRegistryLock(dedicatedServer, false)
@@ -100,6 +101,6 @@ fun createBiomeMap() {
     blockyBiomeQuery.forEach { prefab ->
         prefab.toEntity() ?: return@forEach
         if (!prefab.toEntity()!!.hasBlockyBiome) return@forEach
-        prefab.toEntity()!!.blockyBiome?.let { addCustomBiome(it) }
+        addCustomBiome(prefab.toEntity()!!.blockyBiome!!)
     }
 }
