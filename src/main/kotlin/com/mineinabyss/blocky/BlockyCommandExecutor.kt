@@ -8,8 +8,11 @@ import com.mineinabyss.idofront.commands.CommandHolder
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.LootyFactory
+import org.bukkit.FluidCollisionMode
+import org.bukkit.block.Biome
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -40,7 +43,16 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             }
             "map" {
                 blockMap.toMutableMap().clear()
-                blockMap = createBlockMap()
+                createBlockMap()
+            }
+            "biome" {
+                playerAction {
+                    val block = player.rayTraceBlocks(10.0, FluidCollisionMode.NEVER)?.hitBlock ?: return@playerAction
+                    broadcast(block.biome)
+                    block.biome = Biome.NETHER_WASTES
+                    block.world.refreshChunk(block.chunk.x, block.chunk.z)
+                    broadcast(block.biome)
+                }
             }
         }
     }
