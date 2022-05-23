@@ -3,7 +3,10 @@ package com.mineinabyss.blocky.helpers
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyLight
+import com.mineinabyss.blocky.components.BlockySound
 import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
@@ -30,12 +33,13 @@ fun fixClientsideUpdate(blockLoc: Location) {
 }
 
 fun breakTripwireBlock(block: Block, player: Player?) {
-    if (!block.hasBlockyInfo || !block.isBlockyBlock) return
+    val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
+    if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
     block.state.update(true, false)
 
-    if (block.hasBlockySound) block.world.playSound(block.location, block.blockySound!!.placeSound, 1.0f, 0.8f)
-    if (block.hasBlockyLight) removeBlockLight(block.location)
-    if (block.hasBlockyDrops) handleBlockyDrops(block, player)
+    if (gearyBlock.has<BlockySound>()) block.world.playSound(block.location, gearyBlock.get<BlockySound>()!!.placeSound, 1.0f, 0.8f)
+    if (gearyBlock.has<BlockyLight>()) removeBlockLight(block.location)
+    if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
 
     blockyPlugin.launch {

@@ -1,7 +1,9 @@
 package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
@@ -21,8 +23,8 @@ object BlockyTypeQuery : GearyQuery() {
     }
 }
 
-val blockyQuery = BlockyTypeQuery.filter { it.entity.hasBlockyInfo }.map { it.key.toString() }
+val blockyQuery = BlockyTypeQuery.filter { it.entity.has<BlockyInfo>() }.map { it.key.toString() }
 val blockyQueryBlocks =
     BlockyTypeQuery.filter {
-        it.entity.isBlockyBlock && it.entity.blockyBlock!!.blockType != BlockType.GROUND
+        it.entity.has<BlockyBlock>() && it.entity.get<BlockyBlock>()!!.blockType != BlockType.GROUND
     }.map { it.key.toString() }

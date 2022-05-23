@@ -32,15 +32,16 @@ val REPLACEABLE_BLOCKS =
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
 
-    if (prefab.hasBlockySound) block.world.playSound(block.location, prefab.blockySound!!.breakSound, 1.0f, 1.0f)
-    if (prefab.hasBlockyLight) removeBlockLight(block.location)
-    if (prefab.hasBlockyDrops) handleBlockyDrops(block, player)
+    if (prefab.has<BlockySound>()) block.world.playSound(block.location, prefab.get<BlockySound>()!!.breakSound, 1.0f, 1.0f)
+    if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
+    if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
-    if (!block.isBlockyBlock) return
+    val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
+    if (!gearyBlock.has<BlockyBlock>()) return
 
-    block.blockyInfo?.blockDrop?.map {
+    gearyBlock.get<BlockyInfo>()?.blockDrop?.map {
         val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
@@ -68,12 +69,14 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
         }
 
     return BlockyTypeQuery.firstOrNull {
-        if (it.entity.isDirectional) {
-            (it.entity.directional?.yBlockId == blockMap[blockData] ||
-                    it.entity.directional?.xBlockId == blockMap[blockData] ||
-                    it.entity.directional?.zBlockId == blockMap[blockData]) &&
-                    it.entity.blockyBlock?.blockType == type
-        } else it.entity.blockyBlock?.blockId == blockMap[blockData] && it.entity.blockyBlock?.blockType == type
+        val blockyBlock = it.entity.get<BlockyBlock>()
+        if (it.entity.has<Directional>()) {
+            val directional = it.entity.get<BlockyDirectional>()
+            (directional?.yBlockId == blockMap[blockData] ||
+                    directional?.xBlockId == blockMap[blockData] ||
+                    directional?.zBlockId == blockMap[blockData]) &&
+                    blockyBlock?.blockType == type
+        } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
     }?.key ?: return null
 }
 
@@ -371,10 +374,10 @@ fun createBlockMap(): Map<BlockData, Int> {
 }
 
 fun GearyEntity.getDirectionalId(face: BlockFace): Int? = when {
-    !isDirectional -> blockyBlock?.blockId
-    directional?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN) -> directional?.yBlockId
-    directional?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH) -> directional?.xBlockId
-    directional?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST) -> directional?.zBlockId
+    !has<BlockyDirectional>() -> get<BlockyBlock>()?.blockId
+    get<BlockyDirectional>()?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN) -> get<BlockyDirectional>()?.yBlockId
+    get<BlockyDirectional>()?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH) -> get<BlockyDirectional>()?.xBlockId
+    get<BlockyDirectional>()?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST) -> get<BlockyDirectional>()?.zBlockId
     else -> null
 }
 

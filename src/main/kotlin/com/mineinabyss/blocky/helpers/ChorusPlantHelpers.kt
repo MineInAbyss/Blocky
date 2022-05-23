@@ -1,9 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.components.blockyBlock
-import com.mineinabyss.blocky.components.directional
-import com.mineinabyss.blocky.components.isDirectional
 import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.Material
 import org.bukkit.block.BlockFace

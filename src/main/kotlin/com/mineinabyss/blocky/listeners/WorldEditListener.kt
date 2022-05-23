@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.blockyBlock
+import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.helpers.getBlockyNoteBlock
 import com.mineinabyss.blocky.helpers.getBlockyTransparent
 import com.mineinabyss.blocky.helpers.getBlockyTripWire
@@ -31,10 +31,10 @@ class WorldEditListener : Listener {
             .replace("[direction=south]", "")
             .replace("[direction=west]", "")
             .replace("[direction=east]", "").toMCKey().toPrefabKey()).toEntity() ?: return
-        val type = prefab.blockyBlock?.blockType ?: return
+        val type = prefab.get<BlockyBlock>()?.blockType ?: return
         val data =
             if (type == BlockType.GROUND) {
-                prefab.blockyBlock!!.getBlockyTripWire()
+                prefab.get<BlockyBlock>()!!.getBlockyTripWire()
             }
             else if (argId.endsWith("[direction=up]")) {
                 if (type == BlockType.CUBE)

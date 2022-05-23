@@ -53,7 +53,7 @@ class BlockyTripwireListener : Listener {
             block.state.update(true, false)
             blockAgainst.state.update(true, false)
 
-            if (itemInHand.toGearyOrNull(player)?.isBlockyBlock != true)
+            if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true)
                 block.setBlockData(Bukkit.createBlockData(Material.TRIPWIRE), false)
             blockyPlugin.launch {
                 delay(1)
@@ -68,7 +68,7 @@ class BlockyTripwireListener : Listener {
             if (hand != EquipmentSlot.HAND) return
 
             val item = item ?: return
-            val blockyBlock = item.toGearyOrNull(player)?.blockyBlock ?: return
+            val blockyBlock = item.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
             var type = item.type
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
@@ -97,7 +97,7 @@ class BlockyTripwireListener : Listener {
         val blockAbove = block.getRelative(BlockFace.UP)
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type == Material.TRIPWIRE) {
-                if (!block.isBlockyBlock && player.gameMode != GameMode.CREATIVE)
+                if (block.getPrefabFromBlock()?.toEntity()?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE)
                     block.drops.forEach {
                         player.world.dropItemNaturally(block.location, it)
                     }
@@ -136,27 +136,24 @@ class BlockyTripwireListener : Listener {
         if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
 
         // Fixes tripwire updating when placing blocks next to it
-        if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.isBlockyBlock != true) {
+        if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
             placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
             fixClientsideUpdate(clickedBlock!!.location)
         }
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
-        val wireBlock = blockyWire.blockyBlock ?: return
+        val wireBlock = blockyWire.get<BlockyBlock>() ?: return
         if (wireBlock.blockType != BlockType.GROUND) return
-        if (!blockyWire.hasBlockyInfo) return
+        if (!blockyWire.has<BlockyInfo>()) return
 
-        val lightLevel = blockyWire.blockyLight?.lightLevel
+        val lightLevel = blockyWire.get<BlockyLight>()?.lightLevel
         val placedWire =
             placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
-        if (blockyWire.hasBlockySound) placedWire.world.playSound(
-            placedWire.location,
-            blockyWire.blockySound!!.placeSound,
-            1.0f,
-            0.8f
-        )
-        if (blockyWire.hasBlockyLight) createBlockLight(placedWire.location, lightLevel!!)
+        if (blockyWire.has<BlockySound>())
+            placedWire.world.playSound(placedWire.location, blockyWire.get<BlockySound>()!!.placeSound, 1.0f, 0.8f)
+        if (blockyWire.has<BlockyLight>())
+            createBlockLight(placedWire.location, lightLevel!!)
 
         blockyPlugin.launch {
             delay(1)
