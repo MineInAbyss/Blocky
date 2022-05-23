@@ -147,7 +147,6 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
     if (data is Waterlogged) handleWaterlogged(face)
     if (data is Ageable) {
-        Material.NETHER_SPROUTS
         return if ((type == Material.WEEPING_VINES || type == Material.WEEPING_VINES_PLANT) && face != BlockFace.DOWN) false
         else if ((type == Material.TWISTING_VINES || type == Material.TWISTING_VINES_PLANT) && face != BlockFace.UP) false
         else false
@@ -321,7 +320,6 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
             }
         }
         is Attachable -> {
-            Material.SOUL_SOIL
             data.isAttached = true
         }
     }
@@ -382,10 +380,10 @@ fun GearyEntity.getDirectionalId(face: BlockFace): Int? = when {
 
 fun Block.getLeftBlock(player: Player): Block {
     val leftBlock = when (player.facing) {
-        BlockFace.NORTH -> player.world.getBlockAt(location.clone().subtract(1.0, 0.0, 0.0))
-        BlockFace.SOUTH -> player.world.getBlockAt(location.clone().add(1.0, 0.0, 0.0))
-        BlockFace.WEST -> player.world.getBlockAt(location.clone().add(0.0, 0.0, 1.0))
-        BlockFace.EAST -> player.world.getBlockAt(location.clone().subtract(0.0, 0.0, 1.0))
+        BlockFace.NORTH -> getRelative(BlockFace.WEST)
+        BlockFace.SOUTH -> getRelative(BlockFace.EAST)
+        BlockFace.WEST -> getRelative(BlockFace.SOUTH)
+        BlockFace.EAST -> getRelative(BlockFace.NORTH)
         else -> this
     }
     return if (leftBlock.blockData is Chest && (leftBlock.blockData as Chest).facing != player.facing.oppositeFace) this
@@ -394,10 +392,10 @@ fun Block.getLeftBlock(player: Player): Block {
 
 fun Block.getRightBlock(player: Player): Block {
     val rightBlock = when (player.facing) {
-        BlockFace.NORTH -> player.world.getBlockAt(location.clone().add(1.0, 0.0, 0.0))
-        BlockFace.SOUTH -> player.world.getBlockAt(location.clone().subtract(1.0, 0.0, 0.0))
-        BlockFace.WEST -> player.world.getBlockAt(location.clone().subtract(0.0, 0.0, 1.0))
-        BlockFace.EAST -> player.world.getBlockAt(location.clone().add(0.0, 0.0, 1.0))
+        BlockFace.NORTH -> getRelative(BlockFace.EAST)
+        BlockFace.SOUTH -> getRelative(BlockFace.WEST)
+        BlockFace.WEST -> getRelative(BlockFace.NORTH)
+        BlockFace.EAST -> getRelative(BlockFace.SOUTH)
         else -> this
     }
     return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) this

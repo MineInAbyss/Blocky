@@ -67,7 +67,7 @@ class BlockyItemFrameListener : Listener {
     @EventHandler
     fun HangingBreakEvent.onBreakHanging() {
         if (cause == HangingBreakEvent.RemoveCause.ENTITY) return
-        if (entity.toGearyOrNull()?.blockyEntity?.entityType == EntityType.ITEM_FRAME) isCancelled = true
+        if (entity.toGearyOrNull() != null) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
