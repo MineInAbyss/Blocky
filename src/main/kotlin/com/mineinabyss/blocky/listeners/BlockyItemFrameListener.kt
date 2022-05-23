@@ -58,7 +58,7 @@ class BlockyItemFrameListener : Listener {
             return
         }
 
-        gearyItem.placeBlockyFrame(frameRotation, frameYaw, blockFace, targetBlock.location)
+        gearyItem.placeBlockyFrame(frameRotation, frameYaw, blockFace, targetBlock.location, player)
         player.swingMainHand()
         if (player.gameMode != GameMode.CREATIVE) item!!.subtract()
     }
@@ -76,7 +76,9 @@ class BlockyItemFrameListener : Listener {
         val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 10.0)
         frames.forEach { frame ->
             val gearyFrame = frame.toGeary()
-            if (frame.checkFrameHitbox(block.location)) {
+            val gearyItem = frame.item.toGearyOrNull(player) ?: return@forEach
+
+            if (gearyFrame.checkFrameHitbox(block.location)) {
                 gearyFrame.get<BlockyBarrierHitbox>()?.barriers?.forEach { barrierLoc ->
                     barrierLoc.block.type = Material.AIR
                     removeBlockLight(barrierLoc)
@@ -85,7 +87,7 @@ class BlockyItemFrameListener : Listener {
                     gearyFrame.get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
                         seatLoc.getNearbyEntitiesByType(
                             ArmorStand::class.java,
-                            gearyFrame.get<BlockySeat>()?.heightOffset?.times(2) ?: return@forEach
+                            gearyItem.get<BlockySeat>()?.heightOffset?.times(2) ?: return@forEach
                         ).forEach seat@{ stand ->
                             if (stand.toGeary().has<BlockySeat>()) stand.remove()
                             return@seat
@@ -124,7 +126,7 @@ class BlockyItemFrameListener : Listener {
 
         val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 20.0)
         frames.forEach { frame ->
-            if (frame.checkFrameHitbox(block.location) && frame.toGeary().has<BlockySeatLocations>()) {
+            if (frame.toGeary().checkFrameHitbox(block.location) && frame.toGeary().has<BlockySeatLocations>()) {
                 val stand =
                     block.location.getNearbyEntitiesByType(ArmorStand::class.java, 1.0).firstOrNull() ?: return@forEach
                 if (stand.passengers.isEmpty()) stand.addPassenger(player)

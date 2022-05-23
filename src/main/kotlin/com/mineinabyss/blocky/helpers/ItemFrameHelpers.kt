@@ -4,11 +4,11 @@ import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
+import com.mineinabyss.looty.tracking.toGearyOrNull
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.Material
@@ -17,6 +17,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemFrame
+import org.bukkit.entity.Player
 
 fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
     val type = placedAgainst.type
@@ -47,7 +48,13 @@ fun BlockyEntity.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     else collisionHitbox.let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
 }
 
-fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFace, loc: Location): ItemFrame? {
+fun GearyEntity.placeBlockyFrame(
+    rotation: Rotation,
+    yaw: Float,
+    facing: BlockFace,
+    loc: Location,
+    player: Player
+): ItemFrame? {
     if (!has<BlockyEntity>()) return null
     if (get<BlockyEntity>()?.hasEnoughSpace(loc, yaw) != true) return null
     if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock()) return null
@@ -64,31 +71,38 @@ fun GearyEntity.placeBlockyFrame(rotation: Rotation, yaw: Float, facing: BlockFa
             setRotation(rotation)
             setFacingDirection(facing, true)
         }
-    val gearyFrame = newFrame?.toGearyOrNull() ?: return null
-    gearyFrame.setAllPersisting(getComponents())
+    val gearyItem = newFrame?.item?.toGearyOrNull(player) ?: return null
+    val gearyFrame = newFrame.toGeary()
+    gearyFrame.getOrSetPersisting { BlockySeatLocations() }
+    gearyFrame.getOrSetPersisting { BlockyBarrierHitbox() }
 
-    if (gearyFrame.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
-        getLocations(yaw, loc, gearyFrame.get<BlockyEntity>()?.collisionHitbox!!).forEach {adjacentLoc ->
-            gearyFrame.setPersisting(BlockySeatLocations)
+    if (gearyItem.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
+        getLocations(yaw, loc, gearyItem.get<BlockyEntity>()?.collisionHitbox!!).forEach { adjacentLoc ->
             val block = adjacentLoc.block
             block.setType(Material.BARRIER, false)
             gearyFrame.get<BlockyBarrierHitbox>()?.barriers?.add(block.location)
 
-            if (gearyFrame.has<BlockyLight>())
-                createBlockLight(adjacentLoc, gearyFrame.get<BlockyLight>()!!.lightLevel)
-            if (gearyFrame.has<BlockySeat>()) {
-                gearyFrame.getOrSetPersisting { BlockySeatLocations() }
-                spawnSeat(adjacentLoc, gearyFrame.get<BlockySeat>()!!.yaw, gearyFrame.get<BlockySeat>()!!.heightOffset)
+            if (gearyItem.has<BlockyLight>())
+                createBlockLight(adjacentLoc, gearyItem.get<BlockyLight>()!!.lightLevel)
+            if (gearyItem.has<BlockySeat>()) {
+                gearyItem.get<BlockySeat>()?.heightOffset?.let {
+                    gearyItem.get<BlockySeat>()?.yaw?.let { it1 ->
+                        spawnSeat(
+                            adjacentLoc, it1,
+                            it
+                        )
+                    }
+                }
                 gearyFrame.get<BlockySeatLocations>()?.seats?.add(adjacentLoc)
             }
         }
-    } else if (gearyFrame.has<BlockyLight>()) createBlockLight(loc, gearyFrame.get<BlockyLight>()!!.lightLevel)
+    } else if (gearyItem.has<BlockyLight>()) createBlockLight(loc, gearyItem.get<BlockyLight>()!!.lightLevel)
 
     return newFrame
 }
 
-fun ItemFrame.checkFrameHitbox(destination: Location): Boolean {
-    val barrierBox = toGeary().get<BlockyBarrierHitbox>()?.barriers ?: return false
+fun GearyEntity.checkFrameHitbox(destination: Location): Boolean {
+    val barrierBox = get<BlockyBarrierHitbox>()?.barriers ?: return false
     barrierBox.forEach { barrierLoc -> if (barrierLoc == destination) return true }
     return false
 }
