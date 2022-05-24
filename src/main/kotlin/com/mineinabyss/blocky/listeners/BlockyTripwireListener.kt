@@ -94,7 +94,6 @@ class BlockyTripwireListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
-        //val blockAbove = block.getRelative(BlockFace.UP)
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type == Material.TRIPWIRE) {
                 if (block.getPrefabFromBlock()?.toEntity()
@@ -109,7 +108,6 @@ class BlockyTripwireListener : Listener {
         }
 
         if (block.type == Material.TRIPWIRE) breakTripwireBlock(block, player)
-        //if (blockAbove.type == Material.TRIPWIRE) breakTripwireBlock(blockAbove, player)
         else return
 
         isDropItems = false
@@ -129,18 +127,16 @@ class BlockyTripwireListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockFromToEvent.onWaterUpdate() {
-        if (face == BlockFace.DOWN) {
+        if (block.isLiquid && face == BlockFace.DOWN) {
             BlockFace.values().forEach {
+                val changed = toBlock.getRelative(it)
                 if (it == BlockFace.DOWN || it == BlockFace.UP || it == BlockFace.SELF) return@forEach
-                if (toBlock.getRelative(it).type == Material.AIR) return@forEach
+                if (changed.type != Material.TRIPWIRE) return@forEach
 
-                val b = toBlock.getRelative(it)
-                if (b.type == Material.TRIPWIRE) {
-                    val data = b.blockData.clone()
-                    blockyPlugin.launch {
-                        delay(1)
-                        b.setBlockData(data, false)
-                    }
+                val data = changed.blockData.clone()
+                blockyPlugin.launch {
+                    delay(1)
+                    changed.setBlockData(data, false)
                 }
             }
         }
