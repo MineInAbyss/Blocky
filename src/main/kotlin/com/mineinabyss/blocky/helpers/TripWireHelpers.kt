@@ -11,6 +11,7 @@ import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.entity.Player
@@ -41,11 +42,12 @@ fun breakTripwireBlock(block: Block, player: Player?) {
     if (gearyBlock.has<BlockyLight>()) removeBlockLight(block.location)
     if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
-
     blockyPlugin.launch {
         delay(1)
         fixClientsideUpdate(block.location)
     }
+    if (block.getRelative(BlockFace.UP).type == Material.TRIPWIRE)
+        breakTripwireBlock(block.getRelative(BlockFace.UP), null)
 }
 
 fun isStandingInside(player: Player, block: Block): Boolean {
@@ -55,5 +57,3 @@ fun isStandingInside(player: Player, block: Block): Boolean {
             || playerLocation.blockY + 1 == blockLocation.blockY)
             && playerLocation.blockZ == blockLocation.blockZ)
 }
-
-

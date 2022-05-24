@@ -34,7 +34,7 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun BlockPhysicsEvent.cancelTripwirePhysics() {
         if (changedType == Material.TRIPWIRE) {
             isCancelled = true
@@ -94,10 +94,12 @@ class BlockyTripwireListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
-        val blockAbove = block.getRelative(BlockFace.UP)
+        //val blockAbove = block.getRelative(BlockFace.UP)
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type == Material.TRIPWIRE) {
-                if (block.getPrefabFromBlock()?.toEntity()?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE)
+                if (block.getPrefabFromBlock()?.toEntity()
+                        ?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE
+                )
                     block.drops.forEach {
                         player.world.dropItemNaturally(block.location, it)
                     }
@@ -107,7 +109,7 @@ class BlockyTripwireListener : Listener {
         }
 
         if (block.type == Material.TRIPWIRE) breakTripwireBlock(block, player)
-        if (blockAbove.type == Material.TRIPWIRE) breakTripwireBlock(blockAbove, player)
+        //if (blockAbove.type == Material.TRIPWIRE) breakTripwireBlock(blockAbove, player)
         else return
 
         isDropItems = false
@@ -122,6 +124,25 @@ class BlockyTripwireListener : Listener {
         if (block.type == Material.TRIPWIRE) {
             breakTripwireBlock(block, null)
             drops.removeIf { it.type == Material.STRING }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun BlockFromToEvent.onWaterUpdate() {
+        if (face == BlockFace.DOWN) {
+            BlockFace.values().forEach {
+                if (it == BlockFace.DOWN || it == BlockFace.UP || it == BlockFace.SELF) return@forEach
+                if (toBlock.getRelative(it).type == Material.AIR) return@forEach
+
+                val b = toBlock.getRelative(it)
+                if (b.type == Material.TRIPWIRE) {
+                    val data = b.blockData.clone()
+                    blockyPlugin.launch {
+                        delay(1)
+                        b.setBlockData(data, false)
+                    }
+                }
+            }
         }
     }
 
