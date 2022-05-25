@@ -82,10 +82,6 @@ class BlockyTripwireListener : Listener {
                         blockFace,
                         blockyBlock.getBlockyTripWire()
                     )
-                    blockyPlugin.launch {
-                        delay(1)
-                        fixClientsideUpdate(block.location)
-                    }
                 } ?: return
             }
             player.swingMainHand()
@@ -95,7 +91,7 @@ class BlockyTripwireListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         BlockFace.values().forEach { face ->
-            if (block.getRelative(face).type == Material.TRIPWIRE) {
+            if (block.getRelative(face).type == Material.TRIPWIRE && block.type != Material.TRIPWIRE) {
                 if (block.getPrefabFromBlock()?.toEntity()
                         ?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE
                 )
@@ -103,18 +99,16 @@ class BlockyTripwireListener : Listener {
                         player.world.dropItemNaturally(block.location, it)
                     }
                 block.setType(Material.AIR, false)
-                fixClientsideUpdate(block.location)
+                blockyPlugin.launch {
+                    delay(1)
+                    fixClientsideUpdate(block.location)
+                }
             }
         }
 
-        if (block.type == Material.TRIPWIRE) breakTripwireBlock(block, player)
-        else return
-
+        if (block.type != Material.TRIPWIRE) return
+        breakTripwireBlock(block, player)
         isDropItems = false
-        blockyPlugin.launch {
-            delay(1)
-            fixClientsideUpdate(block.location)
-        }
     }
 
     @EventHandler
@@ -154,8 +148,11 @@ class BlockyTripwireListener : Listener {
 
         // Fixes tripwire updating when placing blocks next to it
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
-            placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
-            fixClientsideUpdate(clickedBlock!!.location)
+            BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
+                if (clickedBlock?.getRelative(it)?.getPrefabFromBlock()?.toEntity() == null) return@forEach
+                placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
+                fixClientsideUpdate(clickedBlock!!.location)
+            }
         }
 
         val blockyWire = item?.toGearyOrNull(player) ?: return

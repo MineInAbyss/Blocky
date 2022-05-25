@@ -154,14 +154,14 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
         else if ((type == Material.TWISTING_VINES || type == Material.TWISTING_VINES_PLANT) && face != BlockFace.UP) false
         else false
     }
-    if (data is Door || data is Bed || data is Chest || data is Bisected)
+    if ((data is Door || data is Bed || data is Chest || data is Bisected) && data !is Stairs && data !is TrapDoor)
         if (!handleDoubleBlocks(player)) return false
     if ((state is Skull || state is Sign || type.toString()
             .contains("TORCH")) && face != BlockFace.DOWN && face != BlockFace.UP
     )
         handleWallAttachable(player, face)
 
-    if (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable) {
+    if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
         if (data is MultipleFacing && face == BlockFace.UP) return false
         if (data is CoralWallFan && face == BlockFace.DOWN) return false
         handleDirectionalBlocks(face)
@@ -189,7 +189,7 @@ private fun Block.handleWaterlogged(face: BlockFace) {
     val data = blockData
     when (data) {
         is Waterlogged -> {
-            if (data is Directional) data.facing = face
+            if (data is Directional && data !is Stairs) data.facing = face
             data.isWaterlogged = false
         }
     }
@@ -278,7 +278,7 @@ private fun Block.handleHalfBlocks(player: Player) {
         }
         is Stairs -> {
             data.facing = player.facing
-            if (eye.hitPosition.y <= eye.hitBlock?.location?.clone()?.apply { y += 0.75 }?.y!!)
+            if (eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += .6 }?.y!!)
                 data.half = Bisected.Half.BOTTOM
             else data.half = Bisected.Half.TOP
         }
