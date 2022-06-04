@@ -40,6 +40,7 @@ class BlockyPlugin : JavaPlugin() {
             BlockyChorusPlantListener(),
             BlockyItemFrameListener(),
             BlockyMiddleClickListener(),
+            BlockyNMSListener(),
             WorldEditListener()
         )
 

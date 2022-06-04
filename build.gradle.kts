@@ -3,6 +3,7 @@ plugins {
     id("com.mineinabyss.conventions.copyjar")
     id("com.mineinabyss.conventions.publication")
     id("com.mineinabyss.conventions.papermc")
+    id ("com.mineinabyss.conventions.nms")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
 }
@@ -47,6 +48,7 @@ dependencies {
     implementation(blockylibs.minecraft.plugin.morepersistentdatatypes)
 
     implementation(libs.idofront.core)
+    implementation(libs.idofront.nms)
     implementation(libs.idofront.autoscan) {
         exclude("org.reflections")
     }
