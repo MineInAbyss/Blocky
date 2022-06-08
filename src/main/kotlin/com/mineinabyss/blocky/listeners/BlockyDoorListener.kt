@@ -59,27 +59,60 @@ class BlockyDoorListener : Listener {
         if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
     }
 
+    // Sets normal doors to powered=false when placed next to a redstone source
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockPlaceEvent.onPlaceDoor() {
+        if (itemInHand.toGearyOrNull(player) == null) {
+            val data = blockPlaced.blockData.clone()
+            when (data) {
+                is Door -> {
+                    data.facing = player.facing.oppositeFace
+                    data.isOpen = (blockPlaced.isBlockPowered || blockPlaced.isBlockIndirectlyPowered)
+                }
+                is TrapDoor -> {
+                    data.facing = player.facing.oppositeFace
+                    data.isOpen = (blockPlaced.isBlockPowered || blockPlaced.isBlockIndirectlyPowered)
+                }
+                is Gate -> {
+                    data.facing = player.facing.oppositeFace
+                    data.isOpen = (blockPlaced.isBlockPowered || blockPlaced.isBlockIndirectlyPowered)
+                    data.isInWall = blockPlaced.isConnectedToWall()
+                }
+                is Powerable -> {
+                    data.isPowered = false
+                }
+            }
+            blockPlaced.setBlockData(data, false)
+        }
+    }
+
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceBlockyDoor() {
         itemInHand.toGearyOrNull(player)?.with { blockyBlock: BlockyBlock ->
-
             when (blockyBlock.blockType) {
                 BlockType.DOOR -> {
                     getDoorType(blockyBlock.blockId)?.let { block.setType(it, false) } ?: return
-                    block.setBlockData(blockyBlock.getBlockyDoor(), false)
+                    val data = blockyBlock.getBlockyDoor()
+                    data.isOpen = (blockPlaced.isBlockPowered || blockPlaced.isBlockIndirectlyPowered)
+                    block.setBlockData(data, false)
                 }
                 BlockType.TRAPDOOR -> {
                     getTrapDoorType(blockyBlock.blockId)?.let { block.setType(it, false) } ?: return
-                    block.setBlockData(blockyBlock.getBlockyTrapDoor(), false)
+                    val data = blockyBlock.getBlockyTrapDoor()
+                    data.isOpen = (blockPlaced.isBlockPowered || blockPlaced.isBlockIndirectlyPowered)
+                    block.setBlockData(data, false)
                 }
                 BlockType.FENCEGATE -> {
                     getFenceGate(blockyBlock.blockId)?.let { block.setType(it, false) } ?: return
-                    block.setBlockData(blockyBlock.getBlockyFenceGate(), false)
+                    val data = blockyBlock.getBlockyFenceGate()
+                    data.isOpen = (blockPlaced.isBlockPowered || blockPlaced.isBlockIndirectlyPowered)
+                    data.isInWall = block.isConnectedToWall()
+                    block.setBlockData(data, false)
                 }
                 else -> return
             }
-        } ?: return
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

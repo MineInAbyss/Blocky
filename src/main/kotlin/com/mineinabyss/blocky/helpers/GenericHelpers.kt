@@ -23,12 +23,6 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import kotlin.random.Random
 
-val REPLACEABLE_BLOCKS =
-    listOf(
-        Material.SNOW, Material.VINE, Material.GRASS, Material.TALL_GRASS, Material.SEAGRASS, Material.FERN,
-        Material.LARGE_FERN
-    )
-
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
 
@@ -40,7 +34,9 @@ fun breakBlockyBlock(block: Block, player: Player?) {
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
+    if (player?.gameMode == GameMode.CREATIVE) return
 
+    block.drops.clear()
     gearyBlock.get<BlockyInfo>()?.blockDrop?.map {
         val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
@@ -49,7 +45,6 @@ fun handleBlockyDrops(block: Block, player: Player?) {
                 it.silkTouchedDrop.toItemStack()
             else it.item.toItemStack()
 
-        if (player?.gameMode == GameMode.CREATIVE) return
         val amount =
             if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
                 tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
@@ -92,7 +87,7 @@ fun placeBlockyBlock(
     newData: BlockData
 ): Block? {
     val targetBlock: Block
-    if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
+    if (against.isReplaceable) targetBlock = against
     else {
         targetBlock = against.getRelative(face)
         if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
@@ -462,46 +457,4 @@ fun Block.getRightBlock(player: Player): Block {
     }
     return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) this
     else rightBlock
-}
-
-fun getDoorType(i: Int) : Material? {
-    return when (i) {
-        1 -> Material.ACACIA_DOOR
-        2 -> Material.BIRCH_DOOR
-        3 -> Material.CRIMSON_DOOR
-        4 -> Material.DARK_OAK_DOOR
-        5 -> Material.JUNGLE_DOOR
-        6 -> Material.OAK_DOOR
-        7 -> Material.SPRUCE_DOOR
-        8 -> Material.WARPED_DOOR
-        else -> null
-    }
-}
-
-fun getTrapDoorType(i: Int) : Material? {
-    return when (i) {
-        1 -> Material.ACACIA_TRAPDOOR
-        2 -> Material.BIRCH_TRAPDOOR
-        3 -> Material.CRIMSON_TRAPDOOR
-        4 -> Material.DARK_OAK_TRAPDOOR
-        5 -> Material.JUNGLE_TRAPDOOR
-        6 -> Material.OAK_TRAPDOOR
-        7 -> Material.SPRUCE_TRAPDOOR
-        8 -> Material.WARPED_TRAPDOOR
-        else -> null
-    }
-}
-
-fun getFenceGate(i: Int) : Material? {
-    return when (i) {
-        1 -> Material.ACACIA_FENCE_GATE
-        2 -> Material.BIRCH_FENCE_GATE
-        3 -> Material.CRIMSON_FENCE_GATE
-        4 -> Material.DARK_OAK_FENCE_GATE
-        5 -> Material.JUNGLE_FENCE_GATE
-        6 -> Material.OAK_FENCE_GATE
-        7 -> Material.SPRUCE_FENCE_GATE
-        8 -> Material.WARPED_FENCE_GATE
-        else -> null
-    }
 }

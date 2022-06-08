@@ -8,7 +8,6 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.Powerable
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -125,13 +124,6 @@ class BlockyGenericListener : Listener {
                 itemInHand.type == Material.NOTE_BLOCK ||
                 itemInHand.type == Material.CHORUS_PLANT
             ) block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
-
-            if (blockPlaced.blockData is Powerable) {
-                // Sets normal doors to powered=false when placed next to a redstone source
-                val data = blockPlaced.blockData.clone() as Powerable
-                data.isPowered = false
-                blockPlaced.setBlockData(data, false)
-            }
         }
 
 
