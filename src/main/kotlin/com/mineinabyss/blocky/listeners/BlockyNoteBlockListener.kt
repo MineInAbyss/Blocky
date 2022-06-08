@@ -40,7 +40,7 @@ class BlockyNoteBlockListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGH)
     fun BlockPhysicsEvent.onBlockPhysics() {
         val aboveBlock = block.getRelative(BlockFace.UP)
         if (aboveBlock.type == Material.NOTE_BLOCK) {

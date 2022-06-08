@@ -35,8 +35,7 @@ class WorldEditListener : Listener {
         val data =
             if (type == BlockType.GROUND) {
                 prefab.get<BlockyBlock>()!!.getBlockyTripWire()
-            }
-            else if (argId.endsWith("[direction=up]")) {
+            } else if (argId.endsWith("[direction=up]")) {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.UP)
                 else prefab.getBlockyTransparent(BlockFace.UP)
@@ -99,6 +98,8 @@ class WorldEditListener : Listener {
                         data.isDisarmed,
                         data.isPowered
                     )
+                else -> message
+
             }
         message = message.replace(argId, blockData, true)
     }

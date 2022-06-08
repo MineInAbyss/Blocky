@@ -61,10 +61,13 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 
 fun Block.getPrefabFromBlock(): PrefabKey? {
     val type =
-        when (type) {
-            Material.NOTE_BLOCK -> BlockType.CUBE
-            Material.TRIPWIRE -> BlockType.GROUND
-            Material.CHORUS_PLANT -> BlockType.TRANSPARENT
+        when {
+            type == Material.NOTE_BLOCK -> BlockType.CUBE
+            type == Material.TRIPWIRE -> BlockType.GROUND
+            type == Material.CHORUS_PLANT -> BlockType.TRANSPARENT
+            blockData is Door -> BlockType.DOOR
+            blockData is TrapDoor -> BlockType.TRAPDOOR
+            blockData is Gate -> BlockType.FENCEGATE
             else -> return null
         }
 
@@ -182,6 +185,9 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
         data.isHanging = true
         setBlockData(data, false)
     }
+
+    if (data is Powerable && (data is Door || data is TrapDoor || data is Gate))
+        if (data.isPowered) return false
     return true
 }
 
@@ -370,6 +376,59 @@ fun createBlockMap(): Map<BlockData, Int> {
         blockMap.putIfAbsent(chorusData, k)
     }
 
+    // Calculates door states
+    for (l in 1..8) {
+        if (getDoorType(l) == null) continue
+
+        val doorData = Bukkit.createBlockData(getDoorType(l)!!) as Door
+        for (i in 1..32) {
+            if (i and 1 == 1) doorData.facing = BlockFace.NORTH
+            if (i shr 1 and 1 == 1) doorData.facing = BlockFace.SOUTH
+            if (i shr 2 and 1 == 1) doorData.facing = BlockFace.WEST
+            if (i shr 3 and 1 == 1) doorData.facing = BlockFace.EAST
+            if (i in (1..32).step(4)) doorData.half = Bisected.Half.BOTTOM else doorData.half = Bisected.Half.TOP
+            if (i in (1..32).step(2)) doorData.hinge = Door.Hinge.LEFT else doorData.hinge = Door.Hinge.RIGHT
+            doorData.isOpen = i in (1..32).step(2)
+        }
+        doorData.isPowered = true
+
+        blockMap.putIfAbsent(doorData, l)
+    }
+
+    // Calculates trapdoor states
+    for (m in 1..8) {
+        if (getTrapDoorType(m) == null) continue
+        val trapDoorData = Bukkit.createBlockData(getTrapDoorType(m)!!) as TrapDoor
+        for (i in 1..32) {
+            if (i and 1 == 1) trapDoorData.facing = BlockFace.NORTH
+            if (i shr 1 and 1 == 1) trapDoorData.facing = BlockFace.SOUTH
+            if (i shr 2 and 1 == 1) trapDoorData.facing = BlockFace.WEST
+            if (i shr 3 and 1 == 1) trapDoorData.facing = BlockFace.EAST
+            if (i in (1..32).step(4)) trapDoorData.half = Bisected.Half.BOTTOM else trapDoorData.half = Bisected.Half.TOP
+            trapDoorData.isOpen = i in (1..32).step(2)
+        }
+        trapDoorData.isPowered = true
+
+        blockMap.putIfAbsent(trapDoorData, m)
+    }
+
+    // Calculates fencegate states
+    for (n in 1..8) {
+        if (getFenceGate(n) == null) continue
+        val fenceGateData = Bukkit.createBlockData(getFenceGate(n)!!) as Gate
+        for (i in 1..32) {
+            if (i and 1 == 1) fenceGateData.facing = BlockFace.NORTH
+            if (i shr 1 and 1 == 1) fenceGateData.facing = BlockFace.SOUTH
+            if (i shr 2 and 1 == 1) fenceGateData.facing = BlockFace.WEST
+            if (i shr 3 and 1 == 1) fenceGateData.facing = BlockFace.EAST
+            fenceGateData.isOpen = i !in (1..32).step(1)
+            fenceGateData.isInWall = i in (1..32).step(2)
+        }
+        fenceGateData.isPowered = true
+
+        blockMap.putIfAbsent(fenceGateData, n)
+    }
+
     return blockMap
 }
 
@@ -403,4 +462,46 @@ fun Block.getRightBlock(player: Player): Block {
     }
     return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) this
     else rightBlock
+}
+
+fun getDoorType(i: Int) : Material? {
+    return when (i) {
+        1 -> Material.ACACIA_DOOR
+        2 -> Material.BIRCH_DOOR
+        3 -> Material.CRIMSON_DOOR
+        4 -> Material.DARK_OAK_DOOR
+        5 -> Material.JUNGLE_DOOR
+        6 -> Material.OAK_DOOR
+        7 -> Material.SPRUCE_DOOR
+        8 -> Material.WARPED_DOOR
+        else -> null
+    }
+}
+
+fun getTrapDoorType(i: Int) : Material? {
+    return when (i) {
+        1 -> Material.ACACIA_TRAPDOOR
+        2 -> Material.BIRCH_TRAPDOOR
+        3 -> Material.CRIMSON_TRAPDOOR
+        4 -> Material.DARK_OAK_TRAPDOOR
+        5 -> Material.JUNGLE_TRAPDOOR
+        6 -> Material.OAK_TRAPDOOR
+        7 -> Material.SPRUCE_TRAPDOOR
+        8 -> Material.WARPED_TRAPDOOR
+        else -> null
+    }
+}
+
+fun getFenceGate(i: Int) : Material? {
+    return when (i) {
+        1 -> Material.ACACIA_FENCE_GATE
+        2 -> Material.BIRCH_FENCE_GATE
+        3 -> Material.CRIMSON_FENCE_GATE
+        4 -> Material.DARK_OAK_FENCE_GATE
+        5 -> Material.JUNGLE_FENCE_GATE
+        6 -> Material.OAK_FENCE_GATE
+        7 -> Material.SPRUCE_FENCE_GATE
+        8 -> Material.WARPED_FENCE_GATE
+        else -> null
+    }
 }

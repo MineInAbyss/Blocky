@@ -8,6 +8,7 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.Powerable
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -119,12 +120,20 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true &&
-            itemInHand.type == Material.TRIPWIRE ||
-            itemInHand.type == Material.NOTE_BLOCK ||
-            itemInHand.type == Material.CHORUS_PLANT
-        )
-            block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+        if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
+            if (itemInHand.type == Material.TRIPWIRE ||
+                itemInHand.type == Material.NOTE_BLOCK ||
+                itemInHand.type == Material.CHORUS_PLANT
+            ) block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+
+            if (blockPlaced.blockData is Powerable) {
+                // Sets normal doors to powered=false when placed next to a redstone source
+                val data = blockPlaced.blockData.clone() as Powerable
+                data.isPowered = false
+                blockPlaced.setBlockData(data, false)
+            }
+        }
+
 
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
@@ -144,8 +153,10 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         val blockyInfo = block.getPrefabFromBlock()?.toEntity()?.get<BlockyInfo>() ?: return
+        val blockType = block.getPrefabFromBlock()?.toEntity()?.get<BlockyBlock>()?.blockType ?: return
 
-        if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
+        if (isCancelled || !isDropItems) return
+        if (blockType != BlockType.CUBE && blockType != BlockType.TRANSPARENT) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
         breakBlockyBlock(block, player)
         isDropItems = false
