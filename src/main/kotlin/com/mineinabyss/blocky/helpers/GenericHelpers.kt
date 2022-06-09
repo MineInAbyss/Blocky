@@ -384,10 +384,10 @@ fun createBlockMap(): Map<BlockData, Int> {
             if (i in (1..32).step(4)) doorData.half = Bisected.Half.BOTTOM else doorData.half = Bisected.Half.TOP
             if (i in (1..32).step(2)) doorData.hinge = Door.Hinge.LEFT else doorData.hinge = Door.Hinge.RIGHT
             doorData.isOpen = i in (1..32).step(2)
-        }
-        doorData.isPowered = true
+            doorData.isPowered = true
 
-        blockMap.putIfAbsent(doorData, l)
+            blockMap.putIfAbsent(doorData, l) // Match all of the different variants of 1 block to the same id
+        }
     }
 
     // Calculates trapdoor states
@@ -401,10 +401,10 @@ fun createBlockMap(): Map<BlockData, Int> {
             if (i shr 3 and 1 == 1) trapDoorData.facing = BlockFace.EAST
             if (i in (1..32).step(4)) trapDoorData.half = Bisected.Half.BOTTOM else trapDoorData.half = Bisected.Half.TOP
             trapDoorData.isOpen = i in (1..32).step(2)
-        }
-        trapDoorData.isPowered = true
+            trapDoorData.isPowered = true
 
-        blockMap.putIfAbsent(trapDoorData, m)
+            blockMap.putIfAbsent(trapDoorData, m) // Match all of the different variants of 1 block to the same id
+        }
     }
 
     // Calculates fencegate states
@@ -418,10 +418,20 @@ fun createBlockMap(): Map<BlockData, Int> {
             if (i shr 3 and 1 == 1) fenceGateData.facing = BlockFace.EAST
             fenceGateData.isOpen = i !in (1..32).step(1)
             fenceGateData.isInWall = i in (1..32).step(2)
-        }
-        fenceGateData.isPowered = true
+            fenceGateData.isPowered = true
 
-        blockMap.putIfAbsent(fenceGateData, n)
+            blockMap.putIfAbsent(fenceGateData, n) // Match all of the different variants of 1 block to the same id
+        }
+    }
+
+    // Calculate slab states
+    for (a in 1..1) {
+        val slabData = Bukkit.createBlockData(Material.PETRIFIED_OAK_SLAB) as Slab
+        for (b in 1..2) {
+            if (b == 1) slabData.type = Slab.Type.BOTTOM
+            else slabData.type = Slab.Type.TOP
+            blockMap.putIfAbsent(slabData, a) // Match all of the different variants of 1 block to the same id
+        }
     }
 
     return blockMap

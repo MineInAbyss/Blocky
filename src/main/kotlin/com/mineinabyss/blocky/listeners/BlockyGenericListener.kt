@@ -95,6 +95,7 @@ class BlockyGenericListener : Listener {
 
         val gearyItem = item?.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val blockyType = blockyBlock.blockType
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val blockySound = gearyItem.get<BlockySound>()
         val against = clickedBlock ?: return
@@ -103,14 +104,16 @@ class BlockyGenericListener : Listener {
         ) return
 
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.CUBE &&
-            blockyBlock.blockType != BlockType.TRANSPARENT
-        ) return
+        if (blockyType != BlockType.CUBE && blockyType != BlockType.TRANSPARENT && blockyType != BlockType.SLAB) return
 
-        val newData = if (blockyBlock.blockType == BlockType.TRANSPARENT)
-                gearyItem.getBlockyTransparent(blockFace)
-            else
-                gearyItem.getBlockyNoteBlock(blockFace)
+        val newData =
+            when (blockyType) {
+                BlockType.CUBE -> gearyItem.getBlockyNoteBlock(blockFace)
+                BlockType.TRANSPARENT -> gearyItem.getBlockyTransparent(blockFace)
+                BlockType.SLAB -> Bukkit.createBlockData(Material.PETRIFIED_OAK_SLAB)
+                else -> return
+            }
+
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, newData) ?: return
 
         if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f, 0.8f)
@@ -129,17 +132,16 @@ class BlockyGenericListener : Listener {
 
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val type = blockyBlock.blockType
         val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.UP
         if (!gearyItem.has<BlockyInfo>()) return
 
-        if (blockyBlock.blockType != BlockType.CUBE &&
-            blockyBlock.blockType != BlockType.TRANSPARENT
-        ) return
-
-        if (blockyBlock.blockType == BlockType.TRANSPARENT)
-            block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
-        else block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
-        player.swingMainHand()
+        when (type) {
+            BlockType.CUBE -> block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
+            BlockType.TRANSPARENT -> block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
+            BlockType.SLAB -> block.setType(Material.PETRIFIED_OAK_SLAB, false)
+            else -> return
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -148,7 +150,7 @@ class BlockyGenericListener : Listener {
         val blockType = block.getPrefabFromBlock()?.toEntity()?.get<BlockyBlock>()?.blockType ?: return
 
         if (isCancelled || !isDropItems) return
-        if (blockType != BlockType.CUBE && blockType != BlockType.TRANSPARENT) return
+        if (blockType != BlockType.CUBE && blockType != BlockType.TRANSPARENT && blockType != BlockType.SLAB) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
         breakBlockyBlock(block, player)
         isDropItems = false
