@@ -5,10 +5,7 @@ import com.mineinabyss.blocky.components.BlockyBlock
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.type.Door
-import org.bukkit.block.data.type.Gate
-import org.bukkit.block.data.type.TrapDoor
-import org.bukkit.block.data.type.Wall
+import org.bukkit.block.data.type.*
 
 fun BlockyBlock.getBlockyDoor(): Door {
     return blockMap.filter { it.key is Door && it.key.material == getDoorType(blockId) && it.value == blockId }.keys.first() as Door
@@ -20,6 +17,14 @@ fun BlockyBlock.getBlockyTrapDoor(): TrapDoor {
 
 fun BlockyBlock.getBlockyFenceGate(): Gate {
     return blockMap.filter { it.key is Gate && it.key.material == getFenceGate(blockId) && it.value == blockId }.keys.first() as Gate
+}
+
+fun BlockyBlock.getBlockySlab(): Slab {
+    return blockMap.filter { it.key is Slab && it.key.material == getSlabType(blockId) && it.value == blockId }.keys.first() as Slab
+}
+
+fun BlockyBlock.getBlockyStair(): Stairs {
+    return blockMap.filter { it.key is Stairs && it.key.material == getStairType(blockId) && it.value == blockId }.keys.first() as Stairs
 }
 fun getDoorType(i: Int) : Material? {
     return when (i) {
@@ -93,4 +98,3 @@ fun Block.isConnectedToWall() : Boolean {
     }
     return false
 }
-

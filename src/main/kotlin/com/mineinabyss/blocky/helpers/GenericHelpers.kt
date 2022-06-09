@@ -152,7 +152,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
     if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
-    if (data is Waterlogged) handleWaterlogged(face)
+    if (data is Waterlogged && data !is Stairs && data !is TrapDoor) handleWaterlogged(face)
     if (data is Ageable) {
         return if ((type == Material.WEEPING_VINES || type == Material.WEEPING_VINES_PLANT) && face != BlockFace.DOWN) false
         else if ((type == Material.TWISTING_VINES || type == Material.TWISTING_VINES_PLANT) && face != BlockFace.UP) false
@@ -196,7 +196,7 @@ private fun Block.handleWaterlogged(face: BlockFace) {
     val data = blockData
     when (data) {
         is Waterlogged -> {
-            if (data is Directional && data !is Stairs) data.facing = face
+            if (data is Directional) data.facing = face
             data.isWaterlogged = false
         }
     }
@@ -387,7 +387,7 @@ fun createBlockMap(): Map<BlockData, Int> {
         for (i in 1..32) {
             doorData.half = if ((i % 8 in 1..4)) Bisected.Half.BOTTOM else Bisected.Half.TOP
             doorData.hinge = if ((i % 4 in 1..2)) Door.Hinge.LEFT else Door.Hinge.RIGHT
-            doorData.isOpen = i in (1..32).step(2)
+            doorData.isOpen = (i % 2 != 0)
             doorData.isPowered = true
             doorData.facing =
                 if (i and 1 == 1) BlockFace.NORTH
@@ -443,7 +443,7 @@ fun createBlockMap(): Map<BlockData, Int> {
         val slabData = Bukkit.createBlockData(material) as Slab
 
         for (b in 1..3) {
-            slabData.type = Slab.Type.values()[b]
+            slabData.type = Slab.Type.values()[b-1]
             blockMap.putIfAbsent(slabData, a) // Match all of the different variants of 1 block to the same id
         }
     }

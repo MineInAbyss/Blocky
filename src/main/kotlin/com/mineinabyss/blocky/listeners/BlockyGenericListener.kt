@@ -104,13 +104,11 @@ class BlockyGenericListener : Listener {
         ) return
 
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyType != BlockType.CUBE && blockyType != BlockType.TRANSPARENT && blockyType != BlockType.SLAB) return
 
         val newData =
             when (blockyType) {
                 BlockType.CUBE -> gearyItem.getBlockyNoteBlock(blockFace)
                 BlockType.TRANSPARENT -> gearyItem.getBlockyTransparent(blockFace)
-                BlockType.SLAB -> Bukkit.createBlockData(Material.PETRIFIED_OAK_SLAB)
                 else -> return
             }
 

@@ -11,9 +11,7 @@ import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Bisected
 import org.bukkit.block.data.Powerable
-import org.bukkit.block.data.type.Door
-import org.bukkit.block.data.type.Gate
-import org.bukkit.block.data.type.TrapDoor
+import org.bukkit.block.data.type.*
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -25,6 +23,14 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 
 class BlockyDoorListener : Listener {
+
+    @EventHandler
+    fun PlayerInteractEvent.onWaxBlockyBlock() {
+        val block = clickedBlock ?: return
+        if (action != Action.RIGHT_CLICK_BLOCK) return
+        if (block !is Stairs && block !is Slab) return
+        isCancelled = (((item?.type ?: return) != Material.HONEYCOMB && "COPPER" !in block.type.toString()))
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyDoor() {
@@ -41,22 +47,20 @@ class BlockyDoorListener : Listener {
         ) return
 
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.DOOR &&
-            blockyBlock.blockType != BlockType.TRAPDOOR &&
-            blockyBlock.blockType != BlockType.FENCEGATE
-        ) return
-
         val newData =
             when (blockyBlock.blockType) {
                 BlockType.DOOR -> blockyBlock.getBlockyDoor()
                 BlockType.TRAPDOOR -> blockyBlock.getBlockyTrapDoor()
                 BlockType.FENCEGATE -> blockyBlock.getBlockyFenceGate()
+                BlockType.SLAB -> blockyBlock.getBlockySlab()
+                BlockType.STAIR -> blockyBlock.getBlockyStair()
                 else -> return
             }
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, newData) ?: return
 
         if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f, 0.8f)
         if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
+        player.swingMainHand()
     }
 
     // Sets normal doors to powered=false when placed next to a redstone source
@@ -110,6 +114,16 @@ class BlockyDoorListener : Listener {
                     data.isInWall = block.isConnectedToWall()
                     block.setBlockData(data, false)
                 }
+                BlockType.SLAB -> {
+                    getSlabType(blockyBlock.blockId)?.let { block.setType(it, false) } ?: return
+                    val data = blockyBlock.getBlockySlab()
+                    block.setBlockData(data, false)
+                }
+                BlockType.STAIR -> {
+                    getStairType(blockyBlock.blockId)?.let { block.setType(it, false) } ?: return
+                    val data = blockyBlock.getBlockyStair()
+                    block.setBlockData(data, false)
+                }
                 else -> return
             }
         }
@@ -131,6 +145,14 @@ class BlockyDoorListener : Listener {
                     block.setType(Material.AIR, false)
                 }
                 BlockType.FENCEGATE -> {
+                    breakBlockyBlock(block, player)
+                    block.setType(Material.AIR, false)
+                }
+                BlockType.SLAB -> {
+                    breakBlockyBlock(block, player)
+                    block.setType(Material.AIR, false)
+                }
+                BlockType.STAIR -> {
                     breakBlockyBlock(block, player)
                     block.setType(Material.AIR, false)
                 }
