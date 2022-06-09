@@ -66,6 +66,27 @@ fun getFenceGate(i: Int) : Material? {
     }
 }
 
+fun getSlabType(i: Int) : Material? {
+    return when (i) {
+        1 -> Material.WAXED_CUT_COPPER_SLAB
+        2 -> Material.WAXED_EXPOSED_CUT_COPPER_SLAB
+        3 -> Material.WAXED_OXIDIZED_CUT_COPPER_SLAB
+        4 -> Material.WAXED_WEATHERED_CUT_COPPER_SLAB
+        5 -> Material.PETRIFIED_OAK_SLAB
+        else -> null
+    }
+}
+
+fun getStairType(i: Int) : Material? {
+    return when (i) {
+        1 -> Material.WAXED_CUT_COPPER_STAIRS
+        2 -> Material.WAXED_EXPOSED_CUT_COPPER_STAIRS
+        3 -> Material.WAXED_OXIDIZED_CUT_COPPER_STAIRS
+        4 -> Material.WAXED_WEATHERED_CUT_COPPER_STAIRS
+        else -> null
+    }
+}
+
 fun Block.isConnectedToWall() : Boolean {
     BlockFace.values().filter { it.isCartesian && it.modY == 0 && it != BlockFace.SELF }.forEach { face ->
         if (getRelative(face).blockData is Wall) return true

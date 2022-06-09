@@ -26,7 +26,12 @@ import kotlin.random.Random
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
 
-    if (prefab.has<BlockySound>()) block.world.playSound(block.location, prefab.get<BlockySound>()!!.breakSound, 1.0f, 1.0f)
+    if (prefab.has<BlockySound>()) block.world.playSound(
+        block.location,
+        prefab.get<BlockySound>()!!.breakSound,
+        1.0f,
+        1.0f
+    )
     if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
 }
@@ -142,7 +147,8 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
     if (type.toString().contains("CORAL") && !type.toString()
-            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN) return false
+            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN
+    ) return false
     if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
@@ -313,7 +319,9 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
                 when (face) {
                     BlockFace.UP -> data.attachedFace = FaceAttachable.AttachedFace.FLOOR
                     BlockFace.DOWN -> data.attachedFace = FaceAttachable.AttachedFace.CEILING
-                    else -> { data.facing = face }
+                    else -> {
+                        data.facing = face
+                    }
                 }
             } else data.facing = face
         }
@@ -373,18 +381,19 @@ fun createBlockMap(): Map<BlockData, Int> {
 
     // Calculates door states
     for (l in 1..8) {
-        if (getDoorType(l) == null) continue
+        val material = getDoorType(l) ?: continue
+        val doorData = Bukkit.createBlockData(material) as Door
 
-        val doorData = Bukkit.createBlockData(getDoorType(l)!!) as Door
         for (i in 1..32) {
-            if (i and 1 == 1) doorData.facing = BlockFace.NORTH
-            if (i shr 1 and 1 == 1) doorData.facing = BlockFace.SOUTH
-            if (i shr 2 and 1 == 1) doorData.facing = BlockFace.WEST
-            if (i shr 3 and 1 == 1) doorData.facing = BlockFace.EAST
-            if (i in (1..32).step(4)) doorData.half = Bisected.Half.BOTTOM else doorData.half = Bisected.Half.TOP
-            if (i in (1..32).step(2)) doorData.hinge = Door.Hinge.LEFT else doorData.hinge = Door.Hinge.RIGHT
+            doorData.half = if ((i % 8 in 1..4)) Bisected.Half.BOTTOM else Bisected.Half.TOP
+            doorData.hinge = if ((i % 4 in 1..2)) Door.Hinge.LEFT else Door.Hinge.RIGHT
             doorData.isOpen = i in (1..32).step(2)
             doorData.isPowered = true
+            doorData.facing =
+                if (i and 1 == 1) BlockFace.NORTH
+                else if (i shr 1 and 1 == 1) BlockFace.SOUTH
+                else if (i shr 2 and 1 == 1) BlockFace.WEST
+                else BlockFace.EAST
 
             blockMap.putIfAbsent(doorData, l) // Match all of the different variants of 1 block to the same id
         }
@@ -392,16 +401,18 @@ fun createBlockMap(): Map<BlockData, Int> {
 
     // Calculates trapdoor states
     for (m in 1..8) {
-        if (getTrapDoorType(m) == null) continue
-        val trapDoorData = Bukkit.createBlockData(getTrapDoorType(m)!!) as TrapDoor
+        val material = getTrapDoorType(m) ?: continue
+        val trapDoorData = Bukkit.createBlockData(material) as TrapDoor
+
         for (i in 1..32) {
-            if (i and 1 == 1) trapDoorData.facing = BlockFace.NORTH
-            if (i shr 1 and 1 == 1) trapDoorData.facing = BlockFace.SOUTH
-            if (i shr 2 and 1 == 1) trapDoorData.facing = BlockFace.WEST
-            if (i shr 3 and 1 == 1) trapDoorData.facing = BlockFace.EAST
-            if (i in (1..32).step(4)) trapDoorData.half = Bisected.Half.BOTTOM else trapDoorData.half = Bisected.Half.TOP
-            trapDoorData.isOpen = i in (1..32).step(2)
+            trapDoorData.half = if ((i % 4 in 1..2)) Bisected.Half.BOTTOM else Bisected.Half.TOP
+            trapDoorData.isOpen = (i % 2 != 0)
             trapDoorData.isPowered = true
+            trapDoorData.facing =
+                if (i and 1 == 1) BlockFace.NORTH
+                else if (i shr 1 and 1 == 1) BlockFace.SOUTH
+                else if (i shr 2 and 1 == 1) BlockFace.WEST
+                else BlockFace.EAST
 
             blockMap.putIfAbsent(trapDoorData, m) // Match all of the different variants of 1 block to the same id
         }
@@ -409,31 +420,51 @@ fun createBlockMap(): Map<BlockData, Int> {
 
     // Calculates fencegate states
     for (n in 1..8) {
-        if (getFenceGate(n) == null) continue
-        val fenceGateData = Bukkit.createBlockData(getFenceGate(n)!!) as Gate
+        val material = getFenceGate(n) ?: continue
+        val fenceGateData = Bukkit.createBlockData(material) as Gate
+
         for (i in 1..32) {
-            if (i and 1 == 1) fenceGateData.facing = BlockFace.NORTH
-            if (i shr 1 and 1 == 1) fenceGateData.facing = BlockFace.SOUTH
-            if (i shr 2 and 1 == 1) fenceGateData.facing = BlockFace.WEST
-            if (i shr 3 and 1 == 1) fenceGateData.facing = BlockFace.EAST
-            fenceGateData.isOpen = i !in (1..32).step(1)
-            fenceGateData.isInWall = i in (1..32).step(2)
+            fenceGateData.isInWall = (i % 4 !in 1..2)
+            fenceGateData.isOpen = (i % 2 == 0)
             fenceGateData.isPowered = true
+            fenceGateData.facing =
+                if (i and 1 == 1) BlockFace.NORTH
+                else if (i shr 1 and 1 == 1) BlockFace.SOUTH
+                else if (i shr 2 and 1 == 1) BlockFace.WEST
+                else BlockFace.EAST
 
             blockMap.putIfAbsent(fenceGateData, n) // Match all of the different variants of 1 block to the same id
         }
     }
 
     // Calculate slab states
-    for (a in 1..1) {
-        val slabData = Bukkit.createBlockData(Material.PETRIFIED_OAK_SLAB) as Slab
-        for (b in 1..2) {
-            if (b == 1) slabData.type = Slab.Type.BOTTOM
-            else slabData.type = Slab.Type.TOP
+    for (a in 1..5) {
+        val material = getSlabType(a) ?: continue
+        val slabData = Bukkit.createBlockData(material) as Slab
+
+        for (b in 1..3) {
+            slabData.type = Slab.Type.values()[b]
             blockMap.putIfAbsent(slabData, a) // Match all of the different variants of 1 block to the same id
         }
     }
 
+    // Calculate stair states
+    for (c in 1..4) {
+        val material = getStairType(c) ?: continue
+        val stairData = Bukkit.createBlockData(material) as Stairs
+
+        for (d in 1..40) {
+            stairData.shape = Stairs.Shape.values()[d % 5]
+            stairData.half = if (d % 10 in 1..5) Bisected.Half.BOTTOM else Bisected.Half.TOP
+            stairData.facing = when (d) {
+                in 1..10 -> BlockFace.NORTH
+                in 11..20 -> BlockFace.SOUTH
+                in 21..30 -> BlockFace.WEST
+                else -> BlockFace.EAST
+            }
+            blockMap.putIfAbsent(stairData, c) // Match all of the different variants of 1 block to the same id
+        }
+    }
     return blockMap
 }
 
