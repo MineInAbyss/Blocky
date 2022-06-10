@@ -4,7 +4,7 @@ import com.mineinabyss.blocky.helpers.createPayload
 import com.mineinabyss.blocky.registryTagMap
 import net.minecraft.core.Registry
 import net.minecraft.network.protocol.game.ClientboundUpdateTagsPacket
-import org.bukkit.craftbukkit.v1_18_R2.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_19_R1.entity.CraftPlayer
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.player.PlayerJoinEvent
