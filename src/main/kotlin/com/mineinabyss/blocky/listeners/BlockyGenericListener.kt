@@ -95,20 +95,21 @@ class BlockyGenericListener : Listener {
 
         val gearyItem = item?.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val blockyType = blockyBlock.blockType
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val blockySound = gearyItem.get<BlockySound>()
         val against = clickedBlock ?: return
         if ((against.type.isInteractable && against.getPrefabFromBlock()?.toEntity() == null) && !player.isSneaking) return
 
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.CUBE &&
-            blockyBlock.blockType != BlockType.TRANSPARENT
-        ) return
 
-        val newData = if (blockyBlock.blockType == BlockType.TRANSPARENT)
-                gearyItem.getBlockyTransparent(blockFace)
-            else
-                gearyItem.getBlockyNoteBlock(blockFace)
+        val newData =
+            when (blockyType) {
+                BlockType.CUBE -> gearyItem.getBlockyNoteBlock(blockFace)
+                BlockType.TRANSPARENT -> gearyItem.getBlockyTransparent(blockFace)
+                else -> return
+            }
+
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, newData) ?: return
 
         if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f, 0.8f)
@@ -117,33 +118,35 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true &&
-            itemInHand.type == Material.TRIPWIRE ||
-            itemInHand.type == Material.NOTE_BLOCK ||
-            itemInHand.type == Material.CHORUS_PLANT
-        )
-            block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+        if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
+            if (itemInHand.type == Material.TRIPWIRE ||
+                itemInHand.type == Material.NOTE_BLOCK ||
+                itemInHand.type == Material.CHORUS_PLANT
+            ) block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+        }
+
 
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val type = blockyBlock.blockType
         val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.UP
         if (!gearyItem.has<BlockyInfo>()) return
 
-        if (blockyBlock.blockType != BlockType.CUBE &&
-            blockyBlock.blockType != BlockType.TRANSPARENT
-        ) return
-
-        if (blockyBlock.blockType == BlockType.TRANSPARENT)
-            block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
-        else block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
-        player.swingMainHand()
+        when (type) {
+            BlockType.CUBE -> block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
+            BlockType.TRANSPARENT -> block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
+            BlockType.SLAB -> block.setType(Material.PETRIFIED_OAK_SLAB, false)
+            else -> return
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         val blockyInfo = block.getPrefabFromBlock()?.toEntity()?.get<BlockyInfo>() ?: return
+        val blockType = block.getPrefabFromBlock()?.toEntity()?.get<BlockyBlock>()?.blockType ?: return
 
-        if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
+        if (isCancelled || !isDropItems) return
+        if (blockType != BlockType.CUBE && blockType != BlockType.TRANSPARENT && blockType != BlockType.SLAB) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
         breakBlockyBlock(block, player)
         isDropItems = false
