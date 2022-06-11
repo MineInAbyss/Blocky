@@ -98,9 +98,7 @@ class BlockyGenericListener : Listener {
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val blockySound = gearyItem.get<BlockySound>()
         val against = clickedBlock ?: return
-        if (against.type.isInteractable && against.getPrefabFromBlock()?.toEntity()
-                ?.has<BlockyLight>() != true && !player.isSneaking
-        ) return
+        if ((against.type.isInteractable && against.getPrefabFromBlock()?.toEntity() == null) && !player.isSneaking) return
 
         if (!gearyItem.has<BlockyInfo>()) return
         if (blockyBlock.blockType != BlockType.CUBE &&
