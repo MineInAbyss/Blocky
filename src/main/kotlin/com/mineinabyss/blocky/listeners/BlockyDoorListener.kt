@@ -1,13 +1,16 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.helpers.with
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Bisected
 import org.bukkit.block.data.Powerable
@@ -21,15 +24,31 @@ import org.bukkit.event.block.BlockPhysicsEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.persistence.PersistentDataType
 
 class BlockyDoorListener : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onWaxBlockyBlock() {
         val block = clickedBlock ?: return
+        val item = item ?: return
+        val key = NamespacedKey(blockyPlugin, "waxed")
+
         if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (block !is Stairs && block !is Slab) return
-        isCancelled = (((item?.type ?: return) != Material.HONEYCOMB && "COPPER" !in block.type.toString()))
+        if (block.blockData !is Stairs && block.blockData !is Slab) return
+        if ("COPPER" !in block.type.toString()) return
+
+        val pdc: PersistentDataContainer = CustomBlockData(block, blockyPlugin)
+        if (item.type == Material.HONEYCOMB) {
+            pdc.set(key, PersistentDataType.STRING, "true")
+            broadcast(CustomBlockData(block, blockyPlugin).has(key))
+            isCancelled = true
+        } else if ("_AXE" in item.type.toString() && pdc.has(key)) {
+            pdc.remove(key)
+            broadcast(pdc.has(key))
+            isCancelled = true
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -135,10 +154,10 @@ class BlockyDoorListener : Listener {
             when (blockyBlock.blockType) {
                 BlockType.DOOR -> {
                     breakBlockyBlock(block, player)
-                    block.setType(Material.AIR, false)
                     if ((block.blockData as Door).half == Bisected.Half.BOTTOM)
                         block.getRelative(BlockFace.UP).setType(Material.AIR, false)
                     else block.getRelative(BlockFace.DOWN).setType(Material.AIR, false)
+                    block.setType(Material.AIR, false)
                 }
                 BlockType.TRAPDOOR -> {
                     breakBlockyBlock(block, player)

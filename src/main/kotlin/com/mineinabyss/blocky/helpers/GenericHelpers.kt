@@ -165,9 +165,10 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
     )
         handleWallAttachable(player, face)
 
-    if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
+    if (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable) {
         if (data is MultipleFacing && face == BlockFace.UP) return false
         if (data is CoralWallFan && face == BlockFace.DOWN) return false
+        if (data !is Door || data !is Slab ||data !is Stairs) return true
         handleDirectionalBlocks(face)
     }
 
@@ -187,7 +188,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
         setBlockData(data, false)
     }
 
-    if (data is Powerable && (data is Door || data is TrapDoor || data is Gate))
+    if (data is Powerable && (data is Door))
         if (data.isPowered) return false
     return true
 }
@@ -323,7 +324,9 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
                         data.facing = face
                     }
                 }
-            } else data.facing = face
+            } else {
+                if (data.faces.contains(face)) data.facing = face
+            }
         }
         is MultipleFacing -> {
             data.allowedFaces.forEach {
