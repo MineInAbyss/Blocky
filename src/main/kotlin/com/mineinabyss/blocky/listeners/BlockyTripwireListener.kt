@@ -34,11 +34,22 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST)
     fun BlockPhysicsEvent.cancelTripwirePhysics() {
         if (changedType == Material.TRIPWIRE) {
             isCancelled = true
             block.state.update(true, false)
+        }
+
+        BlockFace.values().filter { it.isCartesian && it.modY == 0 && it != BlockFace.SELF }.forEach { f ->
+            val changed = block.getRelative(f)
+            if (changed.type != Material.TRIPWIRE) return@forEach
+
+            blockyPlugin.launch {
+                val data = changed.blockData.clone()
+                delay(1)
+                changed.setBlockData(data, false)
+            }
         }
     }
 
@@ -116,23 +127,6 @@ class BlockyTripwireListener : Listener {
         if (block.type == Material.TRIPWIRE) {
             breakTripwireBlock(block, null)
             drops.removeIf { it.type == Material.STRING }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    fun BlockFromToEvent.onWaterUpdate() {
-        if (block.isLiquid && face == BlockFace.DOWN) {
-            BlockFace.values().forEach {
-                val changed = toBlock.getRelative(it)
-                if (it == BlockFace.DOWN || it == BlockFace.UP || it == BlockFace.SELF) return@forEach
-                if (changed.type != Material.TRIPWIRE) return@forEach
-
-                val data = changed.blockData.clone()
-                blockyPlugin.launch {
-                    delay(1)
-                    changed.setBlockData(data, false)
-                }
-            }
         }
     }
 
