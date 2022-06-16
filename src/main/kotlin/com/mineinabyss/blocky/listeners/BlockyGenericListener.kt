@@ -79,7 +79,7 @@ class BlockyGenericListener : Listener {
         }
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
-            block.world.spawnFallingBlock(relative.location.toCenterLocation(), Bukkit.createBlockData(type))
+            block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), Bukkit.createBlockData(type))
             return
         }
 
