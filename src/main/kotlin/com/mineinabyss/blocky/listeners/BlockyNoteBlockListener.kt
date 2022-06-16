@@ -50,7 +50,6 @@ class BlockyNoteBlockListener : Listener {
         if (block.type == Material.NOTE_BLOCK) {
             isCancelled = true
             block.state.update(true, false)
-            //TODO Note is played repeatedly if the redstpne is powered say below
             if (block.isBlockIndirectlyPowered) {
                 val p = block.location.getNearbyPlayers(48.0).firstOrNull() ?: return
                 playBlockyNoteBlock(block, p)

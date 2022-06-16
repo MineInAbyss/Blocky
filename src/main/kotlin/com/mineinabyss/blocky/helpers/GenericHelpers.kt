@@ -9,6 +9,8 @@ import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.messaging.broadcast
+import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
 import org.bukkit.block.*
 import org.bukkit.block.Sign
@@ -34,7 +36,12 @@ val REPLACEABLE_BLOCKS =
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
 
-    if (prefab.has<BlockySound>()) block.world.playSound(block.location, prefab.get<BlockySound>()!!.breakSound, 1.0f, 1.0f)
+    if (prefab.has<BlockySound>()) block.world.playSound(
+        block.location,
+        prefab.get<BlockySound>()!!.breakSound,
+        1.0f,
+        1.0f
+    )
     if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
 }
@@ -82,7 +89,7 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
     }?.key ?: return null
 }
 
-fun Block.getGearyEntityFromBlock() : GearyEntity? {
+fun Block.getGearyEntityFromBlock(): GearyEntity? {
     return getPrefabFromBlock()?.toEntity()
 }
 
@@ -95,12 +102,15 @@ fun placeBlockyBlock(
     newData: BlockData
 ): Block? {
     val targetBlock: Block
-    if (REPLACEABLE_BLOCKS.contains(against.type)) targetBlock = against
+    if (against.isReplaceable) targetBlock = against
     else {
         targetBlock = against.getRelative(face)
         if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
     }
 
+    if (against.getGearyEntityFromBlock()?.has<BlockyBlock>() != true && item.toGearyOrNull(player)
+            ?.has<BlockyBlock>() != true
+    ) return null
     if (isStandingInside(player, targetBlock)) return null
     if (against.isVanillaNoteBlock()) return null
     if (targetBlock.isVanillaNoteBlock())
@@ -115,11 +125,20 @@ fun placeBlockyBlock(
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val state = targetBlock.state
-    val blockPlaceEvent = BlockPlaceEvent(targetBlock, state, against, item, player, true, hand)
+    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
+
+    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true) {
+        val placable = targetBlock.getGearyEntityFromBlock()?.get<BlockyPlacableOn>() ?: return null
+        broadcast(targetBlock.getPrefabFromBlock())
+        broadcast(against.isInProvidedTags(placable.blockTags))
+
+        if (against.getPrefabFromBlock() !in placable.blockyBlocks &&
+            !against.isInProvidedTags(placable.blockTags) && against.type !in placable.blocks
+        ) blockPlaceEvent.isCancelled = true
+    }
 
     if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
@@ -141,7 +160,7 @@ fun placeBlockyBlock(
 }
 
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
-    val data = blockData
+    val data = blockData.clone()
     val state = state
     if (blockData is Tripwire || type == Material.CHORUS_PLANT) return true
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
@@ -151,7 +170,8 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
     if (type.toString().contains("CORAL") && !type.toString()
-            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN) return false
+            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN
+    ) return false
     if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
@@ -202,7 +222,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
 }
 
 private fun Block.handleWaterlogged(face: BlockFace) {
-    val data = blockData
+    val data = blockData.clone()
     when (data) {
         is Waterlogged -> {
             if (data is Directional && data !is Stairs) data.facing = face
@@ -283,9 +303,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
 
 private fun Block.handleHalfBlocks(player: Player) {
     val eye = player.rayTraceBlocks(5.0, FluidCollisionMode.NEVER) ?: return
-    val data = blockData
-    //TODO Stair interactions are still abit unlike vanilla when it comes to connecting around corners etc
-    //TODO Making double slabs doesnt work if second slab is attempted placed on CB
+    val data = blockData.clone()
     when (data) {
         is TrapDoor -> {
             data.facing = player.facing.oppositeFace
@@ -294,7 +312,7 @@ private fun Block.handleHalfBlocks(player: Player) {
         }
         is Stairs -> {
             data.facing = player.facing
-            if (eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += .6 }?.y!!)
+            if (eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += 0.6 }?.y!!)
                 data.half = Bisected.Half.BOTTOM
             else data.half = Bisected.Half.TOP
         }
@@ -303,25 +321,19 @@ private fun Block.handleHalfBlocks(player: Player) {
             else data.type = Slab.Type.TOP
         }
     }
-    setBlockData(data, false)
+    setBlockData(data, true)
 }
 
 private fun Block.handleRotatableBlocks(player: Player) {
-    val data = blockData
-    val state = state
-    //TODO Support full facing spectrum not just N/S/W/E
-    when (data) {
-        is Rotatable -> {
-            data.rotation = player.facing
-            if (state is Sign && state !is WallSign)
-                data.rotation = player.facing.oppositeFace
-        }
-    }
+    val data = blockData.clone() as Rotatable
+    data.rotation =
+        if ("SKULL" in type.toString() || "HEAD" in type.toString()) player.getRelativeFacing()
+        else player.getRelativeFacing().oppositeFace
     setBlockData(data, false)
 }
 
 private fun Block.handleDirectionalBlocks(face: BlockFace) {
-    val data = blockData
+    val data = blockData.clone()
 
     when (data) {
         is Directional -> {
@@ -329,7 +341,9 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
                 when (face) {
                     BlockFace.UP -> data.attachedFace = FaceAttachable.AttachedFace.FLOOR
                     BlockFace.DOWN -> data.attachedFace = FaceAttachable.AttachedFace.CEILING
-                    else -> { data.facing = face }
+                    else -> {
+                        data.facing = face
+                    }
                 }
             } else data.facing = face
         }
@@ -420,4 +434,26 @@ fun Block.getRightBlock(player: Player): Block {
     }
     return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) this
     else rightBlock
+}
+
+private fun Player.getRelativeFacing(): BlockFace {
+    val yaw = location.yaw.toDouble()
+    return when {
+        (yaw >= 337.5 || yaw in 0.0..22.5 || yaw >= -22.5 && yaw <= 0.0 || yaw <= -337.5 && yaw <= 0.0) -> BlockFace.SOUTH
+        (yaw in 22.5..67.5 || yaw in -337.5..-292.5) -> BlockFace.SOUTH_WEST
+        (yaw in 67.5..112.5 || yaw in -292.5..-247.5) -> BlockFace.WEST
+        (yaw in 112.5..157.5 || yaw in -247.5..-202.5) -> BlockFace.NORTH_WEST
+        (yaw in 157.5..202.5 || yaw in -202.5..-157.5) -> BlockFace.NORTH
+        (yaw in 202.5..247.5 || yaw in -157.5..-112.5) -> BlockFace.NORTH_EAST
+        (yaw in 247.5..292.5 || yaw in -112.5..-67.5) -> BlockFace.EAST
+        (yaw in 292.5..337.5 || yaw in -67.5..-22.5) -> BlockFace.SOUTH_EAST
+        else -> facing
+    }
+}
+
+/**
+ * @return A new location at the bottom-center of a block
+ */
+internal fun Location.toBlockCenterLocation(): Location {
+    return clone().toCenterLocation().apply { y -= 0.5 }
 }
