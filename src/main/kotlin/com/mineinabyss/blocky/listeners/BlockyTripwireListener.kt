@@ -103,7 +103,7 @@ class BlockyTripwireListener : Listener {
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type == Material.TRIPWIRE && block.type != Material.TRIPWIRE) {
-                if (block.getPrefabFromBlock()?.toEntity()
+                if (block.getGearyEntityFromBlock()
                         ?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE
                 )
                     block.drops.forEach {
@@ -143,7 +143,7 @@ class BlockyTripwireListener : Listener {
         // Fixes tripwire updating when placing blocks next to it
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (clickedBlock?.getRelative(it)?.getPrefabFromBlock()?.toEntity() == null) return@forEach
+                if (clickedBlock?.getRelative(it)?.getGearyEntityFromBlock() == null) return@forEach
                 placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
                 fixClientsideUpdate(clickedBlock!!.location)
             }

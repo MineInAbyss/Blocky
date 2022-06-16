@@ -8,11 +8,13 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.type.Slab
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 
@@ -43,25 +45,23 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onInteractBlockyBlock() {
         val block = clickedBlock ?: return
-        val blockAbove = block.getRelative(BlockFace.UP)
+        val relative = block.getRelative(blockFace)
         val item = item ?: return
         var type = item.clone().type
-        if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (hand != EquipmentSlot.HAND) return
-        if (block.type != Material.NOTE_BLOCK) return
-        if (block.type.isInteractable && block.getPrefabFromBlock()?.toEntity()
-                ?.has<BlockyBlock>() != true && !player.isSneaking
-        ) return
-        if (item.type == Material.BUCKET && blockAbove.isLiquid) {
+
+        if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
+        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+
+        if (item.type == Material.BUCKET && relative.isLiquid) {
             val sound =
-                if (blockAbove.type == Material.WATER) Sound.ITEM_BUCKET_FILL
-                else Sound.valueOf("ITEM_BUCKET_FILL_" + blockAbove.type)
+                if (relative.type == Material.WATER) Sound.ITEM_BUCKET_FILL
+                else Sound.valueOf("ITEM_BUCKET_FILL_" + relative.type)
 
             if (player.gameMode != GameMode.CREATIVE)
-                item.type = Material.getMaterial("${blockAbove.type}_BUCKET")!!
+                item.type = Material.getMaterial("${relative.type}_BUCKET")!!
 
-            player.playSound(blockAbove.location, sound, 1.0f, 1.0f)
-            blockAbove.type = Material.AIR
+            player.playSound(relative.location, sound, 1.0f, 1.0f)
+            relative.type = Material.AIR
             return
         }
 
@@ -73,9 +73,24 @@ class BlockyGenericListener : Listener {
             if (bucketEntity == null)
                 type = Material.getMaterial(bucketBlock) ?: return
             else {
-                type = Material.WATER
-                player.world.spawnEntity(blockAbove.location.add(0.5, 0.0, 0.5), bucketEntity)
+                type = Material.WATER//
+                player.world.spawnEntity(relative.location.add(0.5, 0.0, 0.5), bucketEntity)
             }
+        }
+
+        if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
+            block.world.spawnFallingBlock(relative.location.toCenterLocation(), Bukkit.createBlockData(type))
+            return
+        }
+
+        if (type.toString().endsWith("SLAB") && relative.type == type) {
+            val sound = relative.blockSoundGroup
+            val data = (relative.blockData as Slab)
+            data.type = Slab.Type.DOUBLE
+            relative.setBlockData(data, false)
+            relative.world.playSound(relative.location, sound.placeSound, sound.volume, sound.pitch)
+            if (player.gameMode != GameMode.CREATIVE) item.subtract()
+            return
         }
 
         if (type.isBlock) placeBlockyBlock(
@@ -98,7 +113,9 @@ class BlockyGenericListener : Listener {
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val blockySound = gearyItem.get<BlockySound>()
         val against = clickedBlock ?: return
-        if ((against.type.isInteractable && against.getPrefabFromBlock()?.toEntity() == null) && !player.isSneaking) return
+        if ((against.type.isInteractable && against.getPrefabFromBlock()
+                ?.toEntity() == null) && !player.isSneaking
+        ) return
 
         if (!gearyItem.has<BlockyInfo>()) return
         if (blockyBlock.blockType != BlockType.CUBE &&
@@ -106,9 +123,9 @@ class BlockyGenericListener : Listener {
         ) return
 
         val newData = if (blockyBlock.blockType == BlockType.TRANSPARENT)
-                gearyItem.getBlockyTransparent(blockFace)
-            else
-                gearyItem.getBlockyNoteBlock(blockFace)
+            gearyItem.getBlockyTransparent(blockFace)
+        else
+            gearyItem.getBlockyNoteBlock(blockFace)
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, newData) ?: return
 
         if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f, 0.8f)
@@ -141,11 +158,20 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val blockyInfo = block.getPrefabFromBlock()?.toEntity()?.get<BlockyInfo>() ?: return
+        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
 
         if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
         breakBlockyBlock(block, player)
         isDropItems = false
+    }
+
+    @EventHandler
+    fun EntityExplodeEvent.onExplodingBlocky() {
+        blockList().forEach { block ->
+            val prefab = block.getGearyEntityFromBlock() ?: return@forEach
+            if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
+            block.setType(Material.AIR, false)
+        }
     }
 }

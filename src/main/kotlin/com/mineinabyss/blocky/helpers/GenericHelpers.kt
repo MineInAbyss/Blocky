@@ -30,7 +30,7 @@ val REPLACEABLE_BLOCKS =
     )
 
 fun breakBlockyBlock(block: Block, player: Player?) {
-    val prefab = block.getPrefabFromBlock()?.toEntity() ?: return
+    val prefab = block.getGearyEntityFromBlock() ?: return
 
     if (prefab.has<BlockySound>()) block.world.playSound(block.location, prefab.get<BlockySound>()!!.breakSound, 1.0f, 1.0f)
     if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
@@ -38,7 +38,7 @@ fun breakBlockyBlock(block: Block, player: Player?) {
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
-    val gearyBlock = block.getPrefabFromBlock()?.toEntity() ?: return
+    val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
 
     gearyBlock.get<BlockyInfo>()?.blockDrop?.map {
@@ -78,6 +78,10 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
                     blockyBlock?.blockType == type
         } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
     }?.key ?: return null
+}
+
+fun Block.getGearyEntityFromBlock() : GearyEntity? {
+    return getPrefabFromBlock()?.toEntity()
 }
 
 fun placeBlockyBlock(

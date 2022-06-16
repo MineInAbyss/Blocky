@@ -60,10 +60,10 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {
-        if (block.isVanillaNoteBlock()) {
+        if (blockPlaced.isVanillaNoteBlock()) {
             val map = mutableMapOf<BlockData?, Int?>()
-            map[block.blockData] = 0
-            CustomBlockData(block, blockyPlugin).set(
+            map[blockPlaced.blockData] = 0
+            CustomBlockData(blockPlaced, blockyPlugin).set(
                 NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase()),
                 DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER),
                 map
