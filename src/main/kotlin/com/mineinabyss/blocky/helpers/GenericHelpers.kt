@@ -10,17 +10,19 @@ import com.mineinabyss.blocky.components.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.*
-import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
+import org.bukkit.block.*
 import org.bukkit.block.Sign
-import org.bukkit.block.Skull
 import org.bukkit.block.data.*
 import org.bukkit.block.data.type.*
+import org.bukkit.block.data.type.Bed
+import org.bukkit.block.data.type.Chest
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.BlockStateMeta
 import kotlin.random.Random
 
 val REPLACEABLE_BLOCKS =
@@ -117,7 +119,7 @@ fun placeBlockyBlock(
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, state, against, item, player, true, hand)
     blockPlaceEvent.callEvent()
 
-    if (!targetBlock.correctAllBlockStates(player, face)) blockPlaceEvent.isCancelled = true
+    if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
     if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
@@ -138,8 +140,9 @@ fun placeBlockyBlock(
     return targetBlock
 }
 
-private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolean {
+private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
     val data = blockData
+    val state = state
     if (blockData is Tripwire || type == Material.CHORUS_PLANT) return true
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
     if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
@@ -186,6 +189,15 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace): Boolea
         data.isHanging = true
         setBlockData(data, false)
     }
+
+    if (state is BlockInventoryHolder && ((item.itemMeta as BlockStateMeta).blockState is Container)) {
+        ((item.itemMeta as BlockStateMeta).blockState as Container).inventory.forEach { i ->
+            if (i != null) state.inventory.addItem(i)
+        }
+    }
+
+    if (state is Sign) player.openSign(state)
+
     return true
 }
 
@@ -296,13 +308,14 @@ private fun Block.handleHalfBlocks(player: Player) {
 
 private fun Block.handleRotatableBlocks(player: Player) {
     val data = blockData
+    val state = state
     //TODO Support full facing spectrum not just N/S/W/E
     when (data) {
         is Rotatable -> {
             data.rotation = player.facing
-            if (this.state is Sign) player.openSign(this.state as Sign)
+            if (state is Sign && state !is WallSign)
+                data.rotation = player.facing.oppositeFace
         }
-
     }
     setBlockData(data, false)
 }
