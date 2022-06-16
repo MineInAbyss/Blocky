@@ -37,7 +37,6 @@ fun BlockyUIScope.BlockyMenu() {
 
     Item(ItemStack(Material.ARMOR_STAND,2).editItemMeta {
         displayName("<#4f80c3><b>ModelEngine Furniture / Blocks".miniMsg())
-        //setCustomModelData(something)
     }, Modifier.at(7,2).clickable {
         nav.open(BlockyScreen.AnimatedEntity)
     })

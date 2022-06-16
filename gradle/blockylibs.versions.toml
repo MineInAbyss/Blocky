@@ -2,7 +2,7 @@
 geary = "0.15.89"
 gearyaddons = "0.5.27"
 looty = "0.6.48"
-guiy="0.5.15"
+guiy="0.5.18"
 deeperworld="0.4.74"
 
 [libraries]
