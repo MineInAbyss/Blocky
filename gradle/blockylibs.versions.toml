@@ -1,9 +1,9 @@
 [versions]
-geary = "0.15.89"
-gearyaddons = "0.5.27"
-looty = "0.6.48"
+geary = "0.15.99"
+gearyaddons = "0.5.36"
+looty = "0.6.55"
 guiy="0.5.18"
-deeperworld="0.4.74"
+deeperworld="0.4.75"
 
 [libraries]
 geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
