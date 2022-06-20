@@ -9,7 +9,6 @@ import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
 import org.bukkit.block.*
@@ -132,8 +131,6 @@ fun placeBlockyBlock(
 
     if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true) {
         val placable = targetBlock.getGearyEntityFromBlock()?.get<BlockyPlacableOn>() ?: return null
-        broadcast(targetBlock.getPrefabFromBlock())
-        broadcast(against.isInProvidedTags(placable.blockTags))
 
         if (against.getPrefabFromBlock() !in placable.blockyBlocks &&
             !against.isInProvidedTags(placable.blockTags) && against.type !in placable.blocks
@@ -163,6 +160,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     val data = blockData.clone()
     val state = state
     if (blockData is Tripwire || type == Material.CHORUS_PLANT) return true
+    if (blockData is Sapling && face != BlockFace.UP) return false
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
     if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
     if (type.toString().endsWith("TORCH") && face == BlockFace.DOWN) return false
@@ -207,6 +205,16 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (data is Lantern) {
         if (face != BlockFace.DOWN) return false
         data.isHanging = true
+        setBlockData(data, false)
+    }
+
+    if (data is Repeater) {
+        data.facing = player.facing.oppositeFace
+        setBlockData(data, false)
+    }
+
+    if (type.toString().endsWith("ANVIL")) {
+        (data as Directional).facing = getAnvilFacing(face)
         setBlockData(data, false)
     }
 
@@ -448,6 +456,16 @@ private fun Player.getRelativeFacing(): BlockFace {
         (yaw in 247.5..292.5 || yaw in -112.5..-67.5) -> BlockFace.EAST
         (yaw in 292.5..337.5 || yaw in -67.5..-22.5) -> BlockFace.SOUTH_EAST
         else -> facing
+    }
+}
+
+fun getAnvilFacing(face: BlockFace): BlockFace {
+    return when (face) {
+        BlockFace.NORTH -> BlockFace.EAST
+        BlockFace.EAST -> BlockFace.NORTH
+        BlockFace.SOUTH -> BlockFace.WEST
+        BlockFace.WEST -> BlockFace.SOUTH
+        else -> BlockFace.NORTH
     }
 }
 

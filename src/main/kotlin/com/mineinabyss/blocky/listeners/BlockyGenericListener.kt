@@ -8,6 +8,7 @@ import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.Sound
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Slab
 import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
@@ -79,7 +80,10 @@ class BlockyGenericListener : Listener {
         }
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
-            block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), Bukkit.createBlockData(type))
+            val data = Bukkit.createBlockData(type)
+            if (type.toString().endsWith("ANVIL"))
+                (data as Directional).facing = getAnvilFacing(blockFace)
+            block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
             return
         }
 
