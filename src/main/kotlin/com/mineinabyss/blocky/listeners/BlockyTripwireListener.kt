@@ -34,11 +34,22 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST)
     fun BlockPhysicsEvent.cancelTripwirePhysics() {
         if (changedType == Material.TRIPWIRE) {
             isCancelled = true
             block.state.update(true, false)
+        }
+
+        BlockFace.values().filter { it.isCartesian && it.modY == 0 && it != BlockFace.SELF }.forEach { f ->
+            val changed = block.getRelative(f)
+            if (changed.type != Material.TRIPWIRE) return@forEach
+
+            blockyPlugin.launch {
+                val data = changed.blockData.clone()
+                delay(1)
+                changed.setBlockData(data, false)
+            }
         }
     }
 
@@ -92,7 +103,7 @@ class BlockyTripwireListener : Listener {
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type == Material.TRIPWIRE && block.type != Material.TRIPWIRE) {
-                if (block.getPrefabFromBlock()?.toEntity()
+                if (block.getGearyEntityFromBlock()
                         ?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE
                 )
                     block.drops.forEach {
@@ -119,23 +130,6 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    fun BlockFromToEvent.onWaterUpdate() {
-        if (block.isLiquid && face == BlockFace.DOWN) {
-            BlockFace.values().forEach {
-                val changed = toBlock.getRelative(it)
-                if (it == BlockFace.DOWN || it == BlockFace.UP || it == BlockFace.SELF) return@forEach
-                if (changed.type != Material.TRIPWIRE) return@forEach
-
-                val data = changed.blockData.clone()
-                blockyPlugin.launch {
-                    delay(1)
-                    changed.setBlockData(data, false)
-                }
-            }
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyWire() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
@@ -149,7 +143,7 @@ class BlockyTripwireListener : Listener {
         // Fixes tripwire updating when placing blocks next to it
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (clickedBlock?.getRelative(it)?.getPrefabFromBlock()?.toEntity() == null) return@forEach
+                if (clickedBlock?.getRelative(it)?.getGearyEntityFromBlock() == null) return@forEach
                 placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
                 fixClientsideUpdate(clickedBlock!!.location)
             }

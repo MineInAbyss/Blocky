@@ -11,15 +11,15 @@ import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.height
 import com.mineinabyss.idofront.font.Space
 import de.erethon.headlib.HeadLib
-import org.bukkit.ChatColor
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.Player
 
-sealed class BlockyScreen(val title: String, val height: Int) {
-    object Default : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 5)
-    object NoteBlock : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
-    object Decoration : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
-    object JavaEntity : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
-    object AnimatedEntity : BlockyScreen("${Space.of(-12)}${ChatColor.WHITE}:something:", 6)
+sealed class BlockyScreen(val title: Component, val height: Int) {
+    object Default : BlockyScreen(Component.text("${Space.of(-12)}:something:"), 5)
+    object NoteBlock : BlockyScreen(Component.text("${Space.of(-12)}:something:"), 6)
+    object Decoration : BlockyScreen(Component.text("${Space.of(-12)}:something:"), 6)
+    object JavaEntity : BlockyScreen(Component.text("${Space.of(-12)}:something:"), 6)
+    object AnimatedEntity : BlockyScreen(Component.text("${Space.of(-12)}:something:"), 6)
 
 }
 
