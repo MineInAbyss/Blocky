@@ -10,7 +10,6 @@ plugins {
 
 repositories {
     mavenCentral()
-    mavenLocal()
     maven("https://repo.mineinabyss.com/releases")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
