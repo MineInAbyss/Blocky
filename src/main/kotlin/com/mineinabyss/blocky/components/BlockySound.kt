@@ -11,4 +11,5 @@ class BlockySound (
     val breakSound: Sound? = null,
     val hitSound: Sound? = null,
     val stepSound: Sound? = null,
+    val fallSound: Sound? = null
 )
