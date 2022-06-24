@@ -24,6 +24,7 @@ import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
+import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
 val REPLACEABLE_BLOCKS =
@@ -159,6 +160,10 @@ fun placeBlockyBlock(
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
     val data = blockData.clone()
     val state = state
+    if (state is Skull && item.itemMeta is SkullMeta) {
+        (item.itemMeta as SkullMeta).playerProfile?.let { state.setPlayerProfile(it) }
+        state.update(true, false)
+    }
     if (blockData is Tripwire || type == Material.CHORUS_PLANT) return true
     if (blockData is Sapling && face != BlockFace.UP) return false
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
@@ -167,9 +172,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (state is Sign && face == BlockFace.DOWN) return false
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
-    if (type.toString().contains("CORAL") && !type.toString()
-            .endsWith("CORAL_BLOCK") && face == BlockFace.DOWN
-    ) return false
+    if (face == BlockFace.DOWN && type.toString().contains("CORAL") && !type.toString().endsWith("CORAL_BLOCK")) return false
     if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
