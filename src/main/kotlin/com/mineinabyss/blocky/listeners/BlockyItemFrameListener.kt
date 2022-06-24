@@ -122,7 +122,6 @@ class BlockyItemFrameListener : Listener {
         val block = clickedBlock ?: return
 
         if (block.type != Material.BARRIER || player.isSneaking) return
-        if (player.inventory.itemInMainHand.type != Material.AIR) return
 
         val frames = block.location.getNearbyEntitiesByType(ItemFrame::class.java, 20.0)
         frames.forEach { frame ->
@@ -132,6 +131,7 @@ class BlockyItemFrameListener : Listener {
                 if (stand.passengers.isEmpty()) stand.addPassenger(player)
             }
         }
+        isCancelled = player.inventory.itemInMainHand.type != Material.AIR
     }
 
 }

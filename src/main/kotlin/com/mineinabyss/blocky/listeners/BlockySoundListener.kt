@@ -21,7 +21,7 @@ import org.bukkit.event.player.PlayerMoveEvent
 
 class BlockySoundListener : Listener {
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun BlockDamageEvent.onStartBreaking() {
         if (block.blockSoundGroup.hitSound != Sound.BLOCK_WOOD_HIT) return
         if (instaBreak || player.gameMode == GameMode.CREATIVE) return
@@ -37,12 +37,12 @@ class BlockySoundListener : Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun BlockDamageAbortEvent.onStopBreaking() {
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun PlayerMoveEvent.onStep() {
         val block = player.location.block.getRelative(BlockFace.DOWN)
         if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
@@ -59,7 +59,7 @@ class BlockySoundListener : Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun BlockBreakEvent.onBreak() {
         if (block.blockSoundGroup.breakSound != Sound.BLOCK_WOOD_BREAK) return
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
@@ -69,7 +69,7 @@ class BlockySoundListener : Listener {
         block.world.playSound(block.location, sound, 1.0f, 0.8f)
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun BlockPlaceEvent.onPlace() {
         if (block.blockSoundGroup.placeSound != Sound.BLOCK_WOOD_PLACE) return
         val geary = block.getGearyEntityFromBlock()
