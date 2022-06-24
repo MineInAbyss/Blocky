@@ -450,14 +450,22 @@ fun Block.getRightBlock(player: Player): Block {
 private fun Player.getRelativeFacing(): BlockFace {
     val yaw = location.yaw.toDouble()
     return when {
-        (yaw >= 337.5 || yaw in 0.0..22.5 || yaw >= -22.5 && yaw <= 0.0 || yaw <= -337.5 && yaw <= 0.0) -> BlockFace.SOUTH
-        (yaw in 22.5..67.5 || yaw in -337.5..-292.5) -> BlockFace.SOUTH_WEST
-        (yaw in 67.5..112.5 || yaw in -292.5..-247.5) -> BlockFace.WEST
-        (yaw in 112.5..157.5 || yaw in -247.5..-202.5) -> BlockFace.NORTH_WEST
-        (yaw in 157.5..202.5 || yaw in -202.5..-157.5) -> BlockFace.NORTH
-        (yaw in 202.5..247.5 || yaw in -157.5..-112.5) -> BlockFace.NORTH_EAST
-        (yaw in 247.5..292.5 || yaw in -112.5..-67.5) -> BlockFace.EAST
-        (yaw in 292.5..337.5 || yaw in -67.5..-22.5) -> BlockFace.SOUTH_EAST
+        (yaw >= 348.75 || yaw in 0.0..11.25 || yaw >= -11.25 && yaw <= 0.0 || yaw <= -348.75 && yaw <= 0.0) -> BlockFace.SOUTH
+        (yaw in 11.25..33.75 || yaw in -348.75..-326.25) -> BlockFace.SOUTH_SOUTH_WEST
+        (yaw in 33.75..56.25 || yaw in -326.25..-303.75) -> BlockFace.SOUTH_WEST
+        (yaw in 56.25..78.75 || yaw in -303.75..-281.25) -> BlockFace.WEST_SOUTH_WEST
+        (yaw in 78.75..101.25 || yaw in -281.25..-258.75) -> BlockFace.WEST
+        (yaw in 101.25..123.75 || yaw in -258.75..-236.25) -> BlockFace.WEST_NORTH_WEST
+        (yaw in 123.75..146.25 || yaw in -236.25..-213.75) -> BlockFace.NORTH_WEST
+        (yaw in 146.25..168.75 || yaw in -213.75..-191.25) -> BlockFace.NORTH_NORTH_WEST
+        (yaw in 168.75..191.25 || yaw in -191.25..-168.75) -> BlockFace.NORTH
+        (yaw in 191.25..213.75 || yaw in -168.75..-146.25) -> BlockFace.NORTH_NORTH_EAST
+        (yaw in 213.75..236.25 || yaw in -146.25..-123.75) -> BlockFace.NORTH_EAST
+        (yaw in 236.25..258.75 || yaw in -123.75..-101.25) -> BlockFace.EAST_NORTH_EAST
+        (yaw in 258.75..281.25 || yaw in -101.25..-78.75) -> BlockFace.EAST
+        (yaw in 281.25..303.75 || yaw in -78.75..-56.25) -> BlockFace.EAST_SOUTH_EAST
+        (yaw in 303.75..326.25 || yaw in -56.25..-33.75) -> BlockFace.SOUTH_EAST
+        (yaw in 326.25..348.75 || yaw in -33.75..-11.25) -> BlockFace.SOUTH_SOUTH_EAST
         else -> facing
     }
 }
