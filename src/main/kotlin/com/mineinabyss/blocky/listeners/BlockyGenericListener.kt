@@ -1,6 +1,9 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.Bukkit
@@ -115,7 +118,6 @@ class BlockyGenericListener : Listener {
         val gearyItem = item?.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
-        val blockySound = gearyItem.get<BlockySound>()
         val against = clickedBlock ?: return
         if ((against.type.isInteractable && against.getPrefabFromBlock()
                 ?.toEntity() == null) && !player.isSneaking
@@ -132,7 +134,6 @@ class BlockyGenericListener : Listener {
             gearyItem.getBlockyNoteBlock(blockFace)
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, newData) ?: return
 
-        if (gearyItem.has<BlockySound>()) placed.world.playSound(placed.location, blockySound!!.placeSound, 1.0f, 0.8f)
         if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
     }
 
