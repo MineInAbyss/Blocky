@@ -39,6 +39,7 @@ class BlockyPlugin : JavaPlugin() {
 
         registerEvents(
             BlockyGenericListener(),
+            BlockySoundListener(),
             BlockyNoteBlockListener(),
             BlockyTripwireListener(),
             BlockyChorusPlantListener(),

@@ -6,7 +6,6 @@ import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.BlockyLight
-import com.mineinabyss.blocky.components.BlockySound
 import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
@@ -38,7 +37,6 @@ fun breakTripwireBlock(block: Block, player: Player?) {
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
     block.state.update(true, false)
 
-    if (gearyBlock.has<BlockySound>()) block.world.playSound(block.location, gearyBlock.get<BlockySound>()!!.placeSound, 1.0f, 0.8f)
     if (gearyBlock.has<BlockyLight>()) removeBlockLight(block.location)
     if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
