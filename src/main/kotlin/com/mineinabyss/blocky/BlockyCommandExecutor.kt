@@ -10,6 +10,9 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.LootyFactory
+import com.mineinabyss.looty.ecs.components.itemcontexts.PlayerInventorySlotContext
+import com.mineinabyss.looty.ecs.components.itemcontexts.useWithLooty
+import com.mineinabyss.looty.loadItem
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -28,8 +31,16 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         player.error("No empty slots in inventory")
                         return@playerAction
                     }
+                    val item = LootyFactory.createFromPrefab(PrefabKey.of(type))
+                    if (item == null) {
+                        player.error("$type exists but is not a block.")
+                        return@playerAction
+                    }
 
-                    player.inventory.setItem(slot, LootyFactory.createFromPrefab(PrefabKey.of(type)))
+                    item.useWithLooty {
+                        PlayerInventorySlotContext(player, slot).loadItem(this)
+                    }
+                    player.inventory.setItem(slot, item)
                 }
             }
             "menu" {
