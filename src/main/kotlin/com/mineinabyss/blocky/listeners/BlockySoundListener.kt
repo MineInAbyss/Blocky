@@ -13,7 +13,6 @@ import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
 import org.bukkit.block.BlockFace
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
@@ -21,6 +20,7 @@ import org.bukkit.event.block.BlockDamageAbortEvent
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.player.PlayerMoveEvent
 
 class BlockySoundListener : Listener {
 
@@ -59,11 +59,22 @@ class BlockySoundListener : Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    fun EntityMoveEvent.onStep() {
+    fun EntityMoveEvent.onMobStep() {
         val block = entity.location.block.getRelative(BlockFace.DOWN)
         if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
+        if (from.block == to.block || from.y != to.y || entity.isJumping) return
+
+        val geary = block.getGearyEntityFromBlock()
+        val sound = geary?.get<BlockySound>()?.stepSound ?: Sound.BLOCK_STONE_STEP
+        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun PlayerMoveEvent.onPlayerStep() {
+        val block = player.location.block.getRelative(BlockFace.DOWN)
+        if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
         if (from.block == to.block || from.y != to.y) return
-        if ((entity is Player && (entity as Player).isSneaking) || entity.isJumping) return
+        if (player.isSneaking || player.isJumping) return
 
         val geary = block.getGearyEntityFromBlock()
         val sound = geary?.get<BlockySound>()?.stepSound ?: Sound.BLOCK_STONE_STEP
