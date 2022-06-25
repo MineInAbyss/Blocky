@@ -1,11 +1,20 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.helpers.isBlockyLeaf
-import com.mineinabyss.blocky.helpers.leafConfig
+import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyLight
+import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.looty.tracking.toGearyOrNull
+import org.bukkit.GameMode
+import org.bukkit.Material
 import org.bukkit.event.EventHandler
+import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
+import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.inventory.EquipmentSlot
 
 class BlockyLeafListener : Listener {
 
@@ -14,30 +23,65 @@ class BlockyLeafListener : Listener {
         isCancelled = leafConfig.disableAllLeafDecay
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         isCancelled = blocks.any { it.isBlockyLeaf() }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
         isCancelled = blocks.any { it.isBlockyLeaf() }
     }
 
     @EventHandler
-    fun PlayerInteractEvent.preBlockyLeafPlace() {
+    fun PlayerInteractEvent.onPreBlockyLeafPlace() {
+        if (action != Action.RIGHT_CLICK_BLOCK) return
+        if (hand != EquipmentSlot.HAND) return
 
+        val gearyItem = item?.toGearyOrNull(player) ?: return
+        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
+        val against = clickedBlock ?: return
+        if ((against.type.isInteractable && against.getPrefabFromBlock()
+                ?.toEntity() == null) && !player.isSneaking
+        ) return
+
+        if (!gearyItem.has<BlockyInfo>()) return
+        if (blockyBlock.blockType != BlockType.LEAF) return
+
+        val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, blockyBlock.getBlockyLeaf()) ?: return
+        if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
     }
 
-    @EventHandler
-    fun BlockPlaceEvent.onLeafPlace() {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockPlaceEvent.onPlacingBlockyBlock() {
+        val gearyItem = itemInHand.toGearyOrNull(player) ?: return
+        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
 
+        if (!gearyItem.has<BlockyInfo>()) return
+        if (blockyBlock.blockType != BlockType.LEAF) return
+
+        block.setBlockData(blockyBlock.getBlockyLeaf(), false)
+        player.swingMainHand()
     }
 
-    @EventHandler
-    fun BlockBreakEvent.onLeafBreak() {
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockBreakEvent.onBreakingBlockyBlock() {
+        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
 
+        if (!block.isBlockyLeaf()) return
+        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
+        breakBlockyBlock(block, player)
+        isDropItems = false
     }
 
-
+    @EventHandler(ignoreCancelled = true)
+    fun EntityExplodeEvent.onExplodingBlocky() {
+        blockList().forEach { block ->
+            val prefab = block.getGearyEntityFromBlock() ?: return@forEach
+            if (!block.isBlockyLeaf()) return@forEach
+            if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
+            block.setType(Material.AIR, false)
+        }
+    }
 }

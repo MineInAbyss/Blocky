@@ -29,8 +29,10 @@ import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
 val config = BlockyConfig.data
+val noteConfig = config.noteBlocks
+val tripwireConfig = config.tripWires
+val chorusConfig = config.chorusPlant
 val leafConfig = config.leafBlocks
-val soundConfig = config.blockSounds
 
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
@@ -85,8 +87,6 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
 fun Block.getGearyEntityFromBlock() = getPrefabFromBlock()?.toEntity()
 
 fun Block.isBlockyBlock() = getGearyEntityFromBlock()?.has<BlockyBlock>() ?: false
-
-fun Block.isBlockyCubeBlock() = (type == Material.NOTE_BLOCK || type == Material.CHORUS_PLANT)
 
 fun BlockFace.isCardinal() =
     this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST

@@ -12,7 +12,7 @@ fun BlockyBlock.getBlockyLeaf(): BlockData {
 }
 
 fun Block.isBlockyLeaf(): Boolean {
-    return blockMap.contains(blockData) && blockData is Leaves && leafList.contains(type)
+    return blockMap.contains(blockData) && leafList.contains(type)
 }
 
 // Azalea before Acacia because of biome tinting

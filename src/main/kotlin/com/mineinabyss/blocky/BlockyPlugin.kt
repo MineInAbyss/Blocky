@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.helpers.createBlockMap
-import com.mineinabyss.blocky.helpers.createTagRegistryMap
+import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
@@ -33,30 +32,29 @@ class BlockyPlugin : JavaPlugin() {
         reloadConfig()
         BlockyConfig.load()
 
-        // Generates a filled blockMap
-
         BlockyCommandExecutor()
 
         registerEvents(
             BlockyGenericListener(),
             BlockySoundListener(),
-            BlockyNoteBlockListener(),
-            BlockyTripwireListener(),
-            BlockyChorusPlantListener(),
-            BlockyLeafListener(),
             BlockyItemFrameListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
             WorldEditListener()
         )
 
+        if (leafConfig.isEnabled) registerEvents(BlockyLeafListener())
+        if (noteConfig.isEnabled) registerEvents(BlockyNoteBlockListener())
+        if (chorusConfig.isEnabled) registerEvents(BlockyChorusPlantListener())
+        if (tripwireConfig.isEnabled) registerEvents(BlockyTripwireListener())
+
         gearyAddon {
             autoscan("com.mineinabyss") {
                 all()
             }
         }
+
         blockMap = createBlockMap()
         registryTagMap = createTagRegistryMap()
-
     }
 }
