@@ -11,5 +11,5 @@ data class BlockyBlock (
 )
 
 enum class BlockType {
-    CUBE, GROUND, TRANSPARENT
+    CUBE, GROUND, TRANSPARENT, LEAF
 }

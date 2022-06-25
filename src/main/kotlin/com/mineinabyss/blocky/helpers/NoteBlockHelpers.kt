@@ -17,6 +17,8 @@ fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == id }.keys.first() as NoteBlock
 }
 
+fun Block.isBlockyNoteBlock() : Boolean = blockMap.contains(blockData) && type == Material.NOTE_BLOCK
+
 fun Block.updateNoteBlockAbove() {
     val above = getRelative(BlockFace.UP)
     above.state.update(true, true)
