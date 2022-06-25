@@ -43,6 +43,7 @@ class BlockyPlugin : JavaPlugin() {
             BlockyNoteBlockListener(),
             BlockyTripwireListener(),
             BlockyChorusPlantListener(),
+            BlockyLeafListener(),
             BlockyItemFrameListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),

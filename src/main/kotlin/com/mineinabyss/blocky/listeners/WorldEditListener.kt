@@ -99,6 +99,9 @@ class WorldEditListener : Listener {
                         data.isDisarmed,
                         data.isPowered
                     )
+                //TODO Finish this
+                BlockType.LEAF ->
+                    String.format("")
             }
         message = message.replace(argId, blockData, true)
     }

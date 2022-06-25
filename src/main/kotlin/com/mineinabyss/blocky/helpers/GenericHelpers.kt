@@ -29,6 +29,8 @@ import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
 val config = BlockyConfig.data
+val leafConfig = config.leafBlocks
+val soundConfig = config.blockSounds
 
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
@@ -168,7 +170,9 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (state is Sign && face == BlockFace.DOWN) return false
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
-    if (face == BlockFace.DOWN && type.toString().contains("CORAL") && !type.toString().endsWith("CORAL_BLOCK")) return false
+    if (face == BlockFace.DOWN && type.toString().contains("CORAL") && !type.toString()
+            .endsWith("CORAL_BLOCK")
+    ) return false
     if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
@@ -406,6 +410,19 @@ fun createBlockMap(): Map<BlockData, Int> {
         if (k shr 5 and 1 == 1) chorusData.setFace(BlockFace.DOWN, true)
 
         blockMap.putIfAbsent(chorusData, k)
+    }
+
+    // Calculates leaf states
+    // Should waterlogged be used aswell?
+    for (l in 1..63) {
+        val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
+        val distance = getLeafDistance(l)
+        if (distance == 1 && leafConfig.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
+
+        leafData.isPersistent = true
+        leafData.distance = distance
+        // Due to map using material before distance the Int is scued by 1 if set to reserve 1 state
+        blockMap.putIfAbsent(leafData, getBlockMapEntryForLeaf(l))
     }
 
     return blockMap
