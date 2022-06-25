@@ -4,6 +4,7 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.BlockySound
 import com.mineinabyss.blocky.components.PlayerIsMining
+import com.mineinabyss.blocky.helpers.config
 import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.time.ticks
@@ -30,7 +31,7 @@ class BlockySoundListener : Listener {
         if (instaBreak || player.gameMode == GameMode.CREATIVE) return
 
         val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.hitSound ?: Sound.BLOCK_STONE_HIT
+        val sound = geary?.get<BlockySound>()?.hitSound ?: config.woodHitSound
         player.toGeary().getOrSet { PlayerIsMining() }
         blockyPlugin.launch {
             do {
@@ -43,7 +44,7 @@ class BlockySoundListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockDamageAbortEvent.onStopBreaking() {
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
-        player.stopSound( block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound ?: Sound.BLOCK_STONE_HIT)
+        player.stopSound( block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound ?: config.woodHitSound)
     }
 
     // Unsure on this, should probably calculate falldistance instead
@@ -51,10 +52,10 @@ class BlockySoundListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun EntityDamageEvent.onFall() {
         val block = entity.location.block.getRelative(BlockFace.DOWN)
-        if (block.blockSoundGroup.fallSound != Sound.BLOCK_STONE_FALL) return
+        if (block.blockSoundGroup.fallSound != Sound.BLOCK_WOOD_FALL) return
 
         val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.fallSound ?: Sound.BLOCK_STONE_FALL
+        val sound = geary?.get<BlockySound>()?.fallSound ?: config.woodFallSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
@@ -65,7 +66,7 @@ class BlockySoundListener : Listener {
         if (from.block == to.block || from.y != to.y || entity.isJumping) return
 
         val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.stepSound ?: Sound.BLOCK_STONE_STEP
+        val sound = geary?.get<BlockySound>()?.stepSound ?: config.woodStepSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
@@ -77,7 +78,7 @@ class BlockySoundListener : Listener {
         if (player.isSneaking || player.isJumping) return
 
         val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.stepSound ?: Sound.BLOCK_STONE_STEP
+        val sound = geary?.get<BlockySound>()?.stepSound ?: config.woodStepSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
@@ -87,7 +88,7 @@ class BlockySoundListener : Listener {
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
 
         val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.breakSound ?: Sound.BLOCK_STONE_BREAK
+        val sound = geary?.get<BlockySound>()?.breakSound ?: config.woodBreakSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
@@ -95,7 +96,7 @@ class BlockySoundListener : Listener {
     fun BlockPlaceEvent.onPlace() {
         if (block.blockSoundGroup.placeSound != Sound.BLOCK_WOOD_PLACE) return
         val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.placeSound ?: Sound.BLOCK_STONE_PLACE
+        val sound = geary?.get<BlockySound>()?.placeSound ?: config.woodPlaceSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 }

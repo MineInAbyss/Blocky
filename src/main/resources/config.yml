@@ -1,1 +1,6 @@
-debug: false
+# Replacement sounds for wood as its entirely removed in resourcepack
+woodPlaceSound: "blocky:wood_place"
+woodBreakSound: "blocky:wood_break"
+woodHitSound: "blocky:wood_hit"
+woodStepSound: "blocky:wood_step"
+woodFallSound: "blocky:wood_fall"

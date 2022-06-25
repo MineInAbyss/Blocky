@@ -20,8 +20,8 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 
 fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
-    val type = placedAgainst.type
-    return if (REPLACEABLE_BLOCKS.contains(type)) placedAgainst else {
+
+    return if (placedAgainst.isReplaceable) placedAgainst else {
         val target = placedAgainst.getRelative(blockFace)
         if (!target.type.isAir && target.type != Material.WATER) null else target
     }

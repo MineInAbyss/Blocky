@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.BlockyConfig
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.blockMap
@@ -27,11 +28,7 @@ import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
-val REPLACEABLE_BLOCKS =
-    listOf(
-        Material.SNOW, Material.VINE, Material.GRASS, Material.TALL_GRASS, Material.SEAGRASS, Material.FERN,
-        Material.LARGE_FERN
-    )
+val config = BlockyConfig.data
 
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
