@@ -80,9 +80,14 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
     }?.key ?: return null
 }
 
-fun Block.getGearyEntityFromBlock(): GearyEntity? {
-    return getPrefabFromBlock()?.toEntity()
-}
+fun Block.getGearyEntityFromBlock() = getPrefabFromBlock()?.toEntity()
+
+fun Block.isBlockyBlock() = getGearyEntityFromBlock()?.has<BlockyBlock>() ?: false
+
+fun Block.isBlockyCubeBlock() = (type == Material.NOTE_BLOCK || type == Material.CHORUS_PLANT)
+
+fun BlockFace.isCardinal() =
+    this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 
 fun placeBlockyBlock(
     player: Player,

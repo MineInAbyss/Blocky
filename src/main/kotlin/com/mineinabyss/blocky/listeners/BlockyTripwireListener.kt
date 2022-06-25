@@ -44,7 +44,7 @@ class BlockyTripwireListener : Listener {
             block.state.update(true, false)
         }
 
-        BlockFace.values().filter { it.isCartesian && it.modY == 0 && it != BlockFace.SELF }.forEach { f ->
+        BlockFace.values().filter { it.isCardinal() }.forEach { f ->
             val changed = block.getRelative(f)
             if (changed.type != Material.TRIPWIRE) return@forEach
 
@@ -104,23 +104,19 @@ class BlockyTripwireListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
+        if (block.type != Material.TRIPWIRE) return
         BlockFace.values().forEach { face ->
-            if (block.getRelative(face).type == Material.TRIPWIRE && block.type != Material.TRIPWIRE) {
-                if (block.getGearyEntityFromBlock()
-                        ?.has<BlockyBlock>() != true && player.gameMode != GameMode.CREATIVE
-                )
-                    block.drops.forEach {
-                        player.world.dropItemNaturally(block.location, it)
-                    }
-                block.setType(Material.AIR, false)
-                blockyPlugin.launch {
-                    delay(1)
-                    fixClientsideUpdate(block.location)
-                }
+            if (block.getRelative(face).type != Material.TRIPWIRE) return@forEach
+            if (!block.isBlockyBlock() && player.gameMode != GameMode.CREATIVE)
+                block.drops.forEach { player.world.dropItemNaturally(block.location, it) }
+
+            block.setType(Material.AIR, false)
+            blockyPlugin.launch {
+                delay(1)
+                fixClientsideUpdate(block.location)
             }
         }
 
-        if (block.type != Material.TRIPWIRE) return
         breakTripwireBlock(block, player)
         isDropItems = false
     }
@@ -137,18 +133,19 @@ class BlockyTripwireListener : Listener {
     fun PlayerInteractEvent.prePlaceBlockyWire() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
-        if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock?.location!!) is Tripwire) {
+        val clickedBlock = clickedBlock ?: return
+        if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock.location) is Tripwire) {
             isCancelled = true
             return
         }
-        if (clickedBlock?.type?.isInteractable == true && !player.isSneaking) return
+        if (clickedBlock.type.isInteractable && !player.isSneaking) return
 
         // Fixes tripwire updating when placing blocks next to it
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (clickedBlock?.getRelative(it)?.getGearyEntityFromBlock() == null) return@forEach
-                placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, Bukkit.createBlockData(item!!.type))
-                fixClientsideUpdate(clickedBlock!!.location)
+                if (clickedBlock.getRelative(it).getGearyEntityFromBlock() == null) return@forEach
+                placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, Bukkit.createBlockData(item!!.type))
+                fixClientsideUpdate(clickedBlock.location)
             }
         }
 
@@ -159,7 +156,7 @@ class BlockyTripwireListener : Listener {
 
         val lightLevel = blockyWire.get<BlockyLight>()?.lightLevel
         val placedWire =
-            placeBlockyBlock(player, hand!!, item!!, clickedBlock!!, blockFace, wireBlock.getBlockyTripWire()) ?: return
+            placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
         if (blockyWire.has<BlockyLight>())
             createBlockLight(placedWire.location, lightLevel!!)

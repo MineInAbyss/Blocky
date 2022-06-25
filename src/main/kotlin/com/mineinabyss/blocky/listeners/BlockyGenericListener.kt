@@ -26,26 +26,15 @@ class BlockyGenericListener : Listener {
 
     @EventHandler
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        if (blocks.stream().anyMatch
-            {
-                it.type == Material.NOTE_BLOCK ||
-                        it.type == Material.CHORUS_PLANT ||
-                        it.type == Material.CHORUS_FLOWER
-            }
-        ) isCancelled = true
+        isCancelled = blocks.any { it.isBlockyCubeBlock() }
     }
 
     @EventHandler
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
-        if (blocks.stream().anyMatch
-            {
-                it.type == Material.NOTE_BLOCK ||
-                        it.type == Material.CHORUS_PLANT ||
-                        it.type == Material.CHORUS_FLOWER
-            }
-        ) isCancelled = true
+        isCancelled = blocks.any { it.isBlockyCubeBlock() }
     }
 
+    //TODO Split this up and handle priority better
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onInteractBlockyBlock() {
         val block = clickedBlock ?: return
@@ -165,7 +154,7 @@ class BlockyGenericListener : Listener {
     fun BlockBreakEvent.onBreakingBlockyBlock() {
         val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
 
-        if ((block.type != Material.CHORUS_PLANT && block.type != Material.NOTE_BLOCK) || isCancelled || !isDropItems) return
+        if (!block.isBlockyCubeBlock()) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
         breakBlockyBlock(block, player)
         isDropItems = false

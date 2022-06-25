@@ -17,11 +17,11 @@ fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == id }.keys.first() as NoteBlock
 }
 
-fun updateAndCheck(loc: Location) {
-    val block = loc.block.getRelative(BlockFace.UP)
-    if (block.type == Material.NOTE_BLOCK) block.state.update(true, true)
-    val nextBlock = block.getRelative(BlockFace.UP)
-    if (nextBlock.type == Material.NOTE_BLOCK) updateAndCheck(block.location)
+fun Block.updateNoteBlockAbove() {
+    val above = getRelative(BlockFace.UP)
+    above.state.update(true, true)
+    if (above.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
+        above.updateNoteBlockAbove()
 }
 
 fun Block.isVanillaNoteBlock(): Boolean {
