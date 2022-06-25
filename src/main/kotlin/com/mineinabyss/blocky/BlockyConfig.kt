@@ -35,6 +35,7 @@ object BlockyConfig : IdofrontConfig<BlockyConfig.Data>(blockyPlugin, Data.seria
     @Serializable
     data class BlockyLeafConfig(
         val isEnabled: Boolean = true,
+        val disableBurnForBlockyLeaves: Boolean = false,
         val disableAllLeafDecay: Boolean = false,
         val shouldReserveOnePersistentLeafPerType: Boolean = true, // if true 54 leaf blocks else 63 leaf blocks
     )

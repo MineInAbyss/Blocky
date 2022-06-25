@@ -8,5 +8,7 @@ blockSounds:
   woodFallSound: "block.stone.fall"
 
 leafBlocks:
+  isEnable: true
+  disableBurnForBlockyLeaves: false
   disableAllLeafDecay: false
   shouldReserveOnePersistentLeafPerType: true

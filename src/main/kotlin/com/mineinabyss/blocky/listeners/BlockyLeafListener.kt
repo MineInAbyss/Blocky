@@ -1,9 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyLight
+import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
@@ -31,6 +28,13 @@ class BlockyLeafListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
         isCancelled = blocks.any { it.isBlockyLeaf() }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun BlockBurnEvent.onBurnBlockyLeaf() {
+        if (!block.isBlockyLeaf()) return
+        if (leafConfig.disableBurnForBlockyLeaves) isCancelled = true
+        if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() == true) isCancelled = false
     }
 
     @EventHandler

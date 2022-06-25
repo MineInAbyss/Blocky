@@ -3,10 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.BlockType
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyLight
+import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
@@ -38,6 +35,12 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
         isCancelled = blocks.any { it.isBlockyNoteBlock() }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    fun BlockBurnEvent.onBurnBlockyNoteBlock() {
+        if (!block.isBlockyNoteBlock()) return
+        if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
