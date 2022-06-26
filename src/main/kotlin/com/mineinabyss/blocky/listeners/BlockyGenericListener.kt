@@ -109,6 +109,7 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
+        block.isBlockyType() || return
         when {
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
             !noteConfig.isEnabled && itemInHand.type != Material.NOTE_BLOCK -> return

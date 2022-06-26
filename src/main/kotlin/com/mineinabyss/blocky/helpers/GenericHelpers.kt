@@ -41,6 +41,10 @@ fun breakBlockyBlock(block: Block, player: Player?) {
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
 }
 
+fun Block.isBlockyType(): Boolean {
+    return type == Material.NOTE_BLOCK || type == Material.TRIPWIRE || type == Material.CHORUS_PLANT || type == Material.STRING || (leafList.contains(type) && (blockData as Leaves).isPersistent)
+}
+
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
