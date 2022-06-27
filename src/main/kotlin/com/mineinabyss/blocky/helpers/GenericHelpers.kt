@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
+import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.BlockyConfig
@@ -156,7 +157,7 @@ fun placeBlockyBlock(
         } else newData.soundGroup.placeSound
 
     if (player.gameMode != GameMode.CREATIVE) {
-        if (item.type.toString().contains("BUCKET")) item.type = Material.BUCKET
+        if (MaterialTags.BUCKETS.isTagged(item)) item.type = Material.BUCKET
         else item.amount = item.amount - 1
     }
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
@@ -174,15 +175,13 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (blockData is Sapling && face != BlockFace.UP) return false
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
     if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
-    if (type.toString().endsWith("TORCH") && face == BlockFace.DOWN) return false
+    if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
     if (state is Sign && face == BlockFace.DOWN) return false
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
-    if (face == BlockFace.DOWN && type.toString().contains("CORAL") && !type.toString()
-            .endsWith("CORAL_BLOCK")
-    ) return false
-    if (type.toString().endsWith("CORAL") && getRelative(BlockFace.DOWN).type == Material.AIR) return false
-    if (type.toString().endsWith("_CORAL_FAN") && face != BlockFace.UP)
+    if (isCoralNotBlock() && face == BlockFace.DOWN) return false
+    if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
+    if (MaterialTags.CORAL_FANS.isTagged(this) && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
     if (data is Waterlogged) handleWaterlogged(face)
     if (data is Ageable) {
@@ -192,13 +191,10 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     }
     if ((data is Door || data is Bed || data is Chest || data is Bisected) && data !is Stairs && data !is TrapDoor)
         if (!handleDoubleBlocks(player)) return false
-    if ((state is Skull || state is Sign || type.toString()
-            .contains("TORCH")) && face != BlockFace.DOWN && face != BlockFace.UP
-    )
-        handleWallAttachable(player, face)
+    if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(player, face)
 
     if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
-        if (data is MultipleFacing && face == BlockFace.UP) return false
+        if (data is MultipleFacing && data !is GlassPane && face == BlockFace.UP) return false
         if (data is CoralWallFan && face == BlockFace.DOWN) return false
         handleDirectionalBlocks(face)
     }
@@ -224,7 +220,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
         setBlockData(data, false)
     }
 
-    if (type.toString().endsWith("ANVIL")) {
+    if (Tag.ANVIL.isTagged(type)) {
         (data as Directional).facing = getAnvilFacing(face)
         setBlockData(data, false)
     }
@@ -254,11 +250,11 @@ private fun Block.handleWaterlogged(face: BlockFace) {
 private fun Block.handleWallAttachable(player: Player, face: BlockFace) {
     if (state is Sign) player.openSign(state as Sign)
     type =
-        if (type.toString().endsWith("TORCH"))
+        if (MaterialTags.TORCHES.isTagged(this))
             Material.valueOf(type.toString().replace("TORCH", "WALL_TORCH"))
-        else if (type.toString().endsWith("SIGN"))
+        else if (Tag.STANDING_SIGNS.isTagged(type))
             Material.valueOf(type.toString().replace("_SIGN", "_WALL_SIGN"))
-        else if (type.toString().endsWith("SKULL"))
+        else if (type.toString().endsWith("SKULL") && !type.toString().endsWith("_WALL_SKULL"))
             Material.valueOf(type.toString().replace("_SKULL", "_WALL_SKULL"))
         else Material.valueOf(type.toString().replace("_HEAD", "_WALL_HEAD"))
 
@@ -346,7 +342,7 @@ private fun Block.handleHalfBlocks(player: Player) {
 private fun Block.handleRotatableBlocks(player: Player) {
     val data = blockData.clone() as Rotatable
     data.rotation =
-        if ("SKULL" in type.toString() || "HEAD" in type.toString()) player.getRelativeFacing()
+        if (MaterialTags.SKULLS.isTagged(this)) player.getRelativeFacing()
         else player.getRelativeFacing().oppositeFace
     setBlockData(data, false)
 }
@@ -499,6 +495,10 @@ fun getAnvilFacing(face: BlockFace): BlockFace {
         BlockFace.WEST -> BlockFace.SOUTH
         else -> BlockFace.NORTH
     }
+}
+
+private fun Block.isCoralNotBlock(): Boolean {
+    return (MaterialTags.CORAL.isTagged(this) || MaterialTags.CORAL_FANS.isTagged(this))
 }
 
 /**

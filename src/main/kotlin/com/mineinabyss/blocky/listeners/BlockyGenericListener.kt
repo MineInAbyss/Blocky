@@ -1,10 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
+import com.destroystokyo.paper.MaterialTags
 import com.mineinabyss.blocky.helpers.*
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.Material
-import org.bukkit.Sound
+import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Slab
@@ -30,7 +28,7 @@ class BlockyGenericListener : Listener {
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
             val data = Bukkit.createBlockData(type)
-            if (type.toString().endsWith("ANVIL"))
+            if (Tag.ANVIL.isTagged(type))
                 (data as Directional).facing = getAnvilFacing(blockFace)
             block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
             isCancelled = true
@@ -47,7 +45,7 @@ class BlockyGenericListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
         if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
 
-        if (type.toString().endsWith("SLAB") && relative.type == type) {
+        if (Tag.SLABS.isTagged(type) && relative.type == type) {
             val sound = relative.blockSoundGroup
             val data = (relative.blockData as Slab)
             data.type = Slab.Type.DOUBLE
@@ -81,30 +79,19 @@ class BlockyGenericListener : Listener {
             return
         }
 
-        val bucketCheck = type.toString().endsWith("_BUCKET")
+        MaterialTags.BUCKETS.isTagged(type) || return
         val bucketBlock = type.toString().replace("_BUCKET", "")
         val bucketEntity = runCatching { EntityType.valueOf(bucketBlock) }.getOrNull()
 
-        if (bucketCheck && type != Material.MILK_BUCKET) {
-            if (bucketEntity == null)
+        if (MaterialTags.BUCKETS.isTagged(type) && type != Material.MILK_BUCKET) {
+            if (!MaterialTags.FISH_BUCKETS.isTagged(type))
                 type = Material.getMaterial(bucketBlock) ?: return
             else {
                 type = Material.WATER
-                player.world.spawnEntity(relative.location.add(0.5, 0.0, 0.5), bucketEntity)
+                player.world.spawnEntity(relative.location.add(0.5, 0.0, 0.5), bucketEntity!!)
             }
         }
         block.setType(type, false)
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun PlayerInteractEvent.onInteractBlockyBlock() {
-        val block = clickedBlock ?: return
-        val item = item ?: return
-        val type = item.clone().type
-
-        if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
-        if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, Bukkit.createBlockData(type))
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

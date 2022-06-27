@@ -7,6 +7,7 @@ import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
@@ -43,7 +44,7 @@ class BlockyNoteBlockListener : Listener {
         if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
 
@@ -54,6 +55,17 @@ class BlockyNoteBlockListener : Listener {
                 playBlockyNoteBlock(block, player)
             }
         }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun PlayerInteractEvent.onInteractBlockyNoteBlock() {
+        val block = clickedBlock ?: return
+        val item = item ?: return
+        val type = item.clone().type
+
+        if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
+        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, Bukkit.createBlockData(type))
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
@@ -84,7 +96,9 @@ class BlockyNoteBlockListener : Listener {
         if (!gearyItem.has<BlockyInfo>()) return
         if (blockyBlock.blockType != BlockType.CUBE) return
 
-        val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace)) ?: return
+        val placed =
+            placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace))
+                ?: return
         if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
     }
 
