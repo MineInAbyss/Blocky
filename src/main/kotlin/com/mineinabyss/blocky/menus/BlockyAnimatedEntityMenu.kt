@@ -4,8 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mineinabyss.blocky.BlockyTypeQuery
 import com.mineinabyss.blocky.BlockyTypeQuery.key
-import com.mineinabyss.blocky.components.BlockyEntity
-import com.mineinabyss.blocky.components.EntityType
+import com.mineinabyss.blocky.components.BlockyModelEngine
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
@@ -15,9 +14,7 @@ import com.mineinabyss.guiy.modifiers.size
 fun BlockyUIScope.BlockyAnimatedEntityMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
-            BlockyTypeQuery.filter {
-                it.entity.get<BlockyEntity>()?.entityType == EntityType.MODEL_ENGINE
-            }
+            BlockyTypeQuery.filter { it.entity.has<BlockyModelEngine>() }
         }.sortedBy { it.key.key }.forEach { HandleMenuClicks(it.key, player) }
     }
     BackButton(Modifier.at(0, 5))
