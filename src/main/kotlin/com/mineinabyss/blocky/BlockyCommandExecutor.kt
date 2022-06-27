@@ -1,14 +1,17 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.helpers.createBlockMap
+import com.mineinabyss.blocky.components.BlockyModelEngine
 import com.mineinabyss.blocky.menus.BlockyMainMenu
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.inventory.guiy
 import com.mineinabyss.idofront.commands.CommandHolder
+import com.mineinabyss.idofront.commands.arguments.intArg
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.messaging.error
+import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.ecs.components.itemcontexts.PlayerInventorySlotContext
 import com.mineinabyss.looty.ecs.components.itemcontexts.useWithLooty
@@ -49,9 +52,24 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     guiy { BlockyMainMenu(player) }
                 }
             }
-            "map" {
-                blockMap.toMutableMap().clear()
-                blockMap = createBlockMap()
+            "modelengine" {
+                "remove" {
+                    val radius by intArg { default = 10 }
+                    val type by optionArg(options = blockyModelEngineQuery) {
+                        parseErrorMessage = { "No such block: $passed" }
+                    }
+                    playerAction {
+                        val player = sender as Player
+                        val entities =
+                            player.location.getNearbyEntities(radius.toDouble(), radius.toDouble(), radius.toDouble())
+                                .filter { it.toGeary().has<BlockyModelEngine>() }
+                        if (entities.isNotEmpty()) for (entity in entities) {
+                            if (!entity.toGeary().instanceOf(PrefabKey.of(type).toEntity() ?: continue)) continue
+                            entity.remove()
+                            player.success("Removed ${type}'s in a radius of $radius")
+                        } else player.error("No ${type}'s in a radius of $radius")
+                    }
+                }
             }
         }
     }
@@ -64,12 +82,21 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "blocky") {
             when (args.size) {
-                1 -> listOf("give", "menu")
+                1 -> listOf("give", "menu", "modelengine")
                 2 -> {
                     when (args[0]) {
                         "give" ->
-                            blockyQuery.filter { it.startsWith(args[1]) || it.replace("mineinabyss:", "").startsWith(args[1]) }
+                            blockyQuery.filter {
+                                it.startsWith(args[1]) || it.replace("mineinabyss:", "").startsWith(args[1])
+                            }
+                        "modelengine" -> listOf("remove")
                         "menu" -> emptyList()
+                        else -> emptyList()
+                    }
+                }
+                3 -> {
+                    when (args[0]) {
+                        "modelengine" -> blockyModelEngineQuery
                         else -> emptyList()
                     }
                 }

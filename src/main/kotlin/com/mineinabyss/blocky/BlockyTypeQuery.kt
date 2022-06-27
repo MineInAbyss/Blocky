@@ -2,6 +2,7 @@ package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyModelEngine
 import com.mineinabyss.geary.datatypes.family.MutableFamilyOperations.Companion.has
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -21,4 +22,14 @@ object BlockyTypeQuery : GearyQuery() {
     }
 }
 
+object BlockyModelEngineQuery : GearyQuery() {
+    val TargetScope.key by get<PrefabKey>()
+    val TargetScope.modelEngine by family {
+        has<LootyType>()
+        has<Prefab>()
+        has<BlockyModelEngine>()
+    }
+}
+
 val blockyQuery = BlockyTypeQuery.filter { it.entity.has<BlockyInfo>() }.map { it.key.toString() }
+val blockyModelEngineQuery = BlockyModelEngineQuery.map { it.key.toString() }

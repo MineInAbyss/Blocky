@@ -43,6 +43,8 @@ class BlockyPlugin : JavaPlugin() {
             WorldEditListener()
         )
 
+        //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
+        if (server.pluginManager.isPluginEnabled("Mobzy")) registerEvents(BlockyModelEngineListener())
         if (leafConfig.isEnabled) registerEvents(BlockyLeafListener())
         if (noteConfig.isEnabled) registerEvents(BlockyNoteBlockListener())
         if (chorusConfig.isEnabled) registerEvents(BlockyChorusPlantListener())
