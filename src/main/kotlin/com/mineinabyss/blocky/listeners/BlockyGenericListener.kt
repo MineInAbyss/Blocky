@@ -109,12 +109,12 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
-        block.isBlockyType() || return
         when {
-            //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
+            itemInHand.isBlockyBlock(player) -> return
             !noteConfig.isEnabled && itemInHand.type != Material.NOTE_BLOCK -> return
             !chorusConfig.isEnabled && itemInHand.type != Material.CHORUS_PLANT -> return
             !tripwireConfig.isEnabled && itemInHand.type != Material.STRING -> return
+            //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
 
         block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)

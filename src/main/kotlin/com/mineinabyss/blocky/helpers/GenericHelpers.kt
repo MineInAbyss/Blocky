@@ -45,6 +45,10 @@ fun Block.isBlockyType(): Boolean {
     return type == Material.NOTE_BLOCK || type == Material.TRIPWIRE || type == Material.CHORUS_PLANT || type == Material.STRING || (leafList.contains(type) && (blockData as Leaves).isPersistent)
 }
 
+fun ItemStack.isBlockyBlock(player: Player) : Boolean {
+    return toGearyOrNull(player)?.has<BlockyBlock>() == true
+}
+
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
