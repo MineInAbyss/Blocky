@@ -111,9 +111,10 @@ class BlockyGenericListener : Listener {
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         when {
             itemInHand.isBlockyBlock(player) -> return
-            !noteConfig.isEnabled && itemInHand.type != Material.NOTE_BLOCK -> return
-            !chorusConfig.isEnabled && itemInHand.type != Material.CHORUS_PLANT -> return
-            !tripwireConfig.isEnabled && itemInHand.type != Material.STRING -> return
+            !blockPlaced.isBlockyBlock() -> return
+            !noteConfig.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
+            !chorusConfig.isEnabled && itemInHand.type == Material.CHORUS_PLANT -> return
+            !tripwireConfig.isEnabled && itemInHand.type == Material.STRING -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
 
