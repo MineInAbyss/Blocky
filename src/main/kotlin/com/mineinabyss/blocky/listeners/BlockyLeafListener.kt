@@ -77,7 +77,7 @@ class BlockyLeafListener : Listener {
 
         if (!block.isBlockyLeaf()) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-        breakBlockyBlock(block, player)
+        attemptBreakBlockyBlock(block, player)
         isDropItems = false
     }
 

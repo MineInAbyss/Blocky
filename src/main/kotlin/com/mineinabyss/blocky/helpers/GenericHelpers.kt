@@ -13,6 +13,7 @@ import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
 import org.bukkit.block.*
@@ -28,10 +29,12 @@ import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
+import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
@@ -53,11 +56,17 @@ const val stoneHitSound = "blocky.stone.hit"
 const val stoneStepSound = "blocky.stone.step"
 const val stoneFallSound = "blocky.stone.fall"
 
-fun breakBlockyBlock(block: Block, player: Player?) {
+fun attemptBreakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
+    val itemInHand = player?.inventory?.itemInMainHand
 
     if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
+    if (player != null && player.gameMode != GameMode.CREATIVE)
+        if (itemInHand != null && itemInHand.hasItemMeta() && itemInHand is Damageable)
+            PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
+
+    block.setType(Material.AIR, false)
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {

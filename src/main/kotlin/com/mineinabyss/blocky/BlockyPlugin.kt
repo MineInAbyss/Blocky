@@ -1,5 +1,7 @@
 package com.mineinabyss.blocky
 
+import com.comphenix.protocol.ProtocolLibrary
+import com.comphenix.protocol.ProtocolManager
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.listeners.*
@@ -28,12 +30,12 @@ import org.bukkit.block.data.type.Tripwire
 import org.bukkit.plugin.java.JavaPlugin
 
 val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::class.java) }
+val protocolManager: ProtocolManager get() = ProtocolLibrary.getProtocolManager()
 var blockMap = mapOf<BlockData, Int>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 
 interface BlockyContext {
     companion object : BlockyContext by getService()
-
 }
 
 class BlockyPlugin : JavaPlugin() {
@@ -49,6 +51,7 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
         CustomBlockData.registerListener(blockyPlugin)
+        //protocolManager.addPacketListener(CustomBreakingSpeedSystem())
 
         registerEvents(
             BlockyGenericListener(),
