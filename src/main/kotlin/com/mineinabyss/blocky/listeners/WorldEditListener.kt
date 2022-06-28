@@ -102,6 +102,8 @@ class WorldEditListener : Listener {
                 //TODO Finish this
                 BlockType.LEAF ->
                     String.format("")
+                BlockType.CAVEVINE ->
+                    String.format("")
             }
         message = message.replace(argId, blockData, true)
     }

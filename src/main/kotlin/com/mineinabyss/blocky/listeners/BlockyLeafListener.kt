@@ -15,7 +15,7 @@ import org.bukkit.inventory.EquipmentSlot
 
 class BlockyLeafListener : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun LeavesDecayEvent.onLeafDecay() {
         isCancelled = leafConfig.disableAllLeafDecay
     }
@@ -37,7 +37,7 @@ class BlockyLeafListener : Listener {
         if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() == true) isCancelled = false
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEvent.onPreBlockyLeafPlace() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
