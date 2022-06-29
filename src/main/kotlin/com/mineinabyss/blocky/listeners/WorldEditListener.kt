@@ -6,12 +6,15 @@ import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.helpers.getBlockyNoteBlock
 import com.mineinabyss.blocky.helpers.getBlockyTransparent
 import com.mineinabyss.blocky.helpers.getBlockyTripWire
+import com.mineinabyss.blocky.helpers.leafList
 import com.mineinabyss.geary.papermc.helpers.toPrefabKey
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.MultipleFacing
+import org.bukkit.block.data.type.CaveVines
+import org.bukkit.block.data.type.Leaves
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.event.EventHandler
@@ -35,8 +38,7 @@ class WorldEditListener : Listener {
         val data =
             if (type == BlockType.GROUND) {
                 prefab.get<BlockyBlock>()!!.getBlockyTripWire()
-            }
-            else if (argId.endsWith("[direction=up]")) {
+            } else if (argId.endsWith("[direction=up]")) {
                 if (type == BlockType.CUBE)
                     prefab.getBlockyNoteBlock(BlockFace.UP)
                 else prefab.getBlockyTransparent(BlockFace.UP)
@@ -99,11 +101,19 @@ class WorldEditListener : Listener {
                         data.isDisarmed,
                         data.isPowered
                     )
-                //TODO Finish this
                 BlockType.LEAF ->
-                    String.format("")
+                    String.format(
+                        "%s[distance=%s,persistent=true,waterlogged=false]",
+                        leafList[blockMap[data]!!].toString().lowercase(),
+                        (data as Leaves).distance
+                    )
                 BlockType.CAVEVINE ->
-                    String.format("")
+                    String.format(
+                        "%s[age=%s,berries=%s]",
+                        Material.CAVE_VINES.toString().lowercase(),
+                        (data as CaveVines).age,
+                        data.isBerries
+                    )
             }
         message = message.replace(argId, blockData, true)
     }
