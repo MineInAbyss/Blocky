@@ -102,6 +102,7 @@ class BlockyGenericListener : Listener {
             !noteConfig.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !chorusConfig.isEnabled && itemInHand.type == Material.CHORUS_PLANT -> return
             !tripwireConfig.isEnabled && itemInHand.type == Material.STRING -> return
+            !caveVineConfig.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
 

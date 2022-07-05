@@ -34,6 +34,7 @@ val noteConfig = config.noteBlocks
 val tripwireConfig = config.tripWires
 val chorusConfig = config.chorusPlant
 val leafConfig = config.leafBlocks
+val caveVineConfig = config.caveVineBlocks
 
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
@@ -137,13 +138,8 @@ fun placeBlockyBlock(
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
-    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true) {
-        val placable = targetBlock.getGearyEntityFromBlock()?.get<BlockyPlacableOn>() ?: return null
-
-        if (against.getPrefabFromBlock() !in placable.blockyBlocks &&
-            !against.isInProvidedTags(placable.blockTags) && against.type !in placable.blocks
-        ) blockPlaceEvent.isCancelled = true
-    }
+    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && targetBlock.isPlacableOn(face))
+        blockPlaceEvent.isCancelled = true
 
     if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
@@ -171,7 +167,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
         (item.itemMeta as SkullMeta).playerProfile?.let { state.setPlayerProfile(it) }
         state.update(true, false)
     }
-    if (blockData is Tripwire || type == Material.CHORUS_PLANT) return true
+    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
     if (blockData is Sapling && face != BlockFace.UP) return false
     if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
     if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
@@ -379,7 +375,7 @@ fun createBlockMap(): Map<BlockData, Int> {
     val blockMap = mutableMapOf<BlockData, Int>()
 
     // Calculates tripwire states
-    for (i in 0..127) {
+    if (tripwireConfig.isEnabled) for (i in 0..127) {
         val tripWireData = Bukkit.createBlockData(Material.TRIPWIRE) as Tripwire
         if (i and 1 == 1) tripWireData.setFace(BlockFace.NORTH, true)
         if (i shr 1 and 1 == 1) tripWireData.setFace(BlockFace.EAST, true)
@@ -393,7 +389,7 @@ fun createBlockMap(): Map<BlockData, Int> {
     }
 
     // Calculates noteblock states
-    for (j in 0..799) {
+    if (noteConfig.isEnabled) for (j in 0..799) {
         val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
         if (j >= 399) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
         else noteBlockData.instrument = Instrument.getByType((j / 25 % 400).toByte()) ?: continue
@@ -404,7 +400,7 @@ fun createBlockMap(): Map<BlockData, Int> {
     }
 
     // Calculates chorus plant states
-    for (k in 0..63) {
+    if (chorusConfig.isEnabled) for (k in 0..63) {
         val chorusData = Bukkit.createBlockData(Material.CHORUS_PLANT) as MultipleFacing
         if (k and 1 == 1) chorusData.setFace(BlockFace.NORTH, true)
         if (k shr 1 and 1 == 1) chorusData.setFace(BlockFace.EAST, true)
@@ -418,7 +414,7 @@ fun createBlockMap(): Map<BlockData, Int> {
 
     // Calculates leaf states
     // Should waterlogged be used aswell?
-    for (l in 1..63) {
+    if (leafConfig.isEnabled)  for (l in 1..63) {
         val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
         val distance = getLeafDistance(l)
         if (distance == 1 && leafConfig.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
@@ -427,6 +423,16 @@ fun createBlockMap(): Map<BlockData, Int> {
         leafData.distance = distance
         // Due to map using material before distance the Int is scued by 1 if set to reserve 1 state
         blockMap.putIfAbsent(leafData, getBlockMapEntryForLeaf(l))
+    }
+
+    // Calculates cave-vine states
+    if (caveVineConfig.isEnabled) {
+        for (m in 1..50) {
+            val vineData = Bukkit.createBlockData(Material.CAVE_VINES) as CaveVines
+            vineData.isBerries = m > 25
+            vineData.age = if (m > 25) m - 25 else m
+            blockMap.putIfAbsent(vineData, m)
+        }
     }
 
     return blockMap

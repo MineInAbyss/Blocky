@@ -49,7 +49,7 @@ class BlockyPlugin : JavaPlugin() {
         if (noteConfig.isEnabled) registerEvents(BlockyNoteBlockListener())
         if (chorusConfig.isEnabled) registerEvents(BlockyChorusPlantListener())
         if (tripwireConfig.isEnabled) registerEvents(BlockyTripwireListener())
-
+        if (caveVineConfig.isEnabled) registerEvents(BlockyCaveVineListener())
         gearyAddon {
             autoscan("com.mineinabyss") {
                 all()

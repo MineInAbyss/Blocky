@@ -30,12 +30,12 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        isCancelled = blocks.any { it.isBlockyNoteBlock() }
+        if (blocks.any { it.isBlockyNoteBlock() }) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
-        isCancelled = blocks.any { it.isBlockyNoteBlock() }
+        if (blocks.any { it.isBlockyNoteBlock() }) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
