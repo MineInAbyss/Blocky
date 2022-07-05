@@ -17,17 +17,17 @@ class BlockyLeafListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun LeavesDecayEvent.onLeafDecay() {
-        isCancelled = leafConfig.disableAllLeafDecay
+        if (leafConfig.disableAllLeafDecay) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        isCancelled = blocks.any { it.isBlockyLeaf() }
+        if (blocks.any { it.isBlockyLeaf() }) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
-        isCancelled = blocks.any { it.isBlockyLeaf() }
+        if (blocks.any { it.isBlockyLeaf() }) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
