@@ -93,7 +93,7 @@ class BlockyTripwireListener : Listener {
                         block,
                         blockFace,
                         blockyBlock.getBlockyTripWire()
-                    )
+                    ) ?: return
                 } ?: return
             }
             player.swingMainHand()
@@ -105,7 +105,7 @@ class BlockyTripwireListener : Listener {
         if (block.type != Material.TRIPWIRE) return
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type != Material.TRIPWIRE) return@forEach
-            if (!block.isBlockyBlock() && player.gameMode != GameMode.CREATIVE)
+            if (block.isBlockyBlock() && player.gameMode != GameMode.CREATIVE)
                 block.drops.forEach { player.world.dropItemNaturally(block.location, it) }
 
             block.setType(Material.AIR, false)

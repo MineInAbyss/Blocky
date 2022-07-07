@@ -10,6 +10,7 @@ object BlockyConfig : IdofrontConfig<BlockyConfig.Data>(blockyPlugin, Data.seria
         val tripWires: BlockyTripwireConfig,
         val chorusPlant: BlockyChorusPlantConfig,
         val leafBlocks: BlockyLeafConfig,
+        val caveVineBlocks: BlockyCaveVineConfig,
         val disableCustomSounds: Boolean = false,
     )
 
@@ -39,5 +40,10 @@ object BlockyConfig : IdofrontConfig<BlockyConfig.Data>(blockyPlugin, Data.seria
         val disableBurnForBlockyLeaves: Boolean = false,
         val disableAllLeafDecay: Boolean = false,
         val shouldReserveOnePersistentLeafPerType: Boolean = true, // if true 54 leaf blocks else 63 leaf blocks
+    )
+
+    @Serializable
+    data class BlockyCaveVineConfig(
+        val isEnabled: Boolean = false,
     )
 }
