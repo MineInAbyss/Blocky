@@ -8,8 +8,8 @@ import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
 import com.mineinabyss.blocky.helpers.noteConfig
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.time.ticks
-import io.papermc.paper.event.entity.EntityMoveEvent
 import kotlinx.coroutines.delay
+import org.bukkit.GameEvent
 import org.bukkit.GameMode
 import org.bukkit.Sound
 import org.bukkit.SoundCategory
@@ -20,8 +20,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageAbortEvent
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.event.player.PlayerMoveEvent
+import org.bukkit.event.world.GenericGameEvent
 
 class BlockySoundListener : Listener {
 
@@ -47,39 +46,25 @@ class BlockySoundListener : Listener {
         player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound ?: noteConfig.woodHitSound)
     }
 
-    // Unsure on this, should probably calculate falldistance instead
-    // Doesnt count for creative mode etc
     @EventHandler(ignoreCancelled = true)
-    fun EntityDamageEvent.onFall() {
-        val block = entity.location.block.getRelative(BlockFace.DOWN)
+    fun GenericGameEvent.onFall() {
+        val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
+        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.fallSound ?: noteConfig.woodFallSound
+
         if (block.blockSoundGroup.fallSound != Sound.BLOCK_WOOD_FALL) return
+        if (event != GameEvent.HIT_GROUND) return
 
-        val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.fallSound ?: noteConfig.woodFallSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
     @EventHandler(ignoreCancelled = true)
-    fun EntityMoveEvent.onMobStep() {
-        val block = entity.location.block.getRelative(BlockFace.DOWN)
+    fun GenericGameEvent.onStep() {
+        val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
+        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.stepSound ?: noteConfig.woodStepSound
+
         if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
-        if (from.block == to.block || from.y != to.y || entity.isJumping) return
+        if (event != GameEvent.STEP) return
 
-        val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.stepSound ?: noteConfig.woodStepSound
-        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun PlayerMoveEvent.onPlayerStep() {
-        val block = player.location.block.getRelative(BlockFace.DOWN)
-        if (player.gameMode == GameMode.SPECTATOR) return
-        if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
-        if (from.block == to.block || from.y != to.y) return
-        if (player.isSneaking || player.isJumping) return
-
-        val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.stepSound ?: noteConfig.woodStepSound
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
