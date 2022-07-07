@@ -1,5 +1,8 @@
-# Replacement sounds for wood as its entirely removed in resourcepack
+# If you wish to use vanilla sounds, set this to true
+# Keep in mind it disables all custom sounds from place/break/hit etc
+disableCustomSounds: false
 
+# Replacement sounds for wood as its entirely removed in resourcepack
 noteBlocks:
   isEnabled: true
   woodPlaceSound: "block.stone.place"

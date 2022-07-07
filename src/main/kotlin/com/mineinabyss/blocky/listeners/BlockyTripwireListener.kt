@@ -28,9 +28,7 @@ class BlockyTripwireListener : Listener {
 
     @EventHandler
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        val wireList = blocks.stream().filter { it.type == Material.TRIPWIRE }.toList()
-
-        wireList.forEach { wire ->
+        blocks.filter { it.type == Material.TRIPWIRE }.forEach { wire ->
             val gearyEntity = wire.getPrefabFromBlock() ?: return@forEach
             wire.world.dropItemNaturally(wire.location, LootyFactory.createFromPrefab(gearyEntity)!!)
             wire.type = Material.AIR

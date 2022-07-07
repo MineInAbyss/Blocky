@@ -36,7 +36,6 @@ class BlockyPlugin : JavaPlugin() {
 
         registerEvents(
             BlockyGenericListener(),
-            BlockySoundListener(),
             BlockyItemFrameListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
@@ -49,6 +48,7 @@ class BlockyPlugin : JavaPlugin() {
         if (noteConfig.isEnabled) registerEvents(BlockyNoteBlockListener())
         if (chorusConfig.isEnabled) registerEvents(BlockyChorusPlantListener())
         if (tripwireConfig.isEnabled) registerEvents(BlockyTripwireListener())
+        if (!BlockyConfig.data.disableCustomSounds) registerEvents(BlockySoundListener())
 
         gearyAddon {
             autoscan("com.mineinabyss") {

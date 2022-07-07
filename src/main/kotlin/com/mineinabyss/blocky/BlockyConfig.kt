@@ -9,7 +9,8 @@ object BlockyConfig : IdofrontConfig<BlockyConfig.Data>(blockyPlugin, Data.seria
         val noteBlocks: BlockyNoteBlockConfig,
         val tripWires: BlockyTripwireConfig,
         val chorusPlant: BlockyChorusPlantConfig,
-        val leafBlocks: BlockyLeafConfig
+        val leafBlocks: BlockyLeafConfig,
+        val disableCustomSounds: Boolean = false,
     )
 
     @Serializable

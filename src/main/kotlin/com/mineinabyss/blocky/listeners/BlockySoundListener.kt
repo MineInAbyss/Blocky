@@ -44,7 +44,7 @@ class BlockySoundListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockDamageAbortEvent.onStopBreaking() {
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
-        player.stopSound( block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound ?: noteConfig.woodHitSound)
+        player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound ?: noteConfig.woodHitSound)
     }
 
     // Unsure on this, should probably calculate falldistance instead
@@ -73,6 +73,7 @@ class BlockySoundListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun PlayerMoveEvent.onPlayerStep() {
         val block = player.location.block.getRelative(BlockFace.DOWN)
+        if (player.gameMode == GameMode.SPECTATOR) return
         if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
         if (from.block == to.block || from.y != to.y) return
         if (player.isSneaking || player.isJumping) return
