@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockyPlugin
@@ -7,18 +8,18 @@ import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import org.bukkit.Bukkit
-import org.bukkit.GameMode
-import org.bukkit.Material
-import org.bukkit.NamespacedKey
+import kotlinx.coroutines.delay
+import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
+import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.world.GenericGameEvent
 import org.bukkit.inventory.EquipmentSlot
 
 class BlockyNoteBlockListener : Listener {
@@ -68,7 +69,7 @@ class BlockyNoteBlockListener : Listener {
         if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, Bukkit.createBlockData(type))
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
         if (block.type == Material.NOTE_BLOCK) {
             isCancelled = true
@@ -79,6 +80,19 @@ class BlockyNoteBlockListener : Listener {
             }
             if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
                 block.updateNoteBlockAbove()
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun GenericGameEvent.disableRedstone() {
+        val block = location.block
+        val data = block.blockData.clone() as? NoteBlock ?: return
+
+        if (!block.isBlockyNoteBlock() || event != GameEvent.NOTE_BLOCK_PLAY) return
+
+        blockyPlugin.launch {
+            delay(1)
+            block.setBlockData(data, false)
         }
     }
 

@@ -221,7 +221,7 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
         setBlockData(data, false)
     }
 
-    if (state is BlockInventoryHolder && ((item.itemMeta as BlockStateMeta).blockState is Container)) {
+    if (state is BlockInventoryHolder && ((item.itemMeta as BlockStateMeta).blockState is BlockInventoryHolder)) {
         ((item.itemMeta as BlockStateMeta).blockState as Container).inventory.forEach { i ->
             if (i != null) state.inventory.addItem(i)
         }
