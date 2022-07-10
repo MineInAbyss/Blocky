@@ -164,20 +164,14 @@ fun placeBlockyBlock(
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
     val data = blockData.clone()
     val state = state
+    val booleanChecks = booleanChecks(face, item)
     if (state is Skull && item.itemMeta is SkullMeta) {
         (item.itemMeta as SkullMeta).playerProfile?.let { state.setPlayerProfile(it) }
         state.update(true, false)
     }
-    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
-    if (blockData is Sapling && face != BlockFace.UP) return false
-    if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
-    if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
-    if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
-    if (state is Sign && face == BlockFace.DOWN) return false
+    if (booleanChecks != null) return booleanChecks
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
-    if (isCoralNotBlock() && face == BlockFace.DOWN) return false
-    if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (MaterialTags.CORAL_FANS.isTagged(this) && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
     if (data is Waterlogged) handleWaterlogged(face)
@@ -191,8 +185,6 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(player, face)
 
     if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
-        if (data is MultipleFacing && data !is GlassPane && face == BlockFace.UP) return false
-        if (data is CoralWallFan && face == BlockFace.DOWN) return false
         handleDirectionalBlocks(face)
     }
 
@@ -236,6 +228,21 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (state is Sign) player.openSign(state)
 
     return true
+}
+
+private fun Block.booleanChecks(face: BlockFace, item: ItemStack): Boolean? {
+    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
+    else if (blockData is Sapling && face != BlockFace.UP) return false
+    else if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
+    else if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
+    else if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
+    else if (state is Sign && face == BlockFace.DOWN) return false
+    else if (isCoralNotBlock() && face == BlockFace.DOWN) return false
+    else if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
+    else if (blockData is MultipleFacing && blockData !is GlassPane && face == BlockFace.UP) return false
+    else if (blockData is CoralWallFan && face == BlockFace.DOWN) return false
+
+    return null
 }
 
 private fun Block.handleWaterlogged(face: BlockFace) {
