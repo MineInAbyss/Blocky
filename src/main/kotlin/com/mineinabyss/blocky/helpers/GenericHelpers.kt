@@ -19,6 +19,7 @@ import org.bukkit.block.data.*
 import org.bukkit.block.data.type.*
 import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
+import org.bukkit.block.data.type.Lectern
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockPlaceEvent
@@ -218,6 +219,11 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
 
     if (Tag.ANVIL.isTagged(type)) {
         (data as Directional).facing = getAnvilFacing(face)
+        setBlockData(data, false)
+    }
+
+    if (data is Lectern) {
+        data.facing = player.facing.oppositeFace
         setBlockData(data, false)
     }
 
