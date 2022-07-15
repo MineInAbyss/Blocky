@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
+import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.BlockyConfig
 import com.mineinabyss.blocky.BlockyTypeQuery
@@ -22,6 +23,7 @@ import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Lectern
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
@@ -55,23 +57,26 @@ fun ItemStack.isBlockyBlock(player: Player) : Boolean {
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
+    gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
+}
 
-    gearyBlock.get<BlockyInfo>()?.blockDrop?.map {
+fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
+    this.forEach {
         val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
             if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
                 it.silkTouchedDrop.toItemStack()
             else it.item.toItemStack()
-
-        if (player?.gameMode == GameMode.CREATIVE) return
         val amount =
             if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
                 tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
             else tempAmount
 
-        for (j in 1..amount) block.location.world.dropItemNaturally(block.location, item)
-    } ?: return
+        if (player?.gameMode == GameMode.CREATIVE) return
+
+        for (j in 1..amount) location.world.dropItemNaturally(location, item)
+    }
 }
 
 fun Block.getPrefabFromBlock(): PrefabKey? {
@@ -159,6 +164,13 @@ fun placeBlockyBlock(
     }
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     return targetBlock
+}
+
+//TODO Make sure this still removes it and that it doesnt need to be also cleared later
+fun Block.clearCustomBlockData(event: Event) {
+    if (CustomBlockData.hasCustomBlockData(this, blockyPlugin)) {
+        CustomBlockDataRemoveEvent(blockyPlugin, this, event).callEvent()
+    }
 }
 
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {

@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky
 
+import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.autoscan
@@ -33,6 +34,7 @@ class BlockyPlugin : JavaPlugin() {
         BlockyConfig.load()
 
         BlockyCommandExecutor()
+        CustomBlockData.registerListener(blockyPlugin)
 
         registerEvents(
             BlockyGenericListener(),

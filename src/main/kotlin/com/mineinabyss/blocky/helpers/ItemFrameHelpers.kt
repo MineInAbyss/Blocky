@@ -4,6 +4,7 @@ import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
@@ -18,6 +19,7 @@ import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
 
 fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 
@@ -77,28 +79,58 @@ fun GearyEntity.placeBlockyFrame(
     gearyFrame.getOrSetPersisting { BlockyBarrierHitbox() }
 
     if (gearyItem.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
-        getLocations(yaw, loc, gearyItem.get<BlockyEntity>()?.collisionHitbox!!).forEach { adjacentLoc ->
-            val block = adjacentLoc.block
-            block.setType(Material.BARRIER, false)
-            gearyFrame.get<BlockyBarrierHitbox>()?.barriers?.add(block.location)
-
-            if (gearyItem.has<BlockyLight>())
-                createBlockLight(adjacentLoc, gearyItem.get<BlockyLight>()!!.lightLevel)
-            if (gearyItem.has<BlockySeat>()) {
-                gearyItem.get<BlockySeat>()?.heightOffset?.let {
-                    gearyItem.get<BlockySeat>()?.yaw?.let { it1 ->
-                        spawnSeat(
-                            adjacentLoc, it1,
-                            it
-                        )
-                    }
-                }
-                gearyFrame.get<BlockySeatLocations>()?.seats?.add(adjacentLoc)
-            }
-        }
+       newFrame.placeBarrierHitbox(yaw, loc, player)
     } else if (gearyItem.has<BlockyLight>()) createBlockLight(loc, gearyItem.get<BlockyLight>()!!.lightLevel)
 
     return newFrame
+}
+
+fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
+    val gearyItem = item.toGearyOrNull(player) ?: return
+    toGearyOrNull() ?: return
+
+    getLocations(yaw, loc, gearyItem.get<BlockyEntity>()?.collisionHitbox!!).forEach { adjacentLoc ->
+        adjacentLoc.block.setType(Material.BARRIER, false)
+        toGeary().get<BlockyBarrierHitbox>()?.barriers?.add(adjacentLoc.block.location)
+
+        if (gearyItem.has<BlockyLight>())
+            createBlockLight(adjacentLoc, gearyItem.get<BlockyLight>()!!.lightLevel)
+        if (gearyItem.has<BlockySeat>()) {
+            gearyItem.get<BlockySeat>()?.heightOffset?.let { height ->
+                gearyItem.get<BlockySeat>()?.yaw?.let { yaw ->
+                    spawnSeat(adjacentLoc, yaw, height)
+                }
+            }
+            toGeary().get<BlockySeatLocations>()?.seats?.add(adjacentLoc)
+        }
+    }
+}
+
+fun ItemFrame.removeBlockyFrame(player: Player?, event: Event) {
+    this.toGearyOrNull()?.get<BlockyEntity>() ?: return
+    this.removeAssosiatedSeats()
+    this.clearAssosiatedBarrierChunkEntries(event)
+    handleFurnitureDrops(player)
+    removeBlockLight(this.location)
+    this.remove()
+}
+
+fun ItemFrame.clearAssosiatedBarrierChunkEntries(event: Event) {
+    toGearyOrNull()?.get<BlockyBarrierHitbox>()?.barriers?.forEach barrier@{ barrierLoc ->
+        barrierLoc.block.clearCustomBlockData(event)
+        barrierLoc.block.type = Material.AIR
+        removeBlockLight(barrierLoc)
+    }
+}
+
+fun Block.getAssociatedBlockyFrame(radius: Double) : ItemFrame? {
+    return location.getNearbyEntitiesByType(ItemFrame::class.java, radius)
+        .firstOrNull { it.toGearyOrNull() != null && it.toGeary().checkFrameHitbox(location) }
+}
+
+fun ItemFrame.handleFurnitureDrops(player: Player?) {
+    this.toGeary().has<GearyEntity>() || return
+    this.toGeary().get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, this.location) ?: return
 }
 
 fun GearyEntity.checkFrameHitbox(destination: Location): Boolean {
@@ -118,4 +150,23 @@ fun spawnSeat(loc: Location, yaw: Float, heightOffset: Double) {
         setGravity(false)
     }
     stand?.toGeary()?.getOrSetPersisting { BlockySeat() } ?: return
+}
+
+fun Block.sitOnSeat(player: Player) {
+    val frame = this.getAssociatedBlockyFrame(0.5) ?: return
+    if (frame.toGearyOrNull() == null) return
+    if (frame.toGeary().checkFrameHitbox(this.location) && frame.toGeary().has<BlockySeatLocations>()) {
+        val stand = this.location.toCenterLocation().getNearbyEntitiesByType(ArmorStand::class.java, 0.5).firstOrNull() ?: return
+        if (stand.passengers.isEmpty()) stand.addPassenger(player)
+    }
+}
+
+fun ItemFrame.removeAssosiatedSeats() {
+    val frame = this.toGearyOrNull() ?: return
+    frame.get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
+        seatLoc.getNearbyEntitiesByType(
+            ArmorStand::class.java,
+            frame.get<BlockySeat>()?.heightOffset?.times(2) ?: return@seatLoc
+        ).forEach seat@{ stand -> if (stand.toGeary().has<BlockySeat>()) stand.remove() }
+    }
 }
