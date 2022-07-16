@@ -73,6 +73,7 @@ fun GearyEntity.placeBlockyFrame(
             setRotation(rotation)
             setFacingDirection(facing, true)
         }
+
     val gearyItem = newFrame?.item?.toGearyOrNull(player) ?: return null
     val gearyFrame = newFrame.toGeary()
     gearyFrame.getOrSetPersisting { BlockySeatLocations() }

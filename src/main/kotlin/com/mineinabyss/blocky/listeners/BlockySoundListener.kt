@@ -47,25 +47,17 @@ class BlockySoundListener : Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    fun GenericGameEvent.onFall() {
+    fun GenericGameEvent.onSound() {
         val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
-        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.fallSound ?: noteConfig.woodFallSound
-
+        val blockySound = block.getGearyEntityFromBlock()?.get<BlockySound>()
         if (block.blockSoundGroup.fallSound != Sound.BLOCK_WOOD_FALL) return
-        if (event != GameEvent.HIT_GROUND) return
 
-        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun GenericGameEvent.onStep() {
-        val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
-        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.stepSound ?: noteConfig.woodStepSound
-
-        if (block.blockSoundGroup.stepSound != Sound.BLOCK_WOOD_STEP) return
-        if (event != GameEvent.STEP) return
-
-        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
+        val sound = when (event) {
+            GameEvent.STEP -> blockySound?.stepSound ?: noteConfig.woodStepSound
+            GameEvent.HIT_GROUND -> blockySound?.fallSound ?: noteConfig.woodFallSound
+            else -> return
+        }
+        block.world.playSound(block.location, sound, 1.0f, 1.0f)
     }
 
     @EventHandler(ignoreCancelled = true)
