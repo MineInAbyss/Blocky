@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -39,6 +40,7 @@ class BlockyLeafListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEvent.onPreBlockyLeafPlace() {
+        player.eyeLocation.getNearbyEntitiesByType(ItemFrame::class.java, 0.1, 0.1, 0.1).firstOrNull() ?: return
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
