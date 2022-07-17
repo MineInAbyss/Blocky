@@ -9,10 +9,7 @@ import com.mineinabyss.blocky.helpers.noteConfig
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.delay
-import org.bukkit.GameEvent
-import org.bukkit.GameMode
-import org.bukkit.Sound
-import org.bukkit.SoundCategory
+import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
@@ -49,7 +46,10 @@ class BlockySoundListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun GenericGameEvent.onSound() {
         val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
+        val currentBlock = entity?.location?.block ?: return
         val blockySound = block.getGearyEntityFromBlock()?.get<BlockySound>()
+
+        if (!currentBlock.isReplaceable || currentBlock.type == Material.TRIPWIRE) return
         if (block.blockSoundGroup.fallSound != Sound.BLOCK_WOOD_FALL) return
 
         val sound = when (event) {
