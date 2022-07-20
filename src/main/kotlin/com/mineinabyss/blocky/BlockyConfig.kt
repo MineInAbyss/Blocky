@@ -17,11 +17,11 @@ object BlockyConfig : IdofrontConfig<BlockyConfig.Data>(blockyPlugin, Data.seria
     @Serializable
     data class BlockyNoteBlockConfig(
         val isEnabled: Boolean = true,
-        val woodPlaceSound: String = "block.stone.place",
-        val woodBreakSound: String = "block.stone.break",
-        val woodHitSound: String = "block.stone.hit",
-        val woodStepSound: String = "block.stone.step",
-        val woodFallSound: String = "block.stone.fall",
+        val woodPlaceSound: String = "blocky.wood.place",
+        val woodBreakSound: String = "blocky.wood.break",
+        val woodHitSound: String = "blocky.wood.hit",
+        val woodStepSound: String = "blocky.wood.step",
+        val woodFallSound: String = "blocky.wood.fall",
     )
 
     @Serializable

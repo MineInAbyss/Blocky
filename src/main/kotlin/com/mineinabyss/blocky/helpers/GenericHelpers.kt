@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
+import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.BlockyConfig
 import com.mineinabyss.blocky.BlockyTypeQuery
@@ -19,8 +20,10 @@ import org.bukkit.block.data.*
 import org.bukkit.block.data.type.*
 import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
+import org.bukkit.block.data.type.Lectern
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
@@ -54,23 +57,26 @@ fun ItemStack.isBlockyBlock(player: Player) : Boolean {
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
+    gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
+}
 
-    gearyBlock.get<BlockyInfo>()?.blockDrop?.map {
+fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
+    this.forEach {
         val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
             if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
                 it.silkTouchedDrop.toItemStack()
             else it.item.toItemStack()
-
-        if (player?.gameMode == GameMode.CREATIVE) return
         val amount =
             if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
                 tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
             else tempAmount
 
-        for (j in 1..amount) block.location.world.dropItemNaturally(block.location, item)
-    } ?: return
+        if (player?.gameMode == GameMode.CREATIVE) return
+
+        for (j in 1..amount) location.world.dropItemNaturally(location, item)
+    }
 }
 
 fun Block.getPrefabFromBlock(): PrefabKey? {
@@ -160,23 +166,24 @@ fun placeBlockyBlock(
     return targetBlock
 }
 
+//TODO Make sure this still removes it and that it doesnt need to be also cleared later
+fun Block.clearCustomBlockData(event: Event) {
+    if (CustomBlockData.hasCustomBlockData(this, blockyPlugin)) {
+        CustomBlockDataRemoveEvent(blockyPlugin, this, event).callEvent()
+    }
+}
+
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
     val data = blockData.clone()
     val state = state
+    val booleanChecks = booleanChecks(face, item)
     if (state is Skull && item.itemMeta is SkullMeta) {
         (item.itemMeta as SkullMeta).playerProfile?.let { state.setPlayerProfile(it) }
         state.update(true, false)
     }
-    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
-    if (blockData is Sapling && face != BlockFace.UP) return false
-    if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
-    if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
-    if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
-    if (state is Sign && face == BlockFace.DOWN) return false
+    if (booleanChecks != null) return booleanChecks
     if (data !is Door && (data is Bisected || data is Slab)) handleHalfBlocks(player)
     if (data is Rotatable) handleRotatableBlocks(player)
-    if (isCoralNotBlock() && face == BlockFace.DOWN) return false
-    if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
     if (MaterialTags.CORAL_FANS.isTagged(this) && face != BlockFace.UP)
         type = Material.valueOf(type.toString().replace("_CORAL_FAN", "_CORAL_WALL_FAN"))
     if (data is Waterlogged) handleWaterlogged(face)
@@ -190,8 +197,6 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(player, face)
 
     if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
-        if (data is MultipleFacing && data !is GlassPane && face == BlockFace.UP) return false
-        if (data is CoralWallFan && face == BlockFace.DOWN) return false
         handleDirectionalBlocks(face)
     }
 
@@ -221,7 +226,12 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
         setBlockData(data, false)
     }
 
-    if (state is BlockInventoryHolder && ((item.itemMeta as BlockStateMeta).blockState is Container)) {
+    if (data is Lectern) {
+        data.facing = player.facing.oppositeFace
+        setBlockData(data, false)
+    }
+
+    if (state is BlockInventoryHolder && ((item.itemMeta as BlockStateMeta).blockState is BlockInventoryHolder)) {
         ((item.itemMeta as BlockStateMeta).blockState as Container).inventory.forEach { i ->
             if (i != null) state.inventory.addItem(i)
         }
@@ -230,6 +240,21 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     if (state is Sign) player.openSign(state)
 
     return true
+}
+
+private fun Block.booleanChecks(face: BlockFace, item: ItemStack): Boolean? {
+    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
+    else if (blockData is Sapling && face != BlockFace.UP) return false
+    else if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
+    else if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
+    else if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
+    else if (state is Sign && face == BlockFace.DOWN) return false
+    else if (isCoralNotBlock() && face == BlockFace.DOWN) return false
+    else if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
+    else if (blockData is MultipleFacing && blockData !is GlassPane && face == BlockFace.UP) return false
+    else if (blockData is CoralWallFan && face == BlockFace.DOWN) return false
+
+    return null
 }
 
 private fun Block.handleWaterlogged(face: BlockFace) {
