@@ -29,11 +29,11 @@ dependencies {
     compileOnly(libs.minecraft.mccoroutine)
 
     // Geary platform
-    compileOnly(blockylibs.geary.papermc.core)
-    compileOnly(blockylibs.geary.commons.papermc)
-    compileOnly(blockylibs.looty)
-    compileOnly(blockylibs.deeperworld)
-    compileOnly(blockylibs.guiy)
+    compileOnly(blockyLibs.geary.papermc.core)
+    compileOnly(blockyLibs.geary.commons.papermc)
+    compileOnly(blockyLibs.looty)
+    compileOnly(blockyLibs.deeperworld)
+    compileOnly(blockyLibs.guiy)
 
     // Other plugins
     compileOnly(libs.minecraft.plugin.modelengine)
@@ -42,10 +42,10 @@ dependencies {
     compileOnly(libs.minecraft.plugin.protocollib)
     compileOnly(libs.minecraft.headlib)
     compileOnly(libs.minecraft.anvilgui)
-    compileOnly(blockylibs.minecraft.plugin.lightapi)
-    compileOnly(blockylibs.minecraft.plugin.modelengine)
-    implementation(blockylibs.minecraft.plugin.customblockdata)
-    implementation(blockylibs.minecraft.plugin.morepersistentdatatypes)
+    compileOnly(blockyLibs.minecraft.plugin.lightapi)
+    compileOnly(blockyLibs.minecraft.plugin.modelengine)
+    implementation(blockyLibs.minecraft.plugin.customblockdata)
+    implementation(blockyLibs.minecraft.plugin.morepersistentdatatypes)
 
     implementation(libs.idofront.core)
     implementation(libs.idofront.nms)

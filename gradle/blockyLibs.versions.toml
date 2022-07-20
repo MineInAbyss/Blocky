@@ -2,7 +2,7 @@
 geary = "0.16.100"
 gearyaddons = "0.6.37"
 looty = "0.7.56"
-guiy="0.6.19"
+guiy="0.6.21"
 deeperworld="0.5.76"
 
 [libraries]
@@ -14,5 +14,5 @@ guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 
 minecraft-plugin-customblockdata = "com.jeff_media:CustomBlockData:2.0.0"
 minecraft-plugin-morepersistentdatatypes = "com.jeff_media:MorePersistentDataTypes:2.3.1"
-minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.2.0-Bukkit"
+minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.3.0-Bukkit"
 minecraft-plugin-modelengine = "com.ticxo.modelengine:api:R2.5.0"

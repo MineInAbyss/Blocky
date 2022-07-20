@@ -35,7 +35,7 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
-        create("blockylibs").from(files("gradle/blockylibs.versions.toml"))
+        create("blockyLibs").from(files("gradle/blockyLibs.versions.toml"))
     }
 }
 
