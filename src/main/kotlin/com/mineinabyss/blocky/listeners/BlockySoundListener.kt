@@ -45,6 +45,10 @@ class BlockySoundListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun GenericGameEvent.onSound() {
+        // Some builds of Paper apparently crash when this is fired for an unloaded chunk
+        // Usually only when going to new dimensions before it is fully loaded.
+        if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
+
         val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
         val currentBlock = entity?.location?.block ?: return
         val blockySound = block.getGearyEntityFromBlock()?.get<BlockySound>()

@@ -12,7 +12,13 @@ repositories {
     mavenCentral()
     maven("https://repo.mineinabyss.com/releases")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
+    //maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
+    maven { // Temp ModelEngine repo until normal is fixed
+        url = uri("https://mvn.lumine.io/repository/maven-public")
+        metadataSources {
+            artifact()
+        }
+    }
     maven("https://repo.dmulloy2.net/nexus/repository/public/") //ProtocolLib
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI

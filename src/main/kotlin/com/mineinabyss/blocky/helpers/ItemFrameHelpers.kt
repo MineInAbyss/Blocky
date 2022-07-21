@@ -80,7 +80,7 @@ fun GearyEntity.placeBlockyFrame(
     gearyFrame.getOrSetPersisting { BlockyBarrierHitbox() }
 
     if (gearyItem.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
-       newFrame.placeBarrierHitbox(yaw, loc, player)
+        newFrame.placeBarrierHitbox(yaw, loc, player)
     } else if (gearyItem.has<BlockyLight>()) createBlockLight(loc, gearyItem.get<BlockyLight>()!!.lightLevel)
 
     return newFrame
@@ -97,11 +97,8 @@ fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
         if (gearyItem.has<BlockyLight>())
             createBlockLight(adjacentLoc, gearyItem.get<BlockyLight>()!!.lightLevel)
         if (gearyItem.has<BlockySeat>()) {
-            gearyItem.get<BlockySeat>()?.heightOffset?.let { height ->
-                gearyItem.get<BlockySeat>()?.yaw?.let { yaw ->
-                    spawnSeat(adjacentLoc, yaw, height)
-                }
-            }
+            val seatYaw = gearyItem.get<BlockySeat>()?.yaw ?: (player.location.yaw - 180)
+            spawnSeat(adjacentLoc, seatYaw, gearyItem.get<BlockySeat>()?.heightOffset ?: 0.0)
             toGeary().get<BlockySeatLocations>()?.seats?.add(adjacentLoc)
         }
     }
@@ -124,7 +121,7 @@ fun ItemFrame.clearAssosiatedBarrierChunkEntries(event: Event) {
     }
 }
 
-fun Block.getAssociatedBlockyFrame(radius: Double) : ItemFrame? {
+fun Block.getAssociatedBlockyFrame(radius: Double): ItemFrame? {
     return location.getNearbyEntitiesByType(ItemFrame::class.java, radius)
         .firstOrNull { it.toGearyOrNull() != null && it.toGeary().checkFrameHitbox(location) }
 }
@@ -157,7 +154,8 @@ fun Block.sitOnSeat(player: Player) {
     val frame = this.getAssociatedBlockyFrame(0.5) ?: return
     if (frame.toGearyOrNull() == null) return
     if (frame.toGeary().checkFrameHitbox(this.location) && frame.toGeary().has<BlockySeatLocations>()) {
-        val stand = this.location.toCenterLocation().getNearbyEntitiesByType(ArmorStand::class.java, 0.5).firstOrNull() ?: return
+        val stand = this.location.toCenterLocation().getNearbyEntitiesByType(ArmorStand::class.java, 0.5).firstOrNull()
+            ?: return
         if (stand.passengers.isEmpty()) stand.addPassenger(player)
     }
 }
