@@ -4,8 +4,7 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.BlockySound
 import com.mineinabyss.blocky.components.PlayerIsMining
-import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
-import com.mineinabyss.blocky.helpers.noteConfig
+import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.delay
@@ -23,11 +22,12 @@ class BlockySoundListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun BlockDamageEvent.onStartBreaking() {
-        if (block.blockSoundGroup.hitSound != Sound.BLOCK_WOOD_HIT) return
         if (instaBreak || player.gameMode == GameMode.CREATIVE) return
+        val hitGroup = block.blockSoundGroup.hitSound
+        if (hitGroup != Sound.BLOCK_WOOD_HIT && hitGroup != Sound.BLOCK_STONE_HIT) return
+        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound
+            ?: if (hitGroup == Sound.BLOCK_WOOD_HIT) woodBreakSound else stoneBreakSound
 
-        val geary = block.getGearyEntityFromBlock()
-        val sound = (geary?.get<BlockySound>()?.hitSound ?: noteConfig.woodHitSound)
         player.toGeary().getOrSet { PlayerIsMining() }
         blockyPlugin.launch {
             do {
@@ -40,7 +40,8 @@ class BlockySoundListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockDamageAbortEvent.onStopBreaking() {
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
-        player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound ?: noteConfig.woodHitSound)
+        player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound
+                ?: if (block.blockSoundGroup.hitSound == Sound.BLOCK_WOOD_HIT) woodHitSound else stoneHitSound)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -48,37 +49,48 @@ class BlockySoundListener : Listener {
         // Some builds of Paper apparently crash when this is fired for an unloaded chunk
         // Usually only when going to new dimensions before it is fully loaded.
         if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
-
         val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
-        val currentBlock = entity?.location?.block ?: return
-        val blockySound = block.getGearyEntityFromBlock()?.get<BlockySound>()
+        val stepGroup = block.blockSoundGroup.stepSound
+        if (stepGroup != Sound.BLOCK_WOOD_STEP && stepGroup != Sound.BLOCK_STONE_STEP) return
+        if (event != GameEvent.STEP && event != GameEvent.HIT_GROUND) return
 
+        val blockySound = block.getGearyEntityFromBlock()?.get<BlockySound>()
+        val currentBlock = entity?.location?.block ?: return
         if (!currentBlock.isReplaceable || currentBlock.type == Material.TRIPWIRE) return
-        if (block.blockSoundGroup.fallSound != Sound.BLOCK_WOOD_FALL) return
 
         val sound = when (event) {
-            GameEvent.STEP -> blockySound?.stepSound ?: noteConfig.woodStepSound
-            GameEvent.HIT_GROUND -> blockySound?.fallSound ?: noteConfig.woodFallSound
+            GameEvent.STEP -> blockySound?.stepSound
+                ?: if (stepGroup == Sound.BLOCK_WOOD_STEP) woodStepSound else stoneStepSound
+
+            GameEvent.HIT_GROUND -> blockySound?.fallSound
+                ?: if (stepGroup == Sound.BLOCK_WOOD_STEP) woodFallSound else stoneFallSound
+
             else -> return
         }
-        block.world.playSound(block.location, sound, 1.0f, 1.0f)
+
+        block.world.playSound(block.location, sound, SoundCategory.PLAYERS, 1.0f, 1.0f)
     }
 
     @EventHandler(ignoreCancelled = true)
     fun BlockBreakEvent.onBreak() {
-        if (block.blockSoundGroup.breakSound != Sound.BLOCK_WOOD_BREAK) return
+        val breakGroup = block.blockSoundGroup.breakSound
+        if (breakGroup != Sound.BLOCK_WOOD_BREAK && breakGroup != Sound.BLOCK_STONE_BREAK) return
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
 
-        val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.breakSound ?: noteConfig.woodBreakSound
+        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.breakSound
+            ?: if (breakGroup == Sound.BLOCK_WOOD_BREAK) woodBreakSound else stoneBreakSound
+
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 
     @EventHandler(ignoreCancelled = true)
     fun BlockPlaceEvent.onPlace() {
-        if (block.blockSoundGroup.placeSound != Sound.BLOCK_WOOD_PLACE) return
-        val geary = block.getGearyEntityFromBlock()
-        val sound = geary?.get<BlockySound>()?.placeSound ?: noteConfig.woodPlaceSound
+        val placeGroup = block.blockSoundGroup.placeSound
+        if (placeGroup != Sound.BLOCK_WOOD_PLACE && placeGroup != Sound.BLOCK_STONE_PLACE) return
+
+        val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.placeSound
+            ?: if (placeGroup == Sound.BLOCK_WOOD_PLACE) woodPlaceSound else stonePlaceSound
+
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
     }
 }

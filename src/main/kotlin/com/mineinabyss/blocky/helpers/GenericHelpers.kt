@@ -11,6 +11,7 @@ import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.*
@@ -39,15 +40,22 @@ val chorusConfig = config.chorusPlant
 val leafConfig = config.leafBlocks
 val caveVineConfig = config.caveVineBlocks
 
+const val woodPlaceSound = "blocky.wood.place"
+const val woodBreakSound = "blocky.wood.break"
+const val woodHitSound = "blocky.wood.hit"
+const val woodStepSound = "blocky.wood.step"
+const val woodFallSound = "blocky.wood.fall"
+const val stonePlaceSound = "blocky.stone.place"
+const val stoneBreakSound = "blocky.stone.break"
+const val stoneHitSound = "blocky.stone.hit"
+const val stoneStepSound = "blocky.stone.step"
+const val stoneFallSound = "blocky.stone.fall"
+
 fun breakBlockyBlock(block: Block, player: Player?) {
     val prefab = block.getGearyEntityFromBlock() ?: return
 
     if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
-}
-
-fun Block.isBlockyType(): Boolean {
-    return type == Material.NOTE_BLOCK || type == Material.TRIPWIRE || type == Material.CHORUS_PLANT || type == Material.STRING || (leafList.contains(type) && (blockData as Leaves).isPersistent)
 }
 
 fun ItemStack.isBlockyBlock(player: Player) : Boolean {
@@ -81,11 +89,14 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
 
 fun Block.getPrefabFromBlock(): PrefabKey? {
     val type =
-        when (type) {
-            Material.NOTE_BLOCK -> BlockType.CUBE
-            Material.TRIPWIRE -> BlockType.GROUND
-            Material.CHORUS_PLANT -> BlockType.TRANSPARENT
-            else -> return null
+        when {
+            type == Material.BARRIER -> return this.getAssociatedBlockyFrame(10.0)?.toGearyOrNull()?.get()
+            type == Material.NOTE_BLOCK -> BlockType.CUBE
+            type == Material.TRIPWIRE -> BlockType.GROUND
+            type == Material.CHORUS_PLANT -> BlockType.TRANSPARENT
+            type == Material.CAVE_VINES -> BlockType.CAVEVINE
+            Tag.LEAVES.isTagged(type) -> BlockType.LEAF
+            else -> null
         }
 
     return BlockyTypeQuery.firstOrNull {

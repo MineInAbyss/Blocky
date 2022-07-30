@@ -5,11 +5,6 @@ disableCustomSounds: false
 # Replacement sounds for wood as its entirely removed in resourcepack
 noteBlocks:
   isEnabled: true
-  woodPlaceSound: "block.stone.place"
-  woodBreakSound: "block.stone.break"
-  woodHitSound: "block.stone.hit"
-  woodStepSound: "block.stone.step"
-  woodFallSound: "block.stone.fall"
 
 tripWires:
   isEnabled: true
