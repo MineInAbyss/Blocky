@@ -67,7 +67,7 @@ class BlockyPlugin : JavaPlugin() {
 
 private fun generateDefaultAssets() {
     blockyPlugin.saveResource("assets/minecraft/blockstates/note_block.json", true)
-    blockyPlugin.saveResource("assets/space/blockstates/tripwire.json", true)
-    blockyPlugin.saveResource("assets/space/blockstates/chorus_plant.json", true)
+    blockyPlugin.saveResource("assets/minecraft/blockstates/tripwire.json", true)
+    blockyPlugin.saveResource("assets/minecraft/blockstates/chorus_plant.json", true)
     blockyPlugin.saveResource("assets/minecraft/sounds.json", true)
 }
