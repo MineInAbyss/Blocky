@@ -69,7 +69,7 @@ fun GearyEntity.placeBlockyFrame(
             isPersistent = true
             itemDropChance = 0F
             isCustomNameVisible = false
-            setItem(lootyItem.editItemMeta { displayName(Component.empty()) })
+            setItem(lootyItem.editItemMeta { displayName(Component.empty()) }, false)
             setRotation(rotation)
             setFacingDirection(facing, true)
         }
@@ -113,7 +113,7 @@ fun ItemFrame.removeBlockyFrame(player: Player?, event: Event) {
     this.remove()
 }
 
-fun ItemFrame.clearAssosiatedBarrierChunkEntries(event: Event) {
+private fun ItemFrame.clearAssosiatedBarrierChunkEntries(event: Event) {
     toGearyOrNull()?.get<BlockyBarrierHitbox>()?.barriers?.forEach barrier@{ barrierLoc ->
         barrierLoc.block.clearCustomBlockData(event)
         barrierLoc.block.type = Material.AIR
@@ -126,12 +126,12 @@ fun Block.getAssociatedBlockyFrame(radius: Double): ItemFrame? {
         .firstOrNull { it.toGearyOrNull() != null && it.toGeary().checkFrameHitbox(location) }
 }
 
-fun ItemFrame.handleFurnitureDrops(player: Player?) {
+private fun ItemFrame.handleFurnitureDrops(player: Player?) {
     this.toGeary().has<GearyEntity>() || return
     this.toGeary().get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, this.location) ?: return
 }
 
-fun GearyEntity.checkFrameHitbox(destination: Location): Boolean {
+private fun GearyEntity.checkFrameHitbox(destination: Location): Boolean {
     val barrierBox = get<BlockyBarrierHitbox>()?.barriers ?: return false
     barrierBox.forEach { barrierLoc -> if (barrierLoc == destination) return true }
     return false

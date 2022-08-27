@@ -24,22 +24,22 @@ import org.bukkit.inventory.EquipmentSlot
 
 class BlockyNoteBlockListener : Listener {
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
         isCancelled = true
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         if (blocks.any { it.isBlockyNoteBlock() }) isCancelled = true
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
         if (blocks.any { it.isBlockyNoteBlock() }) isCancelled = true
     }
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyNoteBlock() {
         if (!block.isBlockyNoteBlock()) return
         if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() != true) isCancelled = true
@@ -48,13 +48,12 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
+        if (block.type != Material.NOTE_BLOCK) return
 
-        if (block.type == Material.NOTE_BLOCK) {
-            if (rightClicked) isCancelled = true
-            if (block.isVanillaNoteBlock()) {
-                if (rightClicked) updateBlockyNote(block)
-                playBlockyNoteBlock(block, player)
-            }
+        if (rightClicked) isCancelled = true
+        if (block.isVanillaNoteBlock()) {
+            if (rightClicked) updateBlockyNote(block)
+            playBlockyNoteBlock(block, player)
         }
     }
 
@@ -71,16 +70,16 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
-        if (block.type == Material.NOTE_BLOCK) {
-            isCancelled = true
-            block.state.update(true, false)
-            if (block.isBlockIndirectlyPowered) {
-                val p = block.location.getNearbyPlayers(48.0).firstOrNull() ?: return
-                playBlockyNoteBlock(block, p)
-            }
-            if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
-                block.updateNoteBlockAbove()
+        if (block.type != Material.NOTE_BLOCK) return
+        isCancelled = true
+        block.state.update(true, false)
+
+        if (block.isBlockIndirectlyPowered) {
+            val p = block.location.getNearbyPlayers(48.0).firstOrNull() ?: return
+            playBlockyNoteBlock(block, p)
         }
+        if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
+            block.updateNoteBlockAbove()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

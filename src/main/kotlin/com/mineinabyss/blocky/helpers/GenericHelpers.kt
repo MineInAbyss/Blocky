@@ -5,11 +5,11 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.BlockyConfig
-import com.mineinabyss.blocky.BlockyTypeQuery
-import com.mineinabyss.blocky.BlockyTypeQuery.key
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.systems.BlockyTypeQuery
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.key
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey

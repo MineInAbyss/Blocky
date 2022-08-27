@@ -30,7 +30,7 @@ class BlockyTripwireListener : Listener {
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         blocks.filter { it.type == Material.TRIPWIRE }.forEach { wire ->
             val gearyEntity = wire.getPrefabFromBlock() ?: return@forEach
-            wire.world.dropItemNaturally(wire.location, LootyFactory.createFromPrefab(gearyEntity)!!)
+            LootyFactory.createFromPrefab(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
             wire.type = Material.AIR
         }
     }
@@ -80,20 +80,14 @@ class BlockyTripwireListener : Listener {
             if (hand != EquipmentSlot.HAND) return
 
             val item = item ?: return
+            val hand = hand ?: return
             val blockyBlock = item.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
             var type = item.type
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
             if (type == Material.TRIPWIRE || type == Material.STRING || type.isBlock) {
                 clickedBlock?.getRelative(BlockFace.DOWN)?.let { block ->
-                    placeBlockyBlock(
-                        player,
-                        hand!!,
-                        item,
-                        block,
-                        blockFace,
-                        blockyBlock.getBlockyTripWire()
-                    ) ?: return
+                    placeBlockyBlock(player, hand, item, block, blockFace, blockyBlock.getBlockyTripWire()) ?: return
                 } ?: return
             }
             player.swingMainHand()
@@ -119,7 +113,7 @@ class BlockyTripwireListener : Listener {
         isDropItems = false
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakBlockEvent.onWaterCollide() {
         if (block.type == Material.TRIPWIRE) {
             breakTripwireBlock(block, null)
@@ -135,8 +129,7 @@ class BlockyTripwireListener : Listener {
         if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock.location) is Tripwire) {
             isCancelled = true
             return
-        }
-        if (clickedBlock.type.isInteractable && !player.isSneaking) return
+        } else if (clickedBlock.type.isInteractable && !player.isSneaking) return
 
         // Fixes tripwire updating when placing blocks next to it
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {

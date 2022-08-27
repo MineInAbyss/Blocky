@@ -2,6 +2,8 @@ package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.components.BlockyModelEngine
 import com.mineinabyss.blocky.menus.BlockyMainMenu
+import com.mineinabyss.blocky.systems.blockyModelEngineQuery
+import com.mineinabyss.blocky.systems.blockyQuery
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.inventory.guiy
@@ -78,7 +80,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                                 .filter { it.toGeary().has<BlockyModelEngine>() }
                         if (entities.isNotEmpty()) {
                             for (entity in entities) {
-                                if (!entity.toGeary().instanceOf(PrefabKey.of(type).toEntity() ?: continue)) continue
+                                if (!entity.toGeary().instanceOf(PrefabKey.of(type).toEntity())) continue
                                 entity.remove()
                             }
                             player.success("Removed ${type}'s in a radius of $radius")

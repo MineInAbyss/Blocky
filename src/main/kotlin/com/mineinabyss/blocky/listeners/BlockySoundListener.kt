@@ -31,7 +31,7 @@ class BlockySoundListener : Listener {
         player.toGeary().getOrSet { PlayerIsMining() }
         blockyPlugin.launch {
             do {
-                block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
+                block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 0.8f)
                 delay(3.ticks) // Add small delay to mimic vanilla
             } while (player.toGeary().has<PlayerIsMining>())
         }
@@ -68,7 +68,7 @@ class BlockySoundListener : Listener {
             else -> return
         }
 
-        block.world.playSound(block.location, sound, SoundCategory.PLAYERS, 1.0f, 1.0f)
+        block.world.playSound(block.location, sound, SoundCategory.PLAYERS, 1.0f, 0.8f)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -80,7 +80,7 @@ class BlockySoundListener : Listener {
         val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.breakSound
             ?: if (breakGroup == Sound.BLOCK_WOOD_BREAK) woodBreakSound else stoneBreakSound
 
-        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
+        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 0.8f)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -91,6 +91,6 @@ class BlockySoundListener : Listener {
         val sound = block.getGearyEntityFromBlock()?.get<BlockySound>()?.placeSound
             ?: if (placeGroup == Sound.BLOCK_WOOD_PLACE) woodPlaceSound else stonePlaceSound
 
-        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 1.0f)
+        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, 1.0f, 0.8f)
     }
 }

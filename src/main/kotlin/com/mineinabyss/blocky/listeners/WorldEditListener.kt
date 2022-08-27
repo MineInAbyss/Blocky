@@ -33,43 +33,42 @@ class WorldEditListener : Listener {
             .replace("[direction=north]", "")
             .replace("[direction=south]", "")
             .replace("[direction=west]", "")
-            .replace("[direction=east]", "").toMCKey().toPrefabKey()).toEntity() ?: return
+            .replace("[direction=east]", "").toMCKey().toPrefabKey()).toEntity()
         val type = prefab.get<BlockyBlock>()?.blockType ?: return
-        val data =
-            if (type == BlockType.GROUND) {
-                prefab.get<BlockyBlock>()!!.getBlockyTripWire()
-            } else if (argId.endsWith("[direction=up]")) {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.UP)
-                else prefab.getBlockyTransparent(BlockFace.UP)
-            } else if (argId.endsWith("[direction=down]")) {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.DOWN)
-                else prefab.getBlockyTransparent(BlockFace.DOWN)
-            } else if (argId.endsWith("[direction=north]")) {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.NORTH)
-                else prefab.getBlockyTransparent(BlockFace.NORTH)
-            } else if (argId.endsWith("[direction=south]")) {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.SOUTH)
-                else prefab.getBlockyTransparent(BlockFace.SOUTH)
-            } else if (argId.endsWith("[direction=west]")) {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.WEST)
-                else prefab.getBlockyTransparent(BlockFace.WEST)
-            } else if (argId.endsWith("[direction=east]")) {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.EAST)
-                else prefab.getBlockyTransparent(BlockFace.EAST)
-            } else {
-                if (type == BlockType.CUBE)
-                    prefab.getBlockyNoteBlock(BlockFace.UP)
-                else prefab.getBlockyTransparent(BlockFace.UP)
+        val data = when {
+                type == BlockType.GROUND -> prefab.get<BlockyBlock>()!!.getBlockyTripWire()
+                argId.endsWith("[direction=up]") -> {
+                    if (type == BlockType.CUBE) prefab.getBlockyNoteBlock(BlockFace.UP)
+                    else prefab.getBlockyTransparent(BlockFace.UP)
+                }
+                argId.endsWith("[direction=north]") -> {
+                    if (type == BlockType.CUBE)
+                        prefab.getBlockyNoteBlock(BlockFace.NORTH)
+                    else prefab.getBlockyTransparent(BlockFace.NORTH)
+                }
+                argId.endsWith("[direction=south]") -> {
+                    if (type == BlockType.CUBE)
+                        prefab.getBlockyNoteBlock(BlockFace.SOUTH)
+                    else prefab.getBlockyTransparent(BlockFace.SOUTH)
+                }
+                argId.endsWith("[direction=west]") -> {
+                    if (type == BlockType.CUBE)
+                        prefab.getBlockyNoteBlock(BlockFace.WEST)
+                    else prefab.getBlockyTransparent(BlockFace.WEST)
+                }
+                argId.endsWith("[direction=east]") -> {
+                    if (type == BlockType.CUBE)
+                        prefab.getBlockyNoteBlock(BlockFace.EAST)
+                    else prefab.getBlockyTransparent(BlockFace.EAST)
+                }
+                else -> {
+                    if (type == BlockType.CUBE)
+                        prefab.getBlockyNoteBlock(BlockFace.UP)
+                    else prefab.getBlockyTransparent(BlockFace.UP)
+                }
             }
 
-        val blockData =
-            when (type) {
+        val blockData = when (type) {
                 BlockType.CUBE ->
                     String.format(
                         "%s[instrument=%s,note=%s,powered=%s]",
@@ -117,26 +116,26 @@ class WorldEditListener : Listener {
             }
         message = message.replace(argId, blockData, true)
     }
-}
 
-private fun getInstrument(id: Instrument): String {
-    when (id) {
-        Instrument.BASS_DRUM -> return "basedrum"
-        Instrument.STICKS -> return "hat"
-        Instrument.SNARE_DRUM -> return "snare"
-        Instrument.PIANO -> return "harp"
-        Instrument.BASS_GUITAR -> return "bass"
-        Instrument.FLUTE -> return "flute"
-        Instrument.BELL -> return "bell"
-        Instrument.GUITAR -> return "guitar"
-        Instrument.CHIME -> return "chime"
-        Instrument.XYLOPHONE -> return "xylophone"
-        Instrument.IRON_XYLOPHONE -> return "iron_xylophone"
-        Instrument.COW_BELL -> return "cow_bell"
-        Instrument.DIDGERIDOO -> return "didgeridoo"
-        Instrument.BIT -> return "bit"
-        Instrument.BANJO -> return "banjo"
-        Instrument.PLING -> return "pling"
-        else -> return "hat"
+    private fun getInstrument(id: Instrument): String {
+        when (id) {
+            Instrument.BASS_DRUM -> return "basedrum"
+            Instrument.STICKS -> return "hat"
+            Instrument.SNARE_DRUM -> return "snare"
+            Instrument.PIANO -> return "harp"
+            Instrument.BASS_GUITAR -> return "bass"
+            Instrument.FLUTE -> return "flute"
+            Instrument.BELL -> return "bell"
+            Instrument.GUITAR -> return "guitar"
+            Instrument.CHIME -> return "chime"
+            Instrument.XYLOPHONE -> return "xylophone"
+            Instrument.IRON_XYLOPHONE -> return "iron_xylophone"
+            Instrument.COW_BELL -> return "cow_bell"
+            Instrument.DIDGERIDOO -> return "didgeridoo"
+            Instrument.BIT -> return "bit"
+            Instrument.BANJO -> return "banjo"
+            Instrument.PLING -> return "pling"
+            else -> return "hat"
+        }
     }
 }

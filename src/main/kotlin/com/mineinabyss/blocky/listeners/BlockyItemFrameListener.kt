@@ -72,7 +72,7 @@ class BlockyItemFrameListener : Listener {
         if (player.gameMode != GameMode.CREATIVE) item.subtract()
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun HangingBreakEvent.onBreakHanging() {
         if (cause == HangingBreakEvent.RemoveCause.ENTITY) return
         if (entity.toGearyOrNull() != null) isCancelled = true
@@ -118,9 +118,8 @@ class BlockyItemFrameListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun EntityDamageByEntityEvent.onBreakingFrame() {
-        val gearyEntity = entity.toGearyOrNull() ?: return
-
         if (entity !is ItemFrame) return
+        val gearyEntity = entity.toGearyOrNull() ?: return
         if (!gearyEntity.has<BlockyEntity>() || !gearyEntity.has<BlockyInfo>()) return
         if (gearyEntity.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
     }
