@@ -23,6 +23,8 @@ import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Lectern
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.block.BlockPlaceEvent
@@ -58,7 +60,7 @@ fun breakBlockyBlock(block: Block, player: Player?) {
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
 }
 
-fun ItemStack.isBlockyBlock(player: Player) : Boolean {
+fun ItemStack.isBlockyBlock(player: Player): Boolean {
     return toGearyOrNull(player)?.has<BlockyBlock>() == true
 }
 
@@ -69,21 +71,23 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 }
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
-    this.forEach {
-        val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
+    this.forEach { drop ->
+        val tempAmount = if (drop.minAmount < drop.maxAmount) Random.nextInt(drop.minAmount, drop.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
-            if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
-                it.silkTouchedDrop.toItemStack()
-            else it.item.toItemStack()
+            if (drop.affectedBySilkTouch && Enchantment.SILK_TOUCH in hand.enchantments)
+                drop.silkTouchedDrop?.toItemStack()
+            else drop.item?.toItemStack()
         val amount =
-            if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
+            if (drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments)
                 tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
             else tempAmount
 
         if (player?.gameMode == GameMode.CREATIVE) return
 
-        for (j in 1..amount) location.world.dropItemNaturally(location, item)
+        if (drop.exp < 0)
+                (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
+        (1..amount).forEach { _ -> item?.let { item -> location.world.dropItemNaturally(location, item) } }
     }
 }
 
@@ -205,7 +209,10 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     }
     if ((data is Door || data is Bed || data is Chest || data is Bisected) && data !is Stairs && data !is TrapDoor)
         if (!handleDoubleBlocks(player)) return false
-    if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(player, face)
+    if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(
+        player,
+        face
+    )
 
     if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
         handleDirectionalBlocks(face)
@@ -310,6 +317,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
 
             setBlockData(blockData, false)
         }
+
         is Bed -> {
             if (getRelative(player.facing).type.isSolid || !getRelative(player.facing).isReplaceable) return false
             getRelative(player.facing).setBlockData(blockData, false)
@@ -323,6 +331,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             nextBlock.blockData = nextData
             setBlockData(blockData, false)
         }
+
         is Chest -> {
             if (getLeftBlock(player).blockData is Chest)
                 blockData.type = Chest.Type.LEFT
@@ -333,6 +342,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             blockData.facing = player.facing.oppositeFace
             setBlockData(blockData, true)
         }
+
         is Bisected -> {
             if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
 
@@ -340,6 +350,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             getRelative(BlockFace.UP).setBlockData(blockData, false)
             blockData.half = Bisected.Half.BOTTOM
         }
+
         else -> {
             setBlockData(Bukkit.createBlockData(Material.AIR), false)
             return false
@@ -357,12 +368,14 @@ private fun Block.handleHalfBlocks(player: Player) {
             if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.half = Bisected.Half.BOTTOM
             else data.half = Bisected.Half.TOP
         }
+
         is Stairs -> {
             data.facing = player.facing
             if (eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += 0.6 }?.y!!)
                 data.half = Bisected.Half.BOTTOM
             else data.half = Bisected.Half.TOP
         }
+
         is Slab -> {
             if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.type = Slab.Type.BOTTOM
             else data.type = Slab.Type.TOP
@@ -394,12 +407,14 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
                 }
             } else data.facing = face
         }
+
         is MultipleFacing -> {
             data.allowedFaces.forEach {
                 if (getRelative(it).type.isSolid) data.setFace(it, true)
                 else data.setFace(it, false)
             }
         }
+
         is Attachable -> {
             data.isAttached = true
         }

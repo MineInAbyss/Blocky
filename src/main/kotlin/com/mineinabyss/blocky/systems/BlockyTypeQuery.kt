@@ -14,19 +14,12 @@ import com.mineinabyss.looty.ecs.components.LootyType
 object BlockyTypeQuery : GearyQuery() {
 
     val TargetScope.key by get<PrefabKey>()
+    val TargetScope.type by get<BlockyBlock>()
     val TargetScope.isBlocky by family {
         has<LootyType>()
         has<Prefab>()
-        has<BlockyInfo>()
-    }
-}
-
-object BlockyModelQuery : GearyQuery() {
-
-    val TargetScope.key by get<PrefabKey>()
-    val TargetScope.blockyBlock by get<BlockyBlock>()
-    val TargetScope.isBlocky by family {
         has<BlockyBlock>()
+        has<BlockyInfo>()
     }
 }
 
@@ -39,6 +32,6 @@ object BlockyModelEngineQuery : GearyQuery() {
     }
 }
 
-val blockyModelQuery = BlockyModelQuery.filter { it.entity.has<BlockyBlock>() }.map { it.entity.get<BlockyBlock>() }
+val blockyModelQuery = BlockyTypeQuery.filter { it.entity.has<BlockyBlock>() }.map { it.entity.get<BlockyBlock>() }
 val blockyQuery = BlockyTypeQuery.filter { it.entity.has<BlockyInfo>() }.map { it.key.toString() }
 val blockyModelEngineQuery = BlockyModelEngineQuery.map { it.key.toString() }

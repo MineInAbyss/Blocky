@@ -25,7 +25,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "test" {
                 action {
-                    blockyPlugin.fillDefaultAssets()
+                    ResourcepackGeneration().generateDefaultAssets()
                 }
             }
             "give" {
