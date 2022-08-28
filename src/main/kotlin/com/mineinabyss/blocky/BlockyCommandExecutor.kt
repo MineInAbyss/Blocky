@@ -2,8 +2,9 @@ package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.components.BlockyModelEngine
 import com.mineinabyss.blocky.menus.BlockyMainMenu
+import com.mineinabyss.blocky.systems.BlockyTypeQuery
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
-import com.mineinabyss.blocky.systems.blockyQuery
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.inventory.guiy
@@ -29,7 +30,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "give" {
-                val type by optionArg(options = blockyQuery) {
+                val type by optionArg(options = BlockyTypeQuery.map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
                 playerAction {
@@ -104,15 +105,16 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "blocky") {
             when (args.size) {
-                1 -> listOf("give", "menu", "modelengine")
+                1 -> listOf("give", "menu", "modelengine").filter { it.startsWith(args[0]) }
                 2 -> {
                     when (args[0]) {
                         "give" ->
-                            blockyQuery.filter {
-                                it.startsWith(args[1]) || it.replace("mineinabyss:", "").startsWith(args[1])
-                            }
+                            BlockyTypeQuery.filter {
+                                val arg = args[1].lowercase()
+                                it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
+                            }.map { it.prefabKey.toString() }
 
-                        "modelengine" -> listOf("give", "remove")
+                        "modelengine" -> listOf("give", "remove").filter { it.startsWith(args[1]) }
                         "menu" -> emptyList()
                         else -> emptyList()
                     }
@@ -120,11 +122,10 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
 
                 3 -> {
                     when (args[0]) {
-                        "modelengine" -> blockyModelEngineQuery
+                        "modelengine" -> blockyModelEngineQuery.filter { it.startsWith(args[2]) }
                         else -> emptyList()
                     }
                 }
-
                 else -> emptyList()
             }
         } else emptyList()

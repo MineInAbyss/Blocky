@@ -3,6 +3,7 @@ package com.mineinabyss.blocky
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.listeners.*
+import com.mineinabyss.geary.addon.GearyLoadPhase
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.platforms.IdofrontPlatforms
@@ -70,11 +71,14 @@ class BlockyPlugin : JavaPlugin() {
             autoscan("com.mineinabyss") {
                 all()
             }
+            startup {
+                GearyLoadPhase.ENABLE {
+                    blockMap = createBlockMap()
+                    registryTagMap = createTagRegistryMap()
+                    ResourcepackGeneration().generateDefaultAssets()
+                }
+            }
         }
-
-        blockMap = createBlockMap()
-        registryTagMap = createTagRegistryMap()
-        ResourcepackGeneration().generateDefaultAssets()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {

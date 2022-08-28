@@ -9,7 +9,7 @@ import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.key
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -112,7 +112,7 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
                     directional?.zBlockId == blockMap[blockData]) &&
                     blockyBlock?.blockType == type
         } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
-    }?.key ?: return null
+    }?.prefabKey ?: return null
 }
 
 fun Block.getGearyEntityFromBlock() = getPrefabFromBlock()?.toEntity()

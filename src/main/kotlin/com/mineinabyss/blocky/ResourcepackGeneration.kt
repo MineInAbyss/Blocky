@@ -3,7 +3,8 @@ package com.mineinabyss.blocky
 import com.google.gson.JsonObject
 import com.mineinabyss.blocky.components.BlockType
 import com.mineinabyss.blocky.helpers.leafList
-import com.mineinabyss.blocky.systems.blockyModelQuery
+import com.mineinabyss.blocky.systems.BlockyTypeQuery
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.type
 import okio.Path.Companion.toPath
 import org.bukkit.Instrument
 import org.bukkit.block.BlockFace
@@ -22,7 +23,7 @@ class ResourcepackGeneration {
         val noteBlockFile = "${root}/note_block.json".toPath().toFile()
         val tripwireFile = "${root}/tripwire.json".toPath().toFile()
         val chorusPlantFile = "${root}/chorus_plant.json".toPath().toFile()
-        val leafFiles = leafList.map { "${root}/${it}.json".toPath().toFile() }
+        val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
         val caveVineFile = "${root}/cave_vine.json".toPath().toFile()
 
         noteBlockFile.writeText(getNoteBlockBlockStates().toString(), Charset.defaultCharset())
@@ -35,10 +36,9 @@ class ResourcepackGeneration {
     private fun getNoteBlockBlockStates(): JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = blockyModelQuery.filter { it != null && it.blockType == BlockType.CUBE }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.CUBE }.map { it.type }
         blockMap.filter { it.key is NoteBlock }.forEach { block ->
-            //TODO Find out why this query returns null
-            val modelID = blockyQuery.firstOrNull { it?.blockId == block.value }?.blockModel ?: return@forEach
+            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getNoteBlockData(), modelID.getModelJson())
         }
         variants.add("variants", blockModel)
@@ -58,10 +58,9 @@ class ResourcepackGeneration {
     private fun getTripwireBlockStates(): JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = blockyModelQuery.filter { it != null && it.blockType == BlockType.GROUND }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.GROUND }.map { it.type }
         blockMap.filter { it.key is Tripwire }.forEach { block ->
-            //TODO Find out why this query returns null
-            val modelID = blockyQuery.firstOrNull { it?.blockId == block.value }?.blockModel ?: return@forEach
+            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getTripwireData(), modelID.getModelJson())
         }
         variants.add("variants", blockModel)
@@ -85,10 +84,9 @@ class ResourcepackGeneration {
     private fun getChorusPlantBlockStates() : JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = blockyModelQuery.filter { it != null && it.blockType == BlockType.TRANSPARENT }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.TRANSPARENT }.map { it.type }
         blockMap.filter { it.key is MultipleFacing }.forEach { block ->
-            //TODO Find out why this query returns null
-            val modelID = blockyQuery.firstOrNull { it?.blockId == block.value }?.blockModel ?: return@forEach
+            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getChorusPlantData(), modelID.getModelJson())
         }
         variants.add("variants", blockModel)
@@ -111,10 +109,9 @@ class ResourcepackGeneration {
     private fun getLeafBlockStates() : JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = blockyModelQuery.filter { it != null && it.blockType == BlockType.LEAF }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.LEAF }.map { it.type }
         blockMap.filter { it.key is Leaves }.forEach { block ->
-            //TODO Find out why this query returns null
-            val modelID = blockyQuery.firstOrNull { it?.blockId == block.value }?.blockModel ?: return@forEach
+            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add((block.key as Leaves).getLeafBlockStates(), modelID.getModelJson())
         }
         variants.add("variants", blockModel)
@@ -128,10 +125,9 @@ class ResourcepackGeneration {
     private fun getCaveVineBlockStates() : JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = blockyModelQuery.filter { it != null && it.blockType == BlockType.CAVEVINE }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.CAVEVINE }.map { it.type }
         blockMap.filter { it.key is CaveVines }.forEach { block ->
-            //TODO Find out why this query returns null
-            val modelID = blockyQuery.firstOrNull { it?.blockId == block.value }?.blockModel ?: return@forEach
+            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getCaveVineBlockStates(), modelID.getModelJson())
         }
         variants.add("variants", blockModel)

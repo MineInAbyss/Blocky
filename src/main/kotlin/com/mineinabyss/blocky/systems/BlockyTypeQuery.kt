@@ -3,7 +3,8 @@ package com.mineinabyss.blocky.systems
 import com.mineinabyss.blocky.components.BlockyBlock
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.BlockyModelEngine
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.key
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.type
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
@@ -13,14 +14,9 @@ import com.mineinabyss.looty.ecs.components.LootyType
 
 object BlockyTypeQuery : GearyQuery() {
 
-    val TargetScope.key by get<PrefabKey>()
+    val TargetScope.prefabKey by get<PrefabKey>()
     val TargetScope.type by get<BlockyBlock>()
-    val TargetScope.isBlocky by family {
-        has<LootyType>()
-        has<Prefab>()
-        has<BlockyBlock>()
-        has<BlockyInfo>()
-    }
+    val TargetScope.isPrefab by family { has<Prefab>() }
 }
 
 object BlockyModelEngineQuery : GearyQuery() {
@@ -32,6 +28,7 @@ object BlockyModelEngineQuery : GearyQuery() {
     }
 }
 
-val blockyModelQuery = BlockyTypeQuery.filter { it.entity.has<BlockyBlock>() }.map { it.entity.get<BlockyBlock>() }
-val blockyQuery = BlockyTypeQuery.filter { it.entity.has<BlockyInfo>() }.map { it.key.toString() }
-val blockyModelEngineQuery = BlockyModelEngineQuery.map { it.key.toString() }
+
+val blockyModelQuery = BlockyTypeQuery.map { it.type }
+val blockyQuery = BlockyTypeQuery.filter { it.entity.has<BlockyInfo>() }.map { it.prefabKey.toString() }
+val blockyModelEngineQuery = BlockyModelEngineQuery.map { it.prefabKey.toString() }
