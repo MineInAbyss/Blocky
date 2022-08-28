@@ -7,7 +7,8 @@ import kotlinx.serialization.Serializable
 @SerialName("blocky:block")
 data class BlockyBlock (
     val blockType: BlockType,
-    val blockId: Int
+    val blockId: Int,
+    val blockModel: String,
 )
 
 enum class BlockType {

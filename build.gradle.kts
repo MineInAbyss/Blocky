@@ -50,6 +50,7 @@ dependencies {
     compileOnly(libs.minecraft.anvilgui)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
     compileOnly(blockyLibs.minecraft.plugin.modelengine)
+
     implementation(blockyLibs.minecraft.plugin.customblockdata)
     implementation(blockyLibs.minecraft.plugin.morepersistentdatatypes)
 
@@ -57,5 +58,11 @@ dependencies {
     implementation(libs.idofront.nms)
     implementation(libs.idofront.autoscan) {
         exclude("org.reflections")
+    }
+}
+
+tasks {
+    shadowJar {
+        relocate("com.jeff_media", "com.mineinabyss.shaded")
     }
 }

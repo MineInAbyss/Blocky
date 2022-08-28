@@ -9,7 +9,7 @@ import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.key
+import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -23,6 +23,8 @@ import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Lectern
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.EntityType
+import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.block.BlockPlaceEvent
@@ -58,7 +60,7 @@ fun breakBlockyBlock(block: Block, player: Player?) {
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
 }
 
-fun ItemStack.isBlockyBlock(player: Player) : Boolean {
+fun ItemStack.isBlockyBlock(player: Player): Boolean {
     return toGearyOrNull(player)?.has<BlockyBlock>() == true
 }
 
@@ -69,21 +71,23 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 }
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
-    this.forEach {
-        val tempAmount = if (it.minAmount < it.maxAmount) Random.nextInt(it.minAmount, it.maxAmount) else 1
+    this.forEach { drop ->
+        val tempAmount = if (drop.minAmount < drop.maxAmount) Random.nextInt(drop.minAmount, drop.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
-            if (it.affectedBySilkTouch && hand.containsEnchantment(Enchantment.SILK_TOUCH))
-                it.silkTouchedDrop.toItemStack()
-            else it.item.toItemStack()
+            if (drop.affectedBySilkTouch && Enchantment.SILK_TOUCH in hand.enchantments)
+                drop.silkTouchedDrop?.toItemStack()
+            else drop.item?.toItemStack()
         val amount =
-            if (it.affectedByFortune && hand.containsEnchantment(Enchantment.LOOT_BONUS_BLOCKS))
+            if (drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments)
                 tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
             else tempAmount
 
         if (player?.gameMode == GameMode.CREATIVE) return
 
-        for (j in 1..amount) location.world.dropItemNaturally(location, item)
+        if (drop.exp < 0)
+                (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
+        (1..amount).forEach { _ -> item?.let { item -> location.world.dropItemNaturally(location, item) } }
     }
 }
 
@@ -108,7 +112,7 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
                     directional?.zBlockId == blockMap[blockData]) &&
                     blockyBlock?.blockType == type
         } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
-    }?.key ?: return null
+    }?.prefabKey ?: return null
 }
 
 fun Block.getGearyEntityFromBlock() = getPrefabFromBlock()?.toEntity()
@@ -205,7 +209,10 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
     }
     if ((data is Door || data is Bed || data is Chest || data is Bisected) && data !is Stairs && data !is TrapDoor)
         if (!handleDoubleBlocks(player)) return false
-    if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(player, face)
+    if ((state is Skull || state is Sign || MaterialTags.TORCHES.isTagged(this)) && face != BlockFace.DOWN && face != BlockFace.UP) handleWallAttachable(
+        player,
+        face
+    )
 
     if (data !is Stairs && (data is Directional || data is FaceAttachable || data is MultipleFacing || data is Attachable)) {
         handleDirectionalBlocks(face)
@@ -310,6 +317,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
 
             setBlockData(blockData, false)
         }
+
         is Bed -> {
             if (getRelative(player.facing).type.isSolid || !getRelative(player.facing).isReplaceable) return false
             getRelative(player.facing).setBlockData(blockData, false)
@@ -323,6 +331,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             nextBlock.blockData = nextData
             setBlockData(blockData, false)
         }
+
         is Chest -> {
             if (getLeftBlock(player).blockData is Chest)
                 blockData.type = Chest.Type.LEFT
@@ -333,6 +342,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             blockData.facing = player.facing.oppositeFace
             setBlockData(blockData, true)
         }
+
         is Bisected -> {
             if (getRelative(BlockFace.UP).type.isSolid || !getRelative(BlockFace.UP).isReplaceable) return false
 
@@ -340,6 +350,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
             getRelative(BlockFace.UP).setBlockData(blockData, false)
             blockData.half = Bisected.Half.BOTTOM
         }
+
         else -> {
             setBlockData(Bukkit.createBlockData(Material.AIR), false)
             return false
@@ -357,12 +368,14 @@ private fun Block.handleHalfBlocks(player: Player) {
             if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.half = Bisected.Half.BOTTOM
             else data.half = Bisected.Half.TOP
         }
+
         is Stairs -> {
             data.facing = player.facing
             if (eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += 0.6 }?.y!!)
                 data.half = Bisected.Half.BOTTOM
             else data.half = Bisected.Half.TOP
         }
+
         is Slab -> {
             if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.type = Slab.Type.BOTTOM
             else data.type = Slab.Type.TOP
@@ -394,84 +407,19 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
                 }
             } else data.facing = face
         }
+
         is MultipleFacing -> {
             data.allowedFaces.forEach {
                 if (getRelative(it).type.isSolid) data.setFace(it, true)
                 else data.setFace(it, false)
             }
         }
+
         is Attachable -> {
             data.isAttached = true
         }
     }
     setBlockData(data, false)
-}
-
-fun createBlockMap(): Map<BlockData, Int> {
-    val blockMap = mutableMapOf<BlockData, Int>()
-
-    // Calculates tripwire states
-    if (tripwireConfig.isEnabled) for (i in 0..127) {
-        val tripWireData = Bukkit.createBlockData(Material.TRIPWIRE) as Tripwire
-        if (i and 1 == 1) tripWireData.setFace(BlockFace.NORTH, true)
-        if (i shr 1 and 1 == 1) tripWireData.setFace(BlockFace.EAST, true)
-        if (i shr 2 and 1 == 1) tripWireData.setFace(BlockFace.SOUTH, true)
-        if (i shr 3 and 1 == 1) tripWireData.setFace(BlockFace.WEST, true)
-        if (i shr 4 and 1 == 1) tripWireData.isPowered = true
-        if (i shr 5 and 1 == 1) tripWireData.isDisarmed = true
-        if (i shr 6 and 1 == 1) tripWireData.isAttached = true
-
-        blockMap.putIfAbsent(tripWireData, i)
-    }
-
-    // Calculates noteblock states
-    if (noteConfig.isEnabled) for (j in 0..799) {
-        val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
-        if (j >= 399) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
-        else noteBlockData.instrument = Instrument.getByType((j / 25 % 400).toByte()) ?: continue
-        noteBlockData.note = Note((j % 25))
-        noteBlockData.isPowered = j !in 0..399
-
-        blockMap.putIfAbsent(noteBlockData, j)
-    }
-
-    // Calculates chorus plant states
-    if (chorusConfig.isEnabled) for (k in 0..63) {
-        val chorusData = Bukkit.createBlockData(Material.CHORUS_PLANT) as MultipleFacing
-        if (k and 1 == 1) chorusData.setFace(BlockFace.NORTH, true)
-        if (k shr 1 and 1 == 1) chorusData.setFace(BlockFace.EAST, true)
-        if (k shr 2 and 1 == 1) chorusData.setFace(BlockFace.SOUTH, true)
-        if (k shr 3 and 1 == 1) chorusData.setFace(BlockFace.WEST, true)
-        if (k shr 4 and 1 == 1) chorusData.setFace(BlockFace.UP, true)
-        if (k shr 5 and 1 == 1) chorusData.setFace(BlockFace.DOWN, true)
-
-        blockMap.putIfAbsent(chorusData, k)
-    }
-
-    // Calculates leaf states
-    // Should waterlogged be used aswell?
-    if (leafConfig.isEnabled)  for (l in 1..63) {
-        val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
-        val distance = getLeafDistance(l)
-        if (distance == 1 && leafConfig.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
-
-        leafData.isPersistent = true
-        leafData.distance = distance
-        // Due to map using material before distance the Int is scued by 1 if set to reserve 1 state
-        blockMap.putIfAbsent(leafData, getBlockMapEntryForLeaf(l))
-    }
-
-    // Calculates cave-vine states
-    if (caveVineConfig.isEnabled) {
-        for (m in 1..50) {
-            val vineData = Bukkit.createBlockData(Material.CAVE_VINES) as CaveVines
-            vineData.isBerries = m > 25
-            vineData.age = if (m > 25) m - 25 else m
-            blockMap.putIfAbsent(vineData, m)
-        }
-    }
-
-    return blockMap
 }
 
 fun GearyEntity.getDirectionalId(face: BlockFace): Int? = when {
