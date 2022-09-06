@@ -7,7 +7,6 @@ import com.mineinabyss.blocky.components.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.papermc.paper.event.block.BlockBreakBlockEvent
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.event.EventHandler
@@ -82,15 +81,16 @@ class BlockyChorusPlantListener : Listener {
         player.swingMainHand()
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
-
-        if (!block.isBlockyTransparent()) return
-        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-        block.attemptBreakBlockyBlock(player)
-        isDropItems = false
-    }
+    //TODO Verify removal
+//    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+//    fun BlockBreakEvent.onBreakingBlockyBlock() {
+//        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
+//
+//        if (!block.isBlockyTransparent()) return
+//        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
+//        block.attemptBreakBlockyBlock(player)
+//        isDropItems = false
+//    }
 
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {

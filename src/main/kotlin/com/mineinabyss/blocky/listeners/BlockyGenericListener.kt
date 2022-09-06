@@ -4,11 +4,13 @@ import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyMining
 import com.mineinabyss.blocky.components.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
+import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.Block
@@ -37,16 +39,19 @@ class BlockyGenericListener : Listener {
         }
         removePotionEffect(SLOW_DIGGING)
         block.location.getNearbyPlayers(16.0).forEach {
-            it.sendBlockDamage(block.location, 0f)
+            it.sendBlockChange(block.location, block.blockData)
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
-        val breakTime = block.getGearyEntityFromBlock()?.get<BlockyInfo>()?.blockBreakTime ?: return
+        val info = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
+        val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
+        val breakTime =
+            info.blockBreakTime / (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
 
-        if (player.gameMode == GameMode.CREATIVE) return
+        if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
         if (mining.miningTask != null) return
         isCancelled = true
 
@@ -55,7 +60,7 @@ class BlockyGenericListener : Listener {
             var stage = 0
 
             player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, true))
-            do {
+            do { //TODO Fix visual glitch for blockbreaker
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, stage.toFloat() / 10)
                 }

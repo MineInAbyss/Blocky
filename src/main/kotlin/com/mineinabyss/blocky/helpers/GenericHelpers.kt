@@ -78,8 +78,24 @@ fun ItemStack.isBlockyBlock(player: Player): Boolean {
 
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
+    val info = gearyBlock.get<BlockyInfo>() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
+
+    if (info.onlyDropWithCorrectTool) {
+        if (player == null) return
+        val itemInHand = player.inventory.itemInMainHand
+        if (!itemInHand.isCorrectTool(player, block)) return
+    }
+
     gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
+}
+
+private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
+    val gearyBlock = block.getGearyEntityFromBlock() ?: return false
+    val info = gearyBlock.get<BlockyInfo>() ?: return false
+    val allowedToolTypes = toGearyOrNull(player)?.get<BlockyMining>()?.toolTypes ?: return false
+
+    return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
 }
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {

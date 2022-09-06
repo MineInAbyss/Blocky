@@ -9,7 +9,10 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
-import org.bukkit.*
+import org.bukkit.Bukkit
+import org.bukkit.GameEvent
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
@@ -140,16 +143,16 @@ class BlockyNoteBlockListener : Listener {
             )
         }
     }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
-
-        if (!block.isBlockyNoteBlock()) return
-        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-        block.attemptBreakBlockyBlock(player)
-        isDropItems = false
-    }
+    //TODO Verify removal
+//    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+//    fun BlockBreakEvent.onBreakingBlockyBlock() {
+//        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
+//
+//        if (!block.isBlockyNoteBlock()) return
+//        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
+//        block.attemptBreakBlockyBlock(player)
+//        isDropItems = false
+//    }
 
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {

@@ -15,6 +15,8 @@ import kotlin.time.Duration
 data class BlockyInfo (
     val requiredTools: List<SerializableItemStack> = listOf(),
     val isUnbreakable: Boolean = false,
+    val acceptedToolTypes: Set<ToolType> = setOf(ToolType.ANY),
+    val onlyDropWithCorrectTool: Boolean = false,
     val blockBreakTime: @Serializable(with = DurationSerializer::class) Duration,
     val blockDrop: List<BlockyDrops> = listOf(),
 )
