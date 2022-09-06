@@ -10,6 +10,7 @@ import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import io.th0rgal.protectionlib.ProtectionLib
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.Material
@@ -60,6 +61,7 @@ fun GearyEntity.placeBlockyFrame(
     if (!has<BlockyEntity>()) return null
     if (get<BlockyEntity>()?.hasEnoughSpace(loc, yaw) != true) return null
     if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock()) return null
+    if (!ProtectionLib.canBuild(player, loc)) return null
 
     val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return null
     val newFrame =
