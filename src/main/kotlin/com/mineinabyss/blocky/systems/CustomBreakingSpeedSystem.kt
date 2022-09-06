@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.systems
 import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.events.PacketAdapter
 import com.comphenix.protocol.events.PacketEvent
-import com.comphenix.protocol.wrappers.BlockPosition
 import com.comphenix.protocol.wrappers.EnumWrappers.PlayerDigType
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockyPlugin
@@ -11,15 +10,11 @@ import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.PlayerIsMining
 import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
 import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
-import com.mineinabyss.blocky.protocolManager
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.delay
 import org.bukkit.GameMode
-import org.bukkit.block.Block
-import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
@@ -56,30 +51,18 @@ class CustomBreakingSpeedSystem : PacketAdapter(
             do { // Delay and repeat breaking progress until stage is 1.0
                 block.location.getNearbyPlayers(16.0).forEach {
                     it.sendBlockDamage(block.location, value.toFloat() / 10)
-                    //it.sendBlockBreak(block, value.broadcastVal())
                 }
                 delay(breakTime / 10)
             } while (value++ < 10 && player.toGeary().has<PlayerIsMining>())
 
             val breakEvent = BlockBreakEvent(block, player)
             breakEvent.call()
-            broadcast(breakEvent.isCancelled)
 
-            //TODO Add checks for worldguard and other plugins
-            if (!breakEvent.isCancelled) attemptBreakBlockyBlock(block, player)
+            if (!breakEvent.isCancelled) block.attemptBreakBlockyBlock(player)
             player.removePotionEffect(SLOW_DIGGING)
             block.location.getNearbyPlayers(16.0).forEach {
                 it.sendBlockDamage(block.location, 0f)
-                //it.sendBlockBreak(block, 0)
             }
         }
-    }
-    private fun Player.sendBlockBreak(block: Block, stage: Int) {
-        val breakAnimation = protocolManager.createPacket(PacketType.Play.Server.BLOCK_BREAK_ANIMATION)
-        breakAnimation.integers.write(0, entityId)
-        breakAnimation.blockPositionModifier.write(0, BlockPosition(block.location.toVector()))
-        breakAnimation.integers.write(1, stage)
-
-        protocolManager.sendServerPacket(player, breakAnimation)
     }
 }

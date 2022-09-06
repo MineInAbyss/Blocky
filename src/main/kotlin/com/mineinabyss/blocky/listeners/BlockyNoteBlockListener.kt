@@ -147,7 +147,7 @@ class BlockyNoteBlockListener : Listener {
 
         if (!block.isBlockyNoteBlock()) return
         if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-        attemptBreakBlockyBlock(block, player)
+        block.attemptBreakBlockyBlock(player)
         isDropItems = false
     }
 

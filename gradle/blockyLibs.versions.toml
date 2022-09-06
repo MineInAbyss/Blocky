@@ -15,3 +15,5 @@ guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 minecraft-plugin-customblockdata = "com.jeff_media:CustomBlockData:2.1.0"
 minecraft-plugin-morepersistentdatatypes = "com.jeff_media:MorePersistentDataTypes:2.3.1"
 minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.3.0-Bukkit"
+minecraft-plugin-modelengine = "com.ticxo.modelengine:api:R3.0.0"
+minecraft-plugin-protectionlib = "com.github.oraxen:protectionlib:1.1.1"

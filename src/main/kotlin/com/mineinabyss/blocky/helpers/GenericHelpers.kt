@@ -15,6 +15,7 @@ import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
 import org.bukkit.block.*
 import org.bukkit.block.Sign
@@ -56,17 +57,19 @@ const val stoneHitSound = "blocky.stone.hit"
 const val stoneStepSound = "blocky.stone.step"
 const val stoneFallSound = "blocky.stone.fall"
 
-fun attemptBreakBlockyBlock(block: Block, player: Player?) {
-    val prefab = block.getGearyEntityFromBlock() ?: return
-    val itemInHand = player?.inventory?.itemInMainHand
+fun Block.attemptBreakBlockyBlock(player: Player) : Boolean {
+    val prefab = this.getGearyEntityFromBlock() ?: return false
+    val itemInHand = player.inventory.itemInMainHand
 
-    if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
-    if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
-    if (player != null && player.gameMode != GameMode.CREATIVE)
-        if (itemInHand != null && itemInHand.hasItemMeta() && itemInHand is Damageable)
+    if (!ProtectionLib.canBreak(player, this.location)) return false
+    if (prefab.has<BlockyLight>()) removeBlockLight(this.location)
+    if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
+    if (player.gameMode != GameMode.CREATIVE)
+        if (itemInHand.hasItemMeta() && itemInHand is Damageable)
             PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
-    block.setType(Material.AIR, false)
+    this.setType(Material.AIR, false)
+    return true
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
@@ -171,7 +174,7 @@ fun placeBlockyBlock(
     if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && targetBlock.isPlacableOn(face))
         blockPlaceEvent.isCancelled = true
 
-    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
+    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }

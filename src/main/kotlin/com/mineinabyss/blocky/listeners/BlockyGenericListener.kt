@@ -63,8 +63,7 @@ class BlockyGenericListener : Listener {
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
 
             BlockBreakEvent(block, player).call {
-                //TODO Add checks for worldguard and other plugins
-                if (isCancelled) attemptBreakBlockyBlock(block, player)
+                if (isCancelled) block.attemptBreakBlockyBlock(player)
             }
         }
     }
