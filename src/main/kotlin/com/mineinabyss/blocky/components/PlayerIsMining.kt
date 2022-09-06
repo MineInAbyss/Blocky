@@ -4,6 +4,4 @@ import kotlinx.coroutines.Job
 import kotlinx.serialization.Serializable
 
 @Serializable
-class PlayerIsMining(
-    var miningTask: Job? = null
-)
+data class PlayerIsMining(var miningTask: Job? = null)

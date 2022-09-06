@@ -150,7 +150,7 @@ class BlockyTripwireListener : Listener {
             placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
         if (blockyWire.has<BlockyLight>())
-            createBlockLight(placedWire.location, lightLevel!!)
+            handleLight.createBlockLight(placedWire.location, lightLevel!!)
 
         blockyPlugin.launch {
             delay(1)

@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 /**
 * Lets you define a component that affects the mining-speed of custom blocks
  * @param breakSpeedModifier The speed at which this modifies the default break speed of the block
- * @param toolTypes The types of tools that
+ * @param toolTypes The types of tool this item is registered under
 */
 @Serializable
 @SerialName("blocky:mining")

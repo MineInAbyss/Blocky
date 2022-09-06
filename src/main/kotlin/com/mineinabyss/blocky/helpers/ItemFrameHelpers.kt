@@ -83,7 +83,7 @@ fun GearyEntity.placeBlockyFrame(
 
     if (gearyItem.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
         newFrame.placeBarrierHitbox(yaw, loc, player)
-    } else if (gearyItem.has<BlockyLight>()) createBlockLight(loc, gearyItem.get<BlockyLight>()!!.lightLevel)
+    } else if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(loc, gearyItem.get<BlockyLight>()!!.lightLevel)
 
     return newFrame
 }
@@ -97,10 +97,9 @@ fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
         toGeary().get<BlockyBarrierHitbox>()?.barriers?.add(adjacentLoc.block.location)
 
         if (gearyItem.has<BlockyLight>())
-            createBlockLight(adjacentLoc, gearyItem.get<BlockyLight>()!!.lightLevel)
+            handleLight.createBlockLight(adjacentLoc, gearyItem.get<BlockyLight>()!!.lightLevel)
         if (gearyItem.has<BlockySeat>()) {
-            val seatYaw = gearyItem.get<BlockySeat>()?.yaw ?: (player.location.yaw - 180)
-            spawnSeat(adjacentLoc, seatYaw, gearyItem.get<BlockySeat>()?.heightOffset ?: 0.0)
+            spawnSeat(adjacentLoc, (player.location.yaw - 180), gearyItem.get<BlockySeat>()?.heightOffset ?: 0.0)
             toGeary().get<BlockySeatLocations>()?.seats?.add(adjacentLoc)
         }
     }
@@ -111,7 +110,7 @@ fun ItemFrame.removeBlockyFrame(player: Player?, event: Event) {
     this.removeAssosiatedSeats()
     this.clearAssosiatedBarrierChunkEntries(event)
     handleFurnitureDrops(player)
-    removeBlockLight(this.location)
+    handleLight.removeBlockLight(this.location)
     this.remove()
 }
 
@@ -119,7 +118,7 @@ private fun ItemFrame.clearAssosiatedBarrierChunkEntries(event: Event) {
     toGearyOrNull()?.get<BlockyBarrierHitbox>()?.barriers?.forEach barrier@{ barrierLoc ->
         barrierLoc.block.clearCustomBlockData(event)
         barrierLoc.block.type = Material.AIR
-        removeBlockLight(barrierLoc)
+        handleLight.removeBlockLight(barrierLoc)
     }
 }
 

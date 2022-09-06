@@ -65,7 +65,7 @@ class BlockyChorusPlantListener : Listener {
 
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyTransparent(blockFace)) ?: return
         if (gearyItem.has<BlockyLight>())
-            createBlockLight(placed.location, blockyLight!!)
+            handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -80,17 +80,6 @@ class BlockyChorusPlantListener : Listener {
         block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
         player.swingMainHand()
     }
-
-    //TODO Verify removal
-//    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-//    fun BlockBreakEvent.onBreakingBlockyBlock() {
-//        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
-//
-//        if (!block.isBlockyTransparent()) return
-//        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-//        block.attemptBreakBlockyBlock(player)
-//        isDropItems = false
-//    }
 
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {

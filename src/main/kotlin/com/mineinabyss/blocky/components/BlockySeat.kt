@@ -3,9 +3,7 @@ package com.mineinabyss.blocky.components
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+@JvmInline
 @Serializable
 @SerialName("blocky:seat")
-data class BlockySeat (
-    val yaw: Float = 0F,
-    val heightOffset: Double = 0.5
-)
+value class BlockySeat (val heightOffset: Double = 0.5)

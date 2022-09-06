@@ -62,7 +62,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) : Boolean {
     val itemInHand = player.inventory.itemInMainHand
 
     if (!ProtectionLib.canBreak(player, this.location)) return false
-    if (prefab.has<BlockyLight>()) removeBlockLight(this.location)
+    if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
     if (player.gameMode != GameMode.CREATIVE)
         if (itemInHand.hasItemMeta() && itemInHand is Damageable)
@@ -183,11 +183,11 @@ fun placeBlockyBlock(
     targetBlock.setBlockData(newData, isFlowing)
 
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-    blockPlaceEvent.callEvent()
+    blockPlaceEvent.call()
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
-    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && targetBlock.isPlacableOn(face))
+    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && !targetBlock.isPlacableOn(face))
         blockPlaceEvent.isCancelled = true
 
     if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
@@ -212,7 +212,7 @@ fun placeBlockyBlock(
 //TODO Make sure this still removes it and that it doesnt need to be also cleared later
 fun Block.clearCustomBlockData(event: Event) {
     if (CustomBlockData.hasCustomBlockData(this, blockyPlugin)) {
-        CustomBlockDataRemoveEvent(blockyPlugin, this, event).callEvent()
+        CustomBlockDataRemoveEvent(blockyPlugin, this, event).call()
     }
 }
 

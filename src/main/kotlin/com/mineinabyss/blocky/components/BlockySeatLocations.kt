@@ -7,6 +7,4 @@ import org.bukkit.Location
 
 @Serializable
 @SerialName("blocky:seat_locations")
-data class BlockySeatLocations(
-    val seats: MutableList<@Serializable(with = LocationSerializer::class) Location> = mutableListOf()
-)
+data class BlockySeatLocations(val seats: MutableList<@Serializable(with = LocationSerializer::class) Location> = mutableListOf())

@@ -48,8 +48,8 @@ class BlockyGenericListener : Listener {
         val info = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
         val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
-        val breakTime =
-            info.blockBreakTime / (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
+        val breakTime = info.blockBreakTime /
+                (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
 
         if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
         if (mining.miningTask != null) return
