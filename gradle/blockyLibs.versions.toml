@@ -1,9 +1,9 @@
 [versions]
-geary = "0.19.113"
-gearyaddons = "0.7.45"
-looty = "0.8.67"
-guiy="0.7.25"
-deeperworld="0.6.82"
+geary = "0.20.114"
+gearyaddons = "0.7.46"
+looty = "0.8.68"
+guiy="0.7.26"
+deeperworld="0.6.84"
 
 [libraries]
 geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
@@ -15,4 +15,3 @@ guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 minecraft-plugin-customblockdata = "com.jeff_media:CustomBlockData:2.1.0"
 minecraft-plugin-morepersistentdatatypes = "com.jeff_media:MorePersistentDataTypes:2.3.1"
 minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.3.0-Bukkit"
-minecraft-plugin-modelengine = "com.ticxo.modelengine:api:R2.5.0"
