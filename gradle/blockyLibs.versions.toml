@@ -1,7 +1,7 @@
 [versions]
 geary = "0.20.114"
 gearyaddons = "0.7.46"
-looty = "0.8.68"
+looty = "0.8.69"
 guiy="0.7.26"
 deeperworld="0.6.84"
 
