@@ -1,21 +1,96 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
+import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.components.BlockyInfo
+import com.mineinabyss.blocky.components.BlockyMining
+import com.mineinabyss.blocky.components.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.time.inWholeTicks
+import com.mineinabyss.looty.tracking.toGearyOrNull
+import kotlinx.coroutines.delay
 import org.bukkit.*
+import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
 import org.bukkit.block.data.type.Slab
 import org.bukkit.entity.EntityType
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
-import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.*
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.potion.PotionEffect
+import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
 
 class BlockyGenericListener : Listener {
+
+    private fun Player.resetCustomBreak(block: Block) {
+        toGeary {
+            get<PlayerIsMining>()?.miningTask?.cancel() ?: return
+            get<PlayerIsMining>()?.miningTask = null
+            remove<PlayerIsMining>()
+        }
+        removePotionEffect(SLOW_DIGGING)
+        block.location.getNearbyPlayers(16.0).forEach {
+            it.sendBlockChange(block.location, block.blockData)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockDamageEvent.onDamage() {
+        val info = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
+        val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
+        val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
+        val breakTime = info.blockBreakTime /
+                (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
+
+        if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
+        if (mining.miningTask != null) return
+        isCancelled = true
+
+        mining.miningTask = blockyPlugin.launch {
+            val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
+            var stage = 0
+
+            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, true))
+            do { //TODO Fix visual glitch for blockbreaker
+                block.location.getNearbyPlayers(16.0).forEach { p ->
+                    p.sendBlockDamage(block.location, stage.toFloat() / 10)
+                }
+                delay(breakTime / 10)
+            } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
+
+            BlockBreakEvent(block, player).call {
+                if (isCancelled) block.attemptBreakBlockyBlock(player)
+            }
+        }
+    }
+
+    // Cancel the custom break task if player stops breaking
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    fun BlockBreakEvent.onBreak() {
+        player.resetCustomBreak(block)
+    }
+
+    // Cancel the custom break task if player stops breaking
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun BlockDamageAbortEvent.onCancelMine() {
+        player.resetCustomBreak(block)
+    }
+
+    // If player swaps item, cancel breaking to prevent exploits
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun PlayerSwapHandItemsEvent.onSwapHand() {
+        if (!player.toGeary().has<PlayerIsMining>()) return
+        player.resetCustomBreak(player.getTargetBlock(null, 5))
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPlaceGravityOnBlocky() {

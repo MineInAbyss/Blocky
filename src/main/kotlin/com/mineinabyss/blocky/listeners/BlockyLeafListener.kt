@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.components.*
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
@@ -56,7 +55,7 @@ class BlockyLeafListener : Listener {
         if (blockyBlock.blockType != BlockType.LEAF) return
 
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, blockyBlock.getBlockyLeaf()) ?: return
-        if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
+        if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -69,16 +68,6 @@ class BlockyLeafListener : Listener {
 
         block.setBlockData(blockyBlock.getBlockyLeaf(), false)
         player.swingMainHand()
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
-
-        if (!block.isBlockyLeaf()) return
-        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-        breakBlockyBlock(block, player)
-        isDropItems = false
     }
 
     @EventHandler(ignoreCancelled = true)

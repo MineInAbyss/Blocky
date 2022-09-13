@@ -105,8 +105,8 @@ class BlockyItemFrameListener : Listener {
         hitEntity != null && hitEntity is ItemFrame && hitEntity?.toGearyOrNull()?.has<BlockyEntity>() == true) || return
 
         //TODO Consider making shooter handle for drops
-        if (entity is Explosive) { (hitEntity as ItemFrame).removeBlockyFrame(null,this)
-        } else isCancelled = true
+        if (entity is Explosive) { (hitEntity as ItemFrame).removeBlockyFrame(null,this) }
+        else isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)

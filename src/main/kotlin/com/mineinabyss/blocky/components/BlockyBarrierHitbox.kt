@@ -5,8 +5,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location
 
+@JvmInline
 @Serializable
 @SerialName("blocky:barrier_hitbox")
-class BlockyBarrierHitbox {
-    val barriers: MutableList<@Serializable(with = LocationSerializer::class) Location> = mutableListOf()
-}
+value class BlockyBarrierHitbox(val barriers: MutableList<@Serializable(with = LocationSerializer::class) Location> = mutableListOf())

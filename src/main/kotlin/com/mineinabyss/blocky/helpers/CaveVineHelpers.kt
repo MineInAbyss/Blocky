@@ -23,7 +23,7 @@ fun breakCaveVineBlock(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
 
-    if (gearyBlock.has<BlockyLight>()) removeBlockLight(block.location)
+    if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
     if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)

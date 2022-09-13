@@ -16,6 +16,8 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageAbortEvent
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.player.PlayerAttemptPickupItemEvent
+import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.event.world.GenericGameEvent
 
 class BlockySoundListener : Listener {
@@ -42,6 +44,25 @@ class BlockySoundListener : Listener {
         if (player.toGeary().has<PlayerIsMining>()) player.toGeary().remove<PlayerIsMining>()
         player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound
                 ?: if (block.blockSoundGroup.hitSound == Sound.BLOCK_WOOD_HIT) woodHitSound else stoneHitSound)
+    }
+
+    // Stop sound from custom block-breaking when player picks item into main hand
+    @EventHandler(ignoreCancelled = true)
+    fun PlayerAttemptPickupItemEvent.onPickupItem() {
+        val block = player.getTargetBlock(null, 5)
+        if (player.toGeary().has<PlayerIsMining>() && player.inventory.itemInMainHand.type == Material.AIR)
+            player.toGeary().remove<PlayerIsMining>()
+        player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound
+            ?: if (block.blockSoundGroup.hitSound == Sound.BLOCK_WOOD_HIT) woodHitSound else stoneHitSound)
+    }
+
+    @EventHandler
+    fun PlayerSwapHandItemsEvent.onSwapHand() {
+        val block = player.getTargetBlock(null, 5)
+        if (player.toGeary().has<PlayerIsMining>() && player.inventory.itemInMainHand.type == Material.AIR)
+            player.toGeary().remove<PlayerIsMining>()
+        player.stopSound(block.getGearyEntityFromBlock()?.get<BlockySound>()?.hitSound
+            ?: if (block.blockSoundGroup.hitSound == Sound.BLOCK_WOOD_HIT) woodHitSound else stoneHitSound)
     }
 
     @EventHandler(ignoreCancelled = true)

@@ -13,7 +13,9 @@ import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
 import org.bukkit.block.*
 import org.bukkit.block.Sign
@@ -28,10 +30,12 @@ import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
+import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
@@ -53,11 +57,19 @@ const val stoneHitSound = "blocky.stone.hit"
 const val stoneStepSound = "blocky.stone.step"
 const val stoneFallSound = "blocky.stone.fall"
 
-fun breakBlockyBlock(block: Block, player: Player?) {
-    val prefab = block.getGearyEntityFromBlock() ?: return
+fun Block.attemptBreakBlockyBlock(player: Player) : Boolean {
+    val prefab = this.getGearyEntityFromBlock() ?: return false
+    val itemInHand = player.inventory.itemInMainHand
 
-    if (prefab.has<BlockyLight>()) removeBlockLight(block.location)
-    if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
+    if (!ProtectionLib.canBreak(player, this.location)) return false
+    if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
+    if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
+    if (player.gameMode != GameMode.CREATIVE)
+        if (itemInHand.hasItemMeta() && itemInHand is Damageable)
+            PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
+
+    this.setType(Material.AIR, false)
+    return true
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
@@ -66,8 +78,24 @@ fun ItemStack.isBlockyBlock(player: Player): Boolean {
 
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
+    val info = gearyBlock.get<BlockyInfo>() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
+
+    if (info.onlyDropWithCorrectTool) {
+        if (player == null) return
+        val itemInHand = player.inventory.itemInMainHand
+        if (!itemInHand.isCorrectTool(player, block)) return
+    }
+
     gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
+}
+
+private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
+    val gearyBlock = block.getGearyEntityFromBlock() ?: return false
+    val info = gearyBlock.get<BlockyInfo>() ?: return false
+    val allowedToolTypes = toGearyOrNull(player)?.get<BlockyMining>()?.toolTypes ?: return false
+
+    return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
 }
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
@@ -155,14 +183,14 @@ fun placeBlockyBlock(
     targetBlock.setBlockData(newData, isFlowing)
 
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-    blockPlaceEvent.callEvent()
+    blockPlaceEvent.call()
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
-    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && targetBlock.isPlacableOn(face))
+    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && !targetBlock.isPlacableOn(face))
         blockPlaceEvent.isCancelled = true
 
-    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
+    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
@@ -184,7 +212,7 @@ fun placeBlockyBlock(
 //TODO Make sure this still removes it and that it doesnt need to be also cleared later
 fun Block.clearCustomBlockData(event: Event) {
     if (CustomBlockData.hasCustomBlockData(this, blockyPlugin)) {
-        CustomBlockDataRemoveEvent(blockyPlugin, this, event).callEvent()
+        CustomBlockDataRemoveEvent(blockyPlugin, this, event).call()
     }
 }
 

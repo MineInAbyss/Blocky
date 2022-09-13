@@ -24,11 +24,6 @@ import org.bukkit.entity.Player
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands: CommandHolder = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
-            "test" {
-                action {
-                    ResourcepackGeneration().generateDefaultAssets()
-                }
-            }
             "give" {
                 val type by optionArg(options = BlockyTypeQuery.map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }

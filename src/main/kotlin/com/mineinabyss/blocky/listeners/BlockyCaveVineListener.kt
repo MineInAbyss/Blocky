@@ -90,6 +90,6 @@ class BlockyCaveVineListener : Listener {
         val placedWire =
             placeBlockyBlock(player, hand!!, item, clickedBlock, blockFace, blockyVine.getBlockyCaveVine()) ?: return
         if (gearyVine.has<BlockyLight>())
-            createBlockLight(placedWire.location, lightLevel!!)
+            handleLight.createBlockLight(placedWire.location, lightLevel!!)
     }
 }

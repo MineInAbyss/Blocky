@@ -2,11 +2,13 @@ package com.mineinabyss.blocky.components
 
 import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
 import com.mineinabyss.blocky.helpers.getPrefabFromBlock
-import com.mineinabyss.blocky.helpers.isInProvidedTags
 import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.bukkit.Bukkit
 import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 
@@ -28,4 +30,13 @@ fun Block.isPlacableOn(face: BlockFace) : Boolean {
     ) return false
 
     return true
+}
+
+// Gets a list of all the materials present in the provided tags
+private fun Block.isInProvidedTags(list: List<String>) : Boolean {
+    list.forEach {  tag ->
+        if (Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(tag), Material::class.java)?.isTagged(type) != true) return@forEach
+        else return true
+    }
+    return false
 }

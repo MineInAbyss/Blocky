@@ -9,7 +9,10 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
-import org.bukkit.*
+import org.bukkit.Bukkit
+import org.bukkit.GameEvent
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
@@ -112,7 +115,7 @@ class BlockyNoteBlockListener : Listener {
         val placed =
             placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace))
                 ?: return
-        if (gearyItem.has<BlockyLight>()) createBlockLight(placed.location, blockyLight!!)
+        if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -139,16 +142,6 @@ class BlockyNoteBlockListener : Listener {
                 map
             )
         }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingBlockyBlock() {
-        val blockyInfo = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
-
-        if (!block.isBlockyNoteBlock()) return
-        if (blockyInfo.isUnbreakable && player.gameMode != GameMode.CREATIVE) isCancelled = true
-        breakBlockyBlock(block, player)
-        isDropItems = false
     }
 
     @EventHandler(ignoreCancelled = true)

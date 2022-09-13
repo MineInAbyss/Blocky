@@ -33,7 +33,6 @@ var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 
 interface BlockyContext {
     companion object : BlockyContext by getService()
-
 }
 
 class BlockyPlugin : JavaPlugin() {

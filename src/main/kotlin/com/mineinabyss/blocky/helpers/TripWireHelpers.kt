@@ -37,7 +37,7 @@ fun breakTripwireBlock(block: Block, player: Player?) {
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
     block.state.update(true, false)
 
-    if (gearyBlock.has<BlockyLight>()) removeBlockLight(block.location)
+    if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
     blockyPlugin.launch {

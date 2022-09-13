@@ -50,6 +50,7 @@ dependencies {
     compileOnly(libs.minecraft.anvilgui)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
 
+    implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)
     implementation(blockyLibs.minecraft.plugin.morepersistentdatatypes)
 
