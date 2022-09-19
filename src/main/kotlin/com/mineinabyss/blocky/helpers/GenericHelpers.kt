@@ -29,6 +29,7 @@ import org.bukkit.entity.EntityType
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
+import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.inventory.BlockInventoryHolder
@@ -57,11 +58,15 @@ const val stoneHitSound = "blocky.stone.hit"
 const val stoneStepSound = "blocky.stone.step"
 const val stoneFallSound = "blocky.stone.fall"
 
-fun Block.attemptBreakBlockyBlock(player: Player) : Boolean {
-    val prefab = this.getGearyEntityFromBlock() ?: return false
+fun Block.attemptBreakBlockyBlock(player: Player) {
+    val prefab = this.getGearyEntityFromBlock() ?: return
     val itemInHand = player.inventory.itemInMainHand
+    val blockBreakEvent = BlockBreakEvent(this, player)
+    blockBreakEvent.call()
 
-    if (!ProtectionLib.canBreak(player, this.location)) return false
+    if (!ProtectionLib.canBreak(player, this.location)) return
+    if (blockBreakEvent.isCancelled) return
+
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
     if (player.gameMode != GameMode.CREATIVE)
@@ -69,7 +74,6 @@ fun Block.attemptBreakBlockyBlock(player: Player) : Boolean {
             PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
     this.setType(Material.AIR, false)
-    return true
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {

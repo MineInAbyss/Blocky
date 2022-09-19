@@ -8,7 +8,6 @@ import com.mineinabyss.blocky.components.BlockyMining
 import com.mineinabyss.blocky.components.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
@@ -62,14 +61,12 @@ class BlockyGenericListener : Listener {
             player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, true))
             do { //TODO Fix visual glitch for blockbreaker
                 block.location.getNearbyPlayers(16.0).forEach { p ->
-                    p.sendBlockDamage(block.location, stage.toFloat() / 10)
+                    p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
                 }
                 delay(breakTime / 10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
 
-            BlockBreakEvent(block, player).call {
-                if (isCancelled) block.attemptBreakBlockyBlock(player)
-            }
+            block.attemptBreakBlockyBlock(player)
         }
     }
 
@@ -88,7 +85,6 @@ class BlockyGenericListener : Listener {
     // If player swaps item, cancel breaking to prevent exploits
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerSwapHandItemsEvent.onSwapHand() {
-        if (!player.toGeary().has<PlayerIsMining>()) return
         player.resetCustomBreak(player.getTargetBlock(null, 5))
     }
 
