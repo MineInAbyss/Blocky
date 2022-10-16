@@ -29,7 +29,16 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
-        isCancelled = true
+        val defaultData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+        val data = block.blockData as NoteBlock
+        //TODO data != defaultData might work here
+        if (data.instrument != defaultData.instrument || data.note != defaultData.note) {
+            isCancelled = true
+        } else {
+            // Update  the note stored in chunk and get instrument from below block
+            note = block.updateBlockyNote()
+            instrument = block.getBlockyInstrument()
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -55,8 +64,8 @@ class BlockyNoteBlockListener : Listener {
 
         if (rightClicked) isCancelled = true
         if (block.isVanillaNoteBlock()) {
-            if (rightClicked) updateBlockyNote(block)
-            playBlockyNoteBlock(block, player)
+            if (rightClicked) block.updateBlockyNote()
+            //playBlockyNoteBlock(block, player)
         }
     }
 

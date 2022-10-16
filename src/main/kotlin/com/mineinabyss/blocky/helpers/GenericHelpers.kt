@@ -4,7 +4,6 @@ import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.BlockyConfig
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.*
@@ -39,13 +38,6 @@ import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
-
-val config = BlockyConfig.data
-val noteConfig = config.noteBlocks
-val tripwireConfig = config.tripWires
-val chorusConfig = config.chorusPlant
-val leafConfig = config.leafBlocks
-val caveVineConfig = config.caveVineBlocks
 
 const val woodPlaceSound = "blocky.wood.place"
 const val woodBreakSound = "blocky.wood.break"
@@ -180,7 +172,7 @@ fun placeBlockyBlock(
             DataType.BLOCK_DATA,
             newData
         )
-    updateBlockyNote(targetBlock)
+    targetBlock.updateBlockyNote()
 
     val currentData = targetBlock.blockData
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA

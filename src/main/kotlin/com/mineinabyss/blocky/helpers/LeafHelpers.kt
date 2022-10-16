@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.components.BlockyBlock
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -45,7 +46,7 @@ internal fun getLeafMaterial(int: Int) : Material {
 }
 
 internal fun getLeafDistance(int: Int) : Int {
-    if (leafConfig.shouldReserveOnePersistentLeafPerType) {
+    if (blockyConfig.leafBlocks.shouldReserveOnePersistentLeafPerType) {
         return when {
             (int % 7) == 1 -> 2
             (int % 7) == 2 -> 3
@@ -70,7 +71,7 @@ internal fun getLeafDistance(int: Int) : Int {
 }
 
 internal fun getBlockMapEntryForLeaf(int: Int) : Int {
-    return if (leafConfig.shouldReserveOnePersistentLeafPerType) int
+    return if (blockyConfig.leafBlocks.shouldReserveOnePersistentLeafPerType) int
     else {
         when (int) {
             in 1..6 -> int

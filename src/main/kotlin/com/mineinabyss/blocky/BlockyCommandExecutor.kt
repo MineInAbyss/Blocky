@@ -13,6 +13,7 @@ import com.mineinabyss.idofront.commands.arguments.intArg
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.looty.LootyFactory
@@ -24,6 +25,12 @@ import org.bukkit.entity.Player
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands: CommandHolder = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
+            "reload" {
+                action {
+                    blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
+                    blockyPlugin.runStartupFunctions()
+                }
+            }
             "give" {
                 val type by optionArg(options = BlockyTypeQuery.map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }

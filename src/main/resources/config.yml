@@ -13,7 +13,7 @@ chorusPlant:
   isEnabled: true
 
 leafBlocks:
-  isEnable: true
+  isEnabled: true
   disableBurnForBlockyLeaves: false
   disableAllLeafDecay: false
   shouldReserveOnePersistentLeafPerType: true

@@ -1,14 +1,18 @@
 package com.mineinabyss.blocky
 
 import com.jeff_media.customblockdata.CustomBlockData
-import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.getBlockMapEntryForLeaf
+import com.mineinabyss.blocky.helpers.getLeafDistance
+import com.mineinabyss.blocky.helpers.getLeafMaterial
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.GearyLoadPhase
 import com.mineinabyss.geary.addon.autoscan
 import com.mineinabyss.geary.papermc.dsl.gearyAddon
-import com.mineinabyss.idofront.platforms.IdofrontPlatforms
-import com.mineinabyss.idofront.plugin.getService
-import com.mineinabyss.idofront.plugin.registerEvents
+import com.mineinabyss.idofront.config.IdofrontConfig
+import com.mineinabyss.idofront.config.config
+import com.mineinabyss.idofront.platforms.Platforms
+import com.mineinabyss.idofront.plugin.Services
+import com.mineinabyss.idofront.plugin.listeners
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceLocation
@@ -32,24 +36,21 @@ var blockMap = mapOf<BlockData, Int>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 
 interface BlockyContext {
-    companion object : BlockyContext by getService()
+    companion object : BlockyContext by Services.get()
 }
 
 class BlockyPlugin : JavaPlugin() {
-
+    lateinit var config: IdofrontConfig<BlockyConfig>
     override fun onLoad() {
-        IdofrontPlatforms.load(this, "mineinabyss")
+        Platforms.load(this, "mineinabyss")
     }
 
     override fun onEnable() {
-        saveDefaultConfig()
-        reloadConfig()
-        BlockyConfig.load()
+        config = config("config") { fromPluginPath(loadDefault = true) }
 
         BlockyCommandExecutor()
         CustomBlockData.registerListener(blockyPlugin)
-
-        registerEvents(
+        listeners(
             BlockyGenericListener(),
             BlockyItemFrameListener(),
             BlockyMiddleClickListener(),
@@ -58,13 +59,15 @@ class BlockyPlugin : JavaPlugin() {
         )
 
         //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
-        if (server.pluginManager.isPluginEnabled("Mobzy")) registerEvents(BlockyModelEngineListener())
-        if (leafConfig.isEnabled) registerEvents(BlockyLeafListener())
-        if (noteConfig.isEnabled) registerEvents(BlockyNoteBlockListener())
-        if (chorusConfig.isEnabled) registerEvents(BlockyChorusPlantListener())
-        if (tripwireConfig.isEnabled) registerEvents(BlockyTripwireListener())
-        if (caveVineConfig.isEnabled) registerEvents(BlockyCaveVineListener())
-        if (!BlockyConfig.data.disableCustomSounds) registerEvents(BlockySoundListener())
+        if (server.pluginManager.isPluginEnabled("Mobzy")) listeners(BlockyModelEngineListener())
+        blockyConfig.run {
+            if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
+            if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
+            if (chorusPlant.isEnabled) listeners(BlockyChorusPlantListener())
+            if (tripWires.isEnabled) listeners(BlockyTripwireListener())
+            if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
+            if (!disableCustomSounds) listeners(BlockySoundListener())
+        }
 
         gearyAddon {
             autoscan("com.mineinabyss") {
@@ -72,12 +75,16 @@ class BlockyPlugin : JavaPlugin() {
             }
             startup {
                 GearyLoadPhase.ENABLE {
-                    blockMap = createBlockMap()
-                    registryTagMap = createTagRegistryMap()
-                    ResourcepackGeneration().generateDefaultAssets()
+                    runStartupFunctions()
                 }
             }
         }
+    }
+
+    fun runStartupFunctions() {
+        blockMap = createBlockMap()
+        registryTagMap = createTagRegistryMap()
+        ResourcepackGeneration().generateDefaultAssets()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
@@ -100,7 +107,7 @@ class BlockyPlugin : JavaPlugin() {
         val blockMap = mutableMapOf<BlockData, Int>()
 
         // Calculates tripwire states
-        if (tripwireConfig.isEnabled) for (i in 0..127) {
+        if (blockyConfig.tripWires.isEnabled) for (i in 0..127) {
             val tripWireData = Bukkit.createBlockData(Material.TRIPWIRE) as Tripwire
             if (i and 1 == 1) tripWireData.setFace(BlockFace.NORTH, true)
             if (i shr 1 and 1 == 1) tripWireData.setFace(BlockFace.EAST, true)
@@ -114,7 +121,7 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         // Calculates noteblock states
-        if (noteConfig.isEnabled) for (j in 0..799) {
+        if (blockyConfig.noteBlocks.isEnabled) for (j in 0..799) {
             val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
             if (j >= 399) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
             else noteBlockData.instrument = Instrument.getByType((j / 25 % 400).toByte()) ?: continue
@@ -125,7 +132,7 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         // Calculates chorus plant states
-        if (chorusConfig.isEnabled) for (k in 0..63) {
+        if (blockyConfig.chorusPlant.isEnabled) for (k in 0..63) {
             val chorusData = Bukkit.createBlockData(Material.CHORUS_PLANT) as MultipleFacing
             if (k and 1 == 1) chorusData.setFace(BlockFace.NORTH, true)
             if (k shr 1 and 1 == 1) chorusData.setFace(BlockFace.EAST, true)
@@ -139,10 +146,10 @@ class BlockyPlugin : JavaPlugin() {
 
         // Calculates leaf states
         // Should waterlog be used aswell?
-        if (leafConfig.isEnabled) for (l in 1..63) {
+        if (blockyConfig.leafBlocks.isEnabled) for (l in 1..63) {
             val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
             val distance = getLeafDistance(l)
-            if (distance == 1 && leafConfig.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
+            if (distance == 1 && blockyConfig.leafBlocks.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
 
             leafData.isPersistent = true
             leafData.distance = distance
@@ -151,7 +158,7 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         // Calculates cave-vine states
-        if (caveVineConfig.isEnabled) {
+        if (blockyConfig.caveVineBlocks.isEnabled) {
             for (m in 1..50) {
                 val vineData = Bukkit.createBlockData(Material.CAVE_VINES) as CaveVines
                 vineData.isBerries = m > 25

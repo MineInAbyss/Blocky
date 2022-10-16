@@ -1,19 +1,17 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.idofront.config.IdofrontConfig
 import kotlinx.serialization.Serializable
 
-object BlockyConfig : IdofrontConfig<BlockyConfig.Data>(blockyPlugin, Data.serializer()) {
-    @Serializable
-    data class Data(
-        val noteBlocks: BlockyNoteBlockConfig,
-        val tripWires: BlockyTripwireConfig,
-        val chorusPlant: BlockyChorusPlantConfig,
-        val leafBlocks: BlockyLeafConfig,
-        val caveVineBlocks: BlockyCaveVineConfig,
-        val disableCustomSounds: Boolean = false,
-    )
-
+val blockyConfig get() = blockyPlugin.config.data
+@Serializable
+data class BlockyConfig(
+    val noteBlocks: BlockyNoteBlockConfig,
+    val tripWires: BlockyTripwireConfig,
+    val chorusPlant: BlockyChorusPlantConfig,
+    val leafBlocks: BlockyLeafConfig,
+    val caveVineBlocks: BlockyCaveVineConfig,
+    val disableCustomSounds: Boolean = false,
+) {
     @Serializable
     data class BlockyNoteBlockConfig(
         val isEnabled: Boolean = true,

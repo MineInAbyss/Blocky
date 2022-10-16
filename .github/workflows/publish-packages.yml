@@ -20,6 +20,13 @@ jobs:
           distribution: temurin
           java-version: 17
 
+      - name: Set env variable from latest maven version
+        run: >
+          echo "RELEASE_VERSION=$( \
+            curl https://repo.mineinabyss.com/releases/com/mineinabyss/blocky/maven-metadata.xml | \
+            grep -oP '(?!<latest>)[\d\.]*(?=</latest>)' \
+          )" >> $GITHUB_ENV
+
       - name: Run gradle build and publish
         run: gradle build publish -PmineinabyssMavenUsername=${{ secrets.MAVEN_PUBLISH_USERNAME }} -PmineinabyssMavenPassword=${{ secrets.MAVEN_PUBLISH_PASSWORD }}
 

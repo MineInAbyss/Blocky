@@ -145,12 +145,11 @@ class BlockyTripwireListener : Listener {
         if (wireBlock.blockType != BlockType.GROUND) return
         if (!blockyWire.has<BlockyInfo>()) return
 
-        val lightLevel = blockyWire.get<BlockyLight>()?.lightLevel
         val placedWire =
             placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
         if (blockyWire.has<BlockyLight>())
-            handleLight.createBlockLight(placedWire.location, lightLevel!!)
+            handleLight.createBlockLight(placedWire.location, blockyWire.get<BlockyLight>()?.lightLevel ?: 0)
 
         blockyPlugin.launch {
             delay(1)

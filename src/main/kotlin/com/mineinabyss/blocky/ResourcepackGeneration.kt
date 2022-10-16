@@ -19,18 +19,24 @@ import java.nio.charset.Charset
 class ResourcepackGeneration {
 
     fun generateDefaultAssets() {
-        val root = "${blockyPlugin.dataFolder.absolutePath}/assets/minecraft/blockstates"
-        val noteBlockFile = "${root}/note_block.json".toPath().toFile()
-        val tripwireFile = "${root}/tripwire.json".toPath().toFile()
-        val chorusPlantFile = "${root}/chorus_plant.json".toPath().toFile()
-        val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
-        val caveVineFile = "${root}/cave_vine.json".toPath().toFile()
+        val root = "${blockyPlugin.dataFolder.absolutePath}/assets/minecraft/blockstates".run { toPath().toFile().mkdirs(); this }
+        val noteBlockFile = "${root}/note_block.json".toPath().toFile().run { createNewFile(); this }
+        val tripwireFile = "${root}/tripwire.json".toPath().toFile().run { createNewFile(); this }
+        val chorusPlantFile = "${root}/chorus_plant.json".toPath().toFile().run { createNewFile(); this }
+        val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile().run { createNewFile(); this } }
+        val caveVineFile = "${root}/cave_vine.json".toPath().toFile().run { createNewFile(); this }
 
         noteBlockFile.writeText(getNoteBlockBlockStates().toString(), Charset.defaultCharset())
         tripwireFile.writeText(getTripwireBlockStates().toString(), Charset.defaultCharset())
         chorusPlantFile.writeText(getChorusPlantBlockStates().toString(), Charset.defaultCharset())
         leafFiles.forEach { it.writeText(getLeafBlockStates().toString(), Charset.defaultCharset()) }
         caveVineFile.writeText(getCaveVineBlockStates().toString(), Charset.defaultCharset())
+
+        if (!blockyConfig.noteBlocks.isEnabled) noteBlockFile.delete()
+        else if (!blockyConfig.tripWires.isEnabled) tripwireFile.delete()
+        else if (!blockyConfig.chorusPlant.isEnabled) chorusPlantFile.delete()
+        else if (!blockyConfig.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
+        else if (!blockyConfig.caveVineBlocks.isEnabled) caveVineFile.delete()
     }
 
     private fun getNoteBlockBlockStates(): JsonObject {

@@ -30,18 +30,13 @@ fun Block.isVanillaNoteBlock(): Boolean {
     return blockData == Bukkit.createBlockData(Material.NOTE_BLOCK)
 }
 
-fun updateBlockyNote(block: Block) {
+// Updates the note stored in the pdc by 1
+fun Block.updateBlockyNote(): Note {
     val noteBlock = NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase())
-    val pdc = CustomBlockData(block, blockyPlugin)
-    val map = pdc.get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER)) ?: return
-    val data = map.entries.first().key as NoteBlock
-    val i = map.entries.first().value + 1
-
-    data.note = Note((i % 25))
-
-    map.clear()
-    map[data] = i
-    pdc.set(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER), map)
+    val pdc = CustomBlockData(this, blockyPlugin)
+    val note = (pdc.get(noteBlock, DataType.INTEGER) ?: 0) + 1
+    pdc.set(noteBlock, DataType.INTEGER, note)
+    return Note(note % 25)
 }
 
 fun playBlockyNoteBlock(block: Block, player: Player) {
@@ -52,15 +47,15 @@ fun playBlockyNoteBlock(block: Block, player: Player) {
     val loc = block.getRelative(BlockFace.UP).location.add(0.5, 0.0, 0.5)
 
     player.location.getNearbyPlayers(50.0).forEach {p ->
-        p.playNote(loc, block.modifiesBlockyInstrument(), data.note)
+        p.playNote(loc, block.getBlockyInstrument(), data.note)
         p.spawnParticle(Particle.NOTE, loc, 0, color, 0.0, 1.0)
     }
 }
 
-fun Block.modifiesBlockyInstrument(): Instrument {
-    val b = getRelative(BlockFace.DOWN)
-    return list.filter { b.type.toString().lowercase().contains(it.first) }
-        .toList().firstOrNull()?.second ?: Instrument.PIANO
+fun Block.getBlockyInstrument(): Instrument {
+    return list.firstOrNull {
+        it.first in getRelative(BlockFace.DOWN).type.toString().lowercase()
+    }?.second ?: Instrument.PIANO
 }
 
 val list = listOf(

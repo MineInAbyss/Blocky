@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.BlockyInfo
 import com.mineinabyss.blocky.components.BlockyMining
@@ -170,10 +171,10 @@ class BlockyGenericListener : Listener {
         when {
             itemInHand.isBlockyBlock(player) -> return
             !blockPlaced.isBlockyBlock() -> return
-            !noteConfig.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
-            !chorusConfig.isEnabled && itemInHand.type == Material.CHORUS_PLANT -> return
-            !tripwireConfig.isEnabled && itemInHand.type == Material.STRING -> return
-            !caveVineConfig.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
+            !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
+            !blockyConfig.chorusPlant.isEnabled && itemInHand.type == Material.CHORUS_PLANT -> return
+            !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
+            !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
 
