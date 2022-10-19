@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.components
+package com.mineinabyss.blocky.components.features
 
 import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
 import com.mineinabyss.blocky.helpers.getPrefabFromBlock

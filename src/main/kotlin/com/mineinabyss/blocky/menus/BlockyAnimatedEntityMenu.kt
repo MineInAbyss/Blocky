@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.mineinabyss.blocky.components.BlockyModelEngine
+import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.guiy.components.Grid

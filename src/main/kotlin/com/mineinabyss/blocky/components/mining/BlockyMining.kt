@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.components
+package com.mineinabyss.blocky.components.mining
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

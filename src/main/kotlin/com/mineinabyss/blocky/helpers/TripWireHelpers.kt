@@ -3,9 +3,9 @@ package com.mineinabyss.blocky.helpers
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyLight
+import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.BlockyLight
 import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material

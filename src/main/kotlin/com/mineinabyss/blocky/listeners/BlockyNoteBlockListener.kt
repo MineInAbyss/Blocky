@@ -4,7 +4,11 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.components.core.BlockType
+import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.BlockyBurnable
+import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull

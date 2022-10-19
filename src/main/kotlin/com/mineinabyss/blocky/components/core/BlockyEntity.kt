@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.components
+package com.mineinabyss.blocky.components.core
 
 import com.mineinabyss.blocky.systems.BlockLocation
 import kotlinx.serialization.SerialName

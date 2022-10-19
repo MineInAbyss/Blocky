@@ -2,18 +2,21 @@ package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyConfig
-import com.mineinabyss.blocky.components.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyBlock
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Leaves
 
+fun BlockyBlock.isBlockyLeaf(): Boolean {
+    return blockMap.filter { it.key is Leaves && it.key.material in leafList && it.value == blockId }.keys.isNotEmpty()
+}
 fun BlockyBlock.getBlockyLeaf(): BlockData {
     return blockMap.filter { it.key is Leaves && leafList.contains(it.key.material) && it.value == blockId }.keys.first() as Leaves
 }
 
 fun Block.isBlockyLeaf(): Boolean {
-    return blockMap.contains(blockData) && leafList.contains(type)
+    return blockData in blockMap && type in leafList
 }
 
 // Azalea before Acacia because of biome tinting

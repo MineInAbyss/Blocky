@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.components.BlockyModelEngine
+import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey

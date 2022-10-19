@@ -1,9 +1,9 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockyEntity
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockySeat
-import com.mineinabyss.blocky.components.EntityType
+import com.mineinabyss.blocky.components.core.BlockyEntity
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.core.EntityType
+import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.idofront.messaging.error

@@ -1,8 +1,8 @@
 package com.mineinabyss.blocky.systems
 
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyModelEngine
+import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.type
 import com.mineinabyss.geary.datatypes.family.family

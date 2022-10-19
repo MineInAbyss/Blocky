@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockyModelEngine
+import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.getRotation
 import com.mineinabyss.blocky.helpers.getYaw
 import com.mineinabyss.geary.papermc.helpers.spawnFromPrefab

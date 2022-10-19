@@ -2,8 +2,8 @@ package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.BlockySound
-import com.mineinabyss.blocky.components.PlayerIsMining
+import com.mineinabyss.blocky.components.core.BlockySound
+import com.mineinabyss.blocky.components.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.time.ticks

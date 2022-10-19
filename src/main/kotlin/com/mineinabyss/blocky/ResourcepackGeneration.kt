@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.google.gson.JsonObject
-import com.mineinabyss.blocky.components.BlockType
+import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.helpers.leafList
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.type

@@ -1,6 +1,11 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.components.*
+import com.mineinabyss.blocky.components.core.BlockyBarrierHitbox
+import com.mineinabyss.blocky.components.core.BlockyEntity
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.BlockySeat
+import com.mineinabyss.blocky.components.features.BlockySeatLocations
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary

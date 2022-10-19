@@ -1,9 +1,9 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.components.BlockyBlock
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyLight
+import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.BlockyLight
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
