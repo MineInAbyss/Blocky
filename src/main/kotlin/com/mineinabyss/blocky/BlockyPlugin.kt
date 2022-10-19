@@ -1,6 +1,8 @@
 package com.mineinabyss.blocky
 
 import com.jeff_media.customblockdata.CustomBlockData
+import com.mineinabyss.blocky.compatibility.WorldEditListener
+import com.mineinabyss.blocky.compatibility.WorldEditSupport
 import com.mineinabyss.blocky.helpers.getBlockMapEntryForLeaf
 import com.mineinabyss.blocky.helpers.getLeafDistance
 import com.mineinabyss.blocky.helpers.getLeafMaterial
@@ -11,8 +13,11 @@ import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.Services
 import com.mineinabyss.idofront.plugin.listeners
+import com.sk89q.worldedit.WorldEdit
+import com.sk89q.worldedit.bukkit.WorldEditPlugin
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceLocation
@@ -50,12 +55,17 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
         CustomBlockData.registerListener(blockyPlugin)
+
+        if (Plugins.isEnabled<WorldEditPlugin>()) {
+            WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
+            listeners(WorldEditListener())
+        }
+
         listeners(
             BlockyGenericListener(),
             BlockyItemFrameListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
-            WorldEditListener()
         )
 
         //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
