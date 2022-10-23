@@ -33,33 +33,33 @@ class WorldEditSupport {
             val type = gearyEntity.get<BlockyBlock>()?.blockType ?: return null
 
             val blockData = when {
-                type == BlockType.GROUND -> gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
+                type == BlockType.TRIPWIRE -> gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
                 input.endsWith("[direction=up]") -> {
-                    if (type == BlockType.CUBE) gearyEntity.getBlockyNoteBlock(BlockFace.UP)
+                    if (type == BlockType.NOTEBLOCK) gearyEntity.getBlockyNoteBlock(BlockFace.UP)
                     else gearyEntity.getBlockyTransparent(BlockFace.UP)
                 }
                 input.endsWith("[direction=north]") -> {
-                    if (type == BlockType.CUBE)
+                    if (type == BlockType.NOTEBLOCK)
                         gearyEntity.getBlockyNoteBlock(BlockFace.NORTH)
                     else gearyEntity.getBlockyTransparent(BlockFace.NORTH)
                 }
                 input.endsWith("[direction=south]") -> {
-                    if (type == BlockType.CUBE)
+                    if (type == BlockType.NOTEBLOCK)
                         gearyEntity.getBlockyNoteBlock(BlockFace.SOUTH)
                     else gearyEntity.getBlockyTransparent(BlockFace.SOUTH)
                 }
                 input.endsWith("[direction=west]") -> {
-                    if (type == BlockType.CUBE)
+                    if (type == BlockType.NOTEBLOCK)
                         gearyEntity.getBlockyNoteBlock(BlockFace.WEST)
                     else gearyEntity.getBlockyTransparent(BlockFace.WEST)
                 }
                 input.endsWith("[direction=east]") -> {
-                    if (type == BlockType.CUBE)
+                    if (type == BlockType.NOTEBLOCK)
                         gearyEntity.getBlockyNoteBlock(BlockFace.EAST)
                     else gearyEntity.getBlockyTransparent(BlockFace.EAST)
                 }
                 else -> {
-                    if (type == BlockType.CUBE)
+                    if (type == BlockType.NOTEBLOCK)
                         gearyEntity.getBlockyNoteBlock(BlockFace.UP)
                     else gearyEntity.getBlockyTransparent(BlockFace.UP)
                 }

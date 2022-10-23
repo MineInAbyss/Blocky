@@ -61,7 +61,7 @@ class BlockyChorusPlantListener : Listener {
 
         if ((against.type.isInteractable && against.getGearyEntityFromBlock() == null) && !player.isSneaking) return
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.TRANSPARENT) return
+        if (blockyBlock.blockType != BlockType.CHORUS) return
 
         val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyTransparent(blockFace)) ?: return
         if (gearyItem.has<BlockyLight>())
@@ -75,7 +75,7 @@ class BlockyChorusPlantListener : Listener {
         val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.UP
 
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.TRANSPARENT) return
+        if (blockyBlock.blockType != BlockType.CHORUS) return
 
         block.setBlockData(gearyItem.getBlockyTransparent(blockFace), false)
         player.swingMainHand()

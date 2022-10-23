@@ -142,7 +142,7 @@ class BlockyTripwireListener : Listener {
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
         val wireBlock = blockyWire.get<BlockyBlock>() ?: return
-        if (wireBlock.blockType != BlockType.GROUND) return
+        if (wireBlock.blockType != BlockType.TRIPWIRE) return
         if (!blockyWire.has<BlockyInfo>()) return
 
         val placedWire =

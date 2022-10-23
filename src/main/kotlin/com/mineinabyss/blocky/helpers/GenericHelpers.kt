@@ -124,9 +124,9 @@ fun Block.getPrefabFromBlock(): PrefabKey? {
     val type =
         when {
             type == Material.BARRIER -> return this.getAssociatedBlockyFrame(10.0)?.toGearyOrNull()?.get()
-            type == Material.NOTE_BLOCK -> BlockType.CUBE
-            type == Material.TRIPWIRE -> BlockType.GROUND
-            type == Material.CHORUS_PLANT -> BlockType.TRANSPARENT
+            type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
+            type == Material.TRIPWIRE -> BlockType.TRIPWIRE
+            type == Material.CHORUS_PLANT -> BlockType.CHORUS
             type == Material.CAVE_VINES -> BlockType.CAVEVINE
             Tag.LEAVES.isTagged(type) -> BlockType.LEAF
             else -> null

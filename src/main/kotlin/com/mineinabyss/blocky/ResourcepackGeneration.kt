@@ -42,7 +42,7 @@ class ResourcepackGeneration {
     private fun getNoteBlockBlockStates(): JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.CUBE }.map { it.type }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.NOTEBLOCK }.map { it.type }
         blockMap.filter { it.key is NoteBlock }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getNoteBlockData(), modelID.getModelJson())
@@ -64,7 +64,7 @@ class ResourcepackGeneration {
     private fun getTripwireBlockStates(): JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.GROUND }.map { it.type }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.TRIPWIRE }.map { it.type }
         blockMap.filter { it.key is Tripwire }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getTripwireData(), modelID.getModelJson())
@@ -90,7 +90,7 @@ class ResourcepackGeneration {
     private fun getChorusPlantBlockStates() : JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.TRANSPARENT }.map { it.type }
+        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.CHORUS }.map { it.type }
         blockMap.filter { it.key is MultipleFacing }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getChorusPlantData(), modelID.getModelJson())

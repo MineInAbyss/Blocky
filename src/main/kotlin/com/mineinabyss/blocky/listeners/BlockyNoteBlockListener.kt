@@ -123,7 +123,7 @@ class BlockyNoteBlockListener : Listener {
 
         if ((against.type.isInteractable && against.getGearyEntityFromBlock() == null) && !player.isSneaking) return
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.CUBE) return
+        if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
 
         val placed =
             placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace))
@@ -138,7 +138,7 @@ class BlockyNoteBlockListener : Listener {
         val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.UP
 
         if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.CUBE) return
+        if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
 
         block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
         player.swingMainHand()

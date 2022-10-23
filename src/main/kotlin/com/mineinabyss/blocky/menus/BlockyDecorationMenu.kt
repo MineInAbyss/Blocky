@@ -16,7 +16,7 @@ fun BlockyUIScope.BlockyDecorationMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
             BlockyTypeQuery.filter {
-                it.entity.get<BlockyBlock>()?.blockType == BlockType.GROUND
+                it.entity.get<BlockyBlock>()?.blockType == BlockType.TRIPWIRE
             }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }

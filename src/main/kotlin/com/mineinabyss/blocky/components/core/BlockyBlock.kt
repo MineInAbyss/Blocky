@@ -12,5 +12,5 @@ data class BlockyBlock (
 )
 
 enum class BlockType {
-    CUBE, GROUND, TRANSPARENT, LEAF, CAVEVINE
+    NOTEBLOCK, TRIPWIRE, CHORUS, LEAF, CAVEVINE
 }
