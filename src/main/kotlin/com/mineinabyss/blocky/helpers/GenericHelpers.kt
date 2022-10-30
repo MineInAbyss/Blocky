@@ -44,16 +44,28 @@ import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
 import kotlin.random.Random
 
-const val woodPlaceSound = "blocky.wood.place"
-const val woodBreakSound = "blocky.wood.break"
-const val woodHitSound = "blocky.wood.hit"
-const val woodStepSound = "blocky.wood.step"
-const val woodFallSound = "blocky.wood.fall"
-const val stonePlaceSound = "blocky.stone.place"
-const val stoneBreakSound = "blocky.stone.break"
-const val stoneHitSound = "blocky.stone.hit"
-const val stoneStepSound = "blocky.stone.step"
-const val stoneFallSound = "blocky.stone.fall"
+const val VANILLA_STONE_PLACE = "blocky.stone.place"
+const val VANILLA_STONE_BREAK = "blocky.stone.break"
+const val VANILLA_STONE_HIT = "blocky.stone.hit"
+const val VANILLA_STONE_STEP = "blocky.stone.step"
+const val VANILLA_STONE_FALL = "blocky.stone.fall"
+
+const val VANILLA_WOOD_PLACE = "blocky.wood.place"
+const val VANILLA_WOOD_BREAK = "blocky.wood.break"
+const val VANILLA_WOOD_HIT = "blocky.wood.hit"
+const val VANILLA_WOOD_STEP = "blocky.wood.step"
+const val VANILLA_WOOD_FALL = "blocky.wood.fall"
+
+const val DEFAULT_PLACE_VOLUME = 1.0f
+const val DEFAULT_PLACE_PITCH = 0.8f
+const val DEFAULT_BREAK_VOLUME = 1.0f
+const val DEFAULT_BREAK_PITCH = 0.8f
+const val DEFAULT_HIT_VOLUME = 0.25f
+const val DEFAULT_HIT_PITCH = 0.5f
+const val DEFAULT_STEP_VOLUME = 0.15f
+const val DEFAULT_STEP_PITCH = 1.0f
+const val DEFAULT_FALL_VOLUME = 0.5f
+const val DEFAULT_FALL_PITCH = 0.75f
 
 fun Block.attemptBreakBlockyBlock(player: Player) {
     val prefab = this.getGearyEntityFromBlock() ?: return
