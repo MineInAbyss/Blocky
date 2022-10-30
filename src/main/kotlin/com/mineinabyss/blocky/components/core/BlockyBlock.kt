@@ -12,5 +12,5 @@ data class BlockyBlock (
 )
 
 enum class BlockType {
-    NOTEBLOCK, TRIPWIRE, CHORUS, LEAF, CAVEVINE
+    NOTEBLOCK, TRIPWIRE, LEAF, CAVEVINE
 }

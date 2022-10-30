@@ -29,7 +29,6 @@ import org.bukkit.Material
 import org.bukkit.Note
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.MultipleFacing
 import org.bukkit.block.data.type.CaveVines
 import org.bukkit.block.data.type.Leaves
 import org.bukkit.block.data.type.NoteBlock
@@ -73,7 +72,6 @@ class BlockyPlugin : JavaPlugin() {
         blockyConfig.run {
             if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
-            if (chorusPlant.isEnabled) listeners(BlockyChorusPlantListener())
             if (tripWires.isEnabled) listeners(BlockyTripwireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
@@ -139,19 +137,6 @@ class BlockyPlugin : JavaPlugin() {
             noteBlockData.isPowered = j !in 0..399
 
             blockMap.putIfAbsent(noteBlockData, j)
-        }
-
-        // Calculates chorus plant states
-        if (blockyConfig.chorusPlant.isEnabled) for (k in 0..63) {
-            val chorusData = Bukkit.createBlockData(Material.CHORUS_PLANT) as MultipleFacing
-            if (k and 1 == 1) chorusData.setFace(BlockFace.NORTH, true)
-            if (k shr 1 and 1 == 1) chorusData.setFace(BlockFace.EAST, true)
-            if (k shr 2 and 1 == 1) chorusData.setFace(BlockFace.SOUTH, true)
-            if (k shr 3 and 1 == 1) chorusData.setFace(BlockFace.WEST, true)
-            if (k shr 4 and 1 == 1) chorusData.setFace(BlockFace.UP, true)
-            if (k shr 5 and 1 == 1) chorusData.setFace(BlockFace.DOWN, true)
-
-            blockMap.putIfAbsent(chorusData, k)
         }
 
         // Calculates leaf states

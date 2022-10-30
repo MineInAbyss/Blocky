@@ -7,7 +7,6 @@ val blockyConfig get() = blockyPlugin.config.data
 data class BlockyConfig(
     val noteBlocks: BlockyNoteBlockConfig,
     val tripWires: BlockyTripwireConfig,
-    val chorusPlant: BlockyChorusPlantConfig,
     val leafBlocks: BlockyLeafConfig,
     val caveVineBlocks: BlockyCaveVineConfig,
     val disableCustomSounds: Boolean = false,
@@ -19,11 +18,6 @@ data class BlockyConfig(
 
     @Serializable
     data class BlockyTripwireConfig(
-        val isEnabled: Boolean = true,
-    )
-
-    @Serializable
-    data class BlockyChorusPlantConfig(
         val isEnabled: Boolean = true,
     )
 

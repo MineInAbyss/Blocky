@@ -9,7 +9,6 @@ import okio.Path.Companion.toPath
 import org.bukkit.Instrument
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.MultipleFacing
 import org.bukkit.block.data.type.CaveVines
 import org.bukkit.block.data.type.Leaves
 import org.bukkit.block.data.type.NoteBlock
@@ -22,19 +21,16 @@ class ResourcepackGeneration {
         val root = "${blockyPlugin.dataFolder.absolutePath}/assets/minecraft/blockstates".run { toPath().toFile().mkdirs(); this }
         val noteBlockFile = "${root}/note_block.json".toPath().toFile().run { createNewFile(); this }
         val tripwireFile = "${root}/tripwire.json".toPath().toFile().run { createNewFile(); this }
-        val chorusPlantFile = "${root}/chorus_plant.json".toPath().toFile().run { createNewFile(); this }
         val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile().run { createNewFile(); this } }
         val caveVineFile = "${root}/cave_vine.json".toPath().toFile().run { createNewFile(); this }
 
         noteBlockFile.writeText(getNoteBlockBlockStates().toString(), Charset.defaultCharset())
         tripwireFile.writeText(getTripwireBlockStates().toString(), Charset.defaultCharset())
-        chorusPlantFile.writeText(getChorusPlantBlockStates().toString(), Charset.defaultCharset())
         leafFiles.forEach { it.writeText(getLeafBlockStates().toString(), Charset.defaultCharset()) }
         caveVineFile.writeText(getCaveVineBlockStates().toString(), Charset.defaultCharset())
 
         if (!blockyConfig.noteBlocks.isEnabled) noteBlockFile.delete()
         else if (!blockyConfig.tripWires.isEnabled) tripwireFile.delete()
-        else if (!blockyConfig.chorusPlant.isEnabled) chorusPlantFile.delete()
         else if (!blockyConfig.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
         else if (!blockyConfig.caveVineBlocks.isEnabled) caveVineFile.delete()
     }
@@ -84,31 +80,6 @@ class ResourcepackGeneration {
             isAttached,
             isDisarmed,
             isPowered
-        )
-    }
-
-    private fun getChorusPlantBlockStates() : JsonObject {
-        val variants = JsonObject()
-        val blockModel = JsonObject()
-        val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.CHORUS }.map { it.type }
-        blockMap.filter { it.key is MultipleFacing }.forEach { block ->
-            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
-            blockModel.add(block.key.getChorusPlantData(), modelID.getModelJson())
-        }
-        variants.add("variants", blockModel)
-        return variants
-    }
-
-    private fun BlockData.getChorusPlantData() : String {
-        this as MultipleFacing
-        return String.format(
-            "%north=%s,south=%s,west=%s,east=%s,up=%s,down=%s",
-            this.hasFace(BlockFace.NORTH),
-            this.hasFace(BlockFace.SOUTH),
-            this.hasFace(BlockFace.WEST),
-            this.hasFace(BlockFace.EAST),
-            this.hasFace(BlockFace.UP),
-            this.hasFace(BlockFace.DOWN)
         )
     }
 

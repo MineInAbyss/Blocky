@@ -16,8 +16,7 @@ fun BlockyUIScope.BlockyNoteBlockMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
             BlockyTypeQuery.filter {
-                it.entity.get<BlockyBlock>()?.blockType == BlockType.NOTEBLOCK ||
-                        it.entity.get<BlockyBlock>()?.blockType == BlockType.CHORUS
+                it.entity.get<BlockyBlock>()?.blockType == BlockType.NOTEBLOCK
             }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }

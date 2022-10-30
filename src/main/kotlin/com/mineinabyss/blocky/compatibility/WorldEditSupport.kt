@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.compatibility
 import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.getBlockyNoteBlock
-import com.mineinabyss.blocky.helpers.getBlockyTransparent
 import com.mineinabyss.blocky.helpers.getBlockyTripWire
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.sk89q.worldedit.WorldEdit
@@ -35,33 +34,22 @@ class WorldEditSupport {
             val blockData = when {
                 type == BlockType.TRIPWIRE -> gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
                 input.endsWith("[direction=up]") -> {
-                    if (type == BlockType.NOTEBLOCK) gearyEntity.getBlockyNoteBlock(BlockFace.UP)
-                    else gearyEntity.getBlockyTransparent(BlockFace.UP)
+                    gearyEntity.getBlockyNoteBlock(BlockFace.UP)
                 }
                 input.endsWith("[direction=north]") -> {
-                    if (type == BlockType.NOTEBLOCK)
-                        gearyEntity.getBlockyNoteBlock(BlockFace.NORTH)
-                    else gearyEntity.getBlockyTransparent(BlockFace.NORTH)
+                    gearyEntity.getBlockyNoteBlock(BlockFace.NORTH)
                 }
                 input.endsWith("[direction=south]") -> {
-                    if (type == BlockType.NOTEBLOCK)
-                        gearyEntity.getBlockyNoteBlock(BlockFace.SOUTH)
-                    else gearyEntity.getBlockyTransparent(BlockFace.SOUTH)
+                    gearyEntity.getBlockyNoteBlock(BlockFace.SOUTH)
                 }
                 input.endsWith("[direction=west]") -> {
-                    if (type == BlockType.NOTEBLOCK)
-                        gearyEntity.getBlockyNoteBlock(BlockFace.WEST)
-                    else gearyEntity.getBlockyTransparent(BlockFace.WEST)
+                    gearyEntity.getBlockyNoteBlock(BlockFace.WEST)
                 }
                 input.endsWith("[direction=east]") -> {
-                    if (type == BlockType.NOTEBLOCK)
-                        gearyEntity.getBlockyNoteBlock(BlockFace.EAST)
-                    else gearyEntity.getBlockyTransparent(BlockFace.EAST)
+                    gearyEntity.getBlockyNoteBlock(BlockFace.EAST)
                 }
                 else -> {
-                    if (type == BlockType.NOTEBLOCK)
-                        gearyEntity.getBlockyNoteBlock(BlockFace.UP)
-                    else gearyEntity.getBlockyTransparent(BlockFace.UP)
+                    gearyEntity.getBlockyNoteBlock(BlockFace.UP)
                 }
             }
 

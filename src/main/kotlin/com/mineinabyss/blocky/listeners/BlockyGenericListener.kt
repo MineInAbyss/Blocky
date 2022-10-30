@@ -172,7 +172,6 @@ class BlockyGenericListener : Listener {
             itemInHand.isBlockyBlock(player) -> return
             !blockPlaced.isBlockyBlock() -> return
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
-            !blockyConfig.chorusPlant.isEnabled && itemInHand.type == Material.CHORUS_PLANT -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
