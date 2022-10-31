@@ -9,13 +9,12 @@ class WireBlockBreakEvent(
     wire: Block,
    val player: Player?,
 ) : WireBlockEvent(wire), Cancellable {
+    private var cancelled = false
 
-    override fun isCancelled(): Boolean {
-        return isCancelled
-    }
+    override fun isCancelled() = cancelled
 
     override fun setCancelled(cancel: Boolean) {
-        this.isCancelled = cancel
+        cancelled = cancel
     }
 
     override fun getHandlers() = handlerList

@@ -9,13 +9,12 @@ class LeafBlockPlaceEvent(
     leaf: Block,
     val player: Player,
 ) : LeafBlockEvent(leaf), Cancellable {
+    private var cancelled = false
 
-    override fun isCancelled(): Boolean {
-        return isCancelled
-    }
+    override fun isCancelled() = cancelled
 
     override fun setCancelled(cancel: Boolean) {
-        this.isCancelled = cancel
+        cancelled = cancel
     }
 
     override fun getHandlers() = handlerList

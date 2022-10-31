@@ -15,13 +15,12 @@ class FurnitureBreakEvent(
     val isModelEngineFurniture get() : Boolean {
         return entity.toGeary().has<BlockyModelEngine>()
     }
+    private var cancelled = false
 
-    override fun isCancelled(): Boolean {
-        return isCancelled
-    }
+    override fun isCancelled() = cancelled
 
     override fun setCancelled(cancel: Boolean) {
-        this.isCancelled = cancel
+        cancelled = cancel
     }
 
     override fun getHandlers() = handlerList
