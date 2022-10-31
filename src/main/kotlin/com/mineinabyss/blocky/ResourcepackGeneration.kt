@@ -2,7 +2,6 @@ package com.mineinabyss.blocky
 
 import com.google.gson.JsonObject
 import com.mineinabyss.blocky.components.core.BlockType
-import com.mineinabyss.blocky.helpers.leafList
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.type
 import okio.Path.Companion.toPath
@@ -21,17 +20,17 @@ class ResourcepackGeneration {
         val root = "${blockyPlugin.dataFolder.absolutePath}/assets/minecraft/blockstates".run { toPath().toFile().mkdirs(); this }
         val noteBlockFile = "${root}/note_block.json".toPath().toFile().run { createNewFile(); this }
         val tripwireFile = "${root}/tripwire.json".toPath().toFile().run { createNewFile(); this }
-        val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile().run { createNewFile(); this } }
+        //val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile().run { createNewFile(); this } }
         val caveVineFile = "${root}/cave_vine.json".toPath().toFile().run { createNewFile(); this }
 
         noteBlockFile.writeText(getNoteBlockBlockStates().toString(), Charset.defaultCharset())
         tripwireFile.writeText(getTripwireBlockStates().toString(), Charset.defaultCharset())
-        leafFiles.forEach { it.writeText(getLeafBlockStates().toString(), Charset.defaultCharset()) }
+        //leafFiles.forEach { it.writeText(getLeafBlockStates().toString(), Charset.defaultCharset()) }
         caveVineFile.writeText(getCaveVineBlockStates().toString(), Charset.defaultCharset())
 
         if (!blockyConfig.noteBlocks.isEnabled) noteBlockFile.delete()
         else if (!blockyConfig.tripWires.isEnabled) tripwireFile.delete()
-        else if (!blockyConfig.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
+        //else if (!blockyConfig.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
         else if (!blockyConfig.caveVineBlocks.isEnabled) caveVineFile.delete()
     }
 

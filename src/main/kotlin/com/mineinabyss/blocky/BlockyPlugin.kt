@@ -3,9 +3,6 @@ package com.mineinabyss.blocky
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.compatibility.WorldEditListener
 import com.mineinabyss.blocky.compatibility.WorldEditSupport
-import com.mineinabyss.blocky.helpers.getBlockMapEntryForLeaf
-import com.mineinabyss.blocky.helpers.getLeafDistance
-import com.mineinabyss.blocky.helpers.getLeafMaterial
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.GearyLoadPhase
 import com.mineinabyss.geary.addon.autoscan
@@ -30,7 +27,6 @@ import org.bukkit.Note
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.CaveVines
-import org.bukkit.block.data.type.Leaves
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.plugin.java.JavaPlugin
@@ -70,7 +66,8 @@ class BlockyPlugin : JavaPlugin() {
         //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
         if (server.pluginManager.isPluginEnabled("Mobzy")) listeners(BlockyModelEngineListener())
         blockyConfig.run {
-            if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
+            // Until reworked deprecate leaf blocks
+            //if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
             if (tripWires.isEnabled) listeners(BlockyTripwireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
@@ -141,7 +138,7 @@ class BlockyPlugin : JavaPlugin() {
 
         // Calculates leaf states
         // Should waterlog be used aswell?
-        if (blockyConfig.leafBlocks.isEnabled) for (l in 1..63) {
+        /*if (blockyConfig.leafBlocks.isEnabled) for (l in 1..63) {
             val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
             val distance = getLeafDistance(l)
             if (distance == 1 && blockyConfig.leafBlocks.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
@@ -150,7 +147,7 @@ class BlockyPlugin : JavaPlugin() {
             leafData.distance = distance
             // Due to map using material before distance the Int is scued by 1 if set to reserve 1 state
             blockMap.putIfAbsent(leafData, getBlockMapEntryForLeaf(l))
-        }
+        }*/
 
         // Calculates cave-vine states
         if (blockyConfig.caveVineBlocks.isEnabled) {
