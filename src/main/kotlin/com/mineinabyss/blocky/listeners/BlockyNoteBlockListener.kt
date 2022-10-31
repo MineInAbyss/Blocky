@@ -132,7 +132,7 @@ class BlockyNoteBlockListener : Listener {
         if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    /*@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
@@ -143,7 +143,7 @@ class BlockyNoteBlockListener : Listener {
 
         block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
         player.swingMainHand()
-    }
+    }*/
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {

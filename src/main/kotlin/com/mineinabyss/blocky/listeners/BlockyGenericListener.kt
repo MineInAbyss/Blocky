@@ -170,7 +170,7 @@ class BlockyGenericListener : Listener {
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         when {
             itemInHand.isBlockyBlock(player) -> return
-            !blockPlaced.isBlockyBlock() -> return
+            blockPlaced.isBlockyBlock() -> return
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return

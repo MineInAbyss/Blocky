@@ -29,6 +29,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 action {
                     blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
                     blockyPlugin.runStartupFunctions()
+                    sender.success("Blocky has been reloaded!")
                 }
             }
             "give" {

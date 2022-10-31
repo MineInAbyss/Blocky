@@ -56,6 +56,7 @@ dependencies {
 
 tasks {
     shadowJar {
-        relocate("com.jeff_media", "com.mineinabyss.shaded")
+        relocate("com.jeff_media.customblockdata", "com.mineinabyss.shaded.customblockdata")
+        relocate("com.jeff_media.morepersistentdatatypes", "com.mineinabyss.shaded.morepersistentdatatypes")
     }
 }
