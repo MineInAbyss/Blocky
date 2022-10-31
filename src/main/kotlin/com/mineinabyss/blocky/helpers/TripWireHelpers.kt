@@ -1,11 +1,13 @@
 package com.mineinabyss.blocky.helpers
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.events.wireblock.WireBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.idofront.events.call
 import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
@@ -35,7 +37,10 @@ fun fixClientsideUpdate(blockLoc: Location) {
 fun breakTripwireBlock(block: Block, player: Player?) {
     val gearyBlock = block.getGearyEntityFromBlock() ?: return
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
-    block.state.update(true, false)
+    //block.state.update(true, false)
+
+    val blockyEvent = WireBlockBreakEvent(block, player).run { this.call(); this }
+    if (blockyEvent.isCancelled) return
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)

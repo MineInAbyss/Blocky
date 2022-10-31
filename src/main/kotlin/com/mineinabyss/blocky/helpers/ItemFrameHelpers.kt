@@ -1,5 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
+import com.mineinabyss.blocky.api.events.furniture.FurnitureBreakEvent
+import com.mineinabyss.blocky.api.events.furniture.FurniturePlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBarrierHitbox
 import com.mineinabyss.blocky.components.core.BlockyEntity
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -11,6 +13,7 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
@@ -62,13 +65,13 @@ fun GearyEntity.placeBlockyFrame(
     facing: BlockFace,
     loc: Location,
     player: Player
-): ItemFrame? {
-    if (!has<BlockyEntity>()) return null
-    if (get<BlockyEntity>()?.hasEnoughSpace(loc, yaw) != true) return null
-    if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock()) return null
-    if (!ProtectionLib.canBuild(player, loc)) return null
+) {
+    if (!has<BlockyEntity>()) return
+    if (get<BlockyEntity>()?.hasEnoughSpace(loc, yaw) != true) return
+    if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock()) return
+    if (!ProtectionLib.canBuild(player, loc)) return
 
-    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return null
+    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return
     val newFrame =
         loc.spawn<ItemFrame>()?.apply {
             isVisible = false
@@ -81,16 +84,23 @@ fun GearyEntity.placeBlockyFrame(
             setFacingDirection(facing, true)
         }
 
-    val gearyItem = newFrame?.item?.toGearyOrNull(player) ?: return null
+    val gearyItem = newFrame?.item?.toGearyOrNull(player) ?: return
     val gearyFrame = newFrame.toGeary()
     gearyFrame.getOrSetPersisting { BlockySeatLocations() }
     gearyFrame.getOrSetPersisting { BlockyBarrierHitbox() }
 
+    val furniturePlaceEvent = FurniturePlaceEvent(newFrame, player).run { this.call(); this }
+    if (furniturePlaceEvent.isCancelled) {
+        newFrame.remove()
+        return
+    }
+
     if (gearyItem.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
         newFrame.placeBarrierHitbox(yaw, loc, player)
-    } else if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(loc, gearyItem.get<BlockyLight>()!!.lightLevel)
-
-    return newFrame
+    } else if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(
+        loc,
+        gearyItem.get<BlockyLight>()!!.lightLevel
+    )
 }
 
 fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
@@ -112,6 +122,10 @@ fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
 
 fun ItemFrame.removeBlockyFrame(player: Player?, event: Event) {
     this.toGearyOrNull()?.get<BlockyEntity>() ?: return
+
+    val furnitureBreakEvent = FurnitureBreakEvent(this, player).run { this.call(); this }
+    if (furnitureBreakEvent.isCancelled) return
+
     this.removeAssosiatedSeats()
     this.clearAssosiatedBarrierChunkEntries(event)
     handleFurnitureDrops(player)

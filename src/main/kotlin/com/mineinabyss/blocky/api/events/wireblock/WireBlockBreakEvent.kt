@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList
 
 class WireBlockBreakEvent(
     wire: Block,
-    val player: Player,
+   val player: Player?,
 ) : WireBlockEvent(wire), Cancellable {
 
     override fun isCancelled(): Boolean {

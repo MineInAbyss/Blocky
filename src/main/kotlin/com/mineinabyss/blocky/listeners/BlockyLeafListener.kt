@@ -30,6 +30,7 @@ class BlockyLeafListener : Listener {
         if (blocks.any { it.isBlockyLeaf() }) isCancelled = true
     }
 
+    //TODO Try and make it check components now, didnt work before but
     @EventHandler(ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
         if (blocks.any { it.isBlockyLeaf() }) isCancelled = true
@@ -63,6 +64,7 @@ class BlockyLeafListener : Listener {
         if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
+    //TODO Isnt this all done inside placeBlockyBlock?
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
         val gearyItem = itemInHand.toGearyOrNull(player) ?: return

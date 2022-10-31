@@ -4,6 +4,10 @@ import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockPlaceEvent
+import com.mineinabyss.blocky.api.events.leafblock.LeafBlockPlaceEvent
+import com.mineinabyss.blocky.api.events.noteblock.NoteBlockPlaceEvent
+import com.mineinabyss.blocky.api.events.wireblock.WireBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockType
@@ -194,15 +198,25 @@ fun placeBlockyBlock(
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-    blockPlaceEvent.call()
+    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand).run { this.call(); this }
+    val blockyEvent = when (newData) { //TODO Make sure the proper events get called here
+        is NoteBlock -> NoteBlockPlaceEvent(targetBlock, player)
+        is Tripwire -> WireBlockPlaceEvent(targetBlock, player)
+        is CaveVines -> CaveVineBlockPlaceEvent(targetBlock, player)
+        is Leaves -> LeafBlockPlaceEvent(targetBlock, player)
+        else -> return null // This should never be the case
+    }.run { this.call(); this }
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
     if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && !targetBlock.isPlacableOn(face))
         blockPlaceEvent.isCancelled = true
 
-    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
+    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())
+        blockPlaceEvent.isCancelled = true
+
+    if (blockyEvent.isCancelled || blockPlaceEvent.isCancelled) {
+        blockyEvent.isCancelled = true
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
@@ -228,6 +242,7 @@ fun Block.clearCustomBlockData(event: Event) {
     }
 }
 
+//TODO This might be better to call via an event or something in stead of this god awful method
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
     val data = blockData.clone()
     val state = state

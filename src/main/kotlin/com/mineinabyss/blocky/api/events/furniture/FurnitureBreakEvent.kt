@@ -9,7 +9,7 @@ import org.bukkit.event.HandlerList
 
 class FurnitureBreakEvent(
     furniture: Entity,
-    val player: Player
+    val player: Player?
 ) : FurnitureEvent(furniture), Cancellable {
 
     val isModelEngineFurniture get() : Boolean {

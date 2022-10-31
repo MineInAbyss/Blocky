@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList
 
 class CaveVineBlockBreakEvent(
     caveVine: Block,
-    val player: Player,
+    val player: Player?,
 ) : CaveVineBlockEvent(caveVine), Cancellable {
 
     override fun isCancelled(): Boolean {
