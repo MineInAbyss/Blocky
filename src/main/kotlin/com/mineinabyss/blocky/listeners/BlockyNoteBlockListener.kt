@@ -69,7 +69,7 @@ class BlockyNoteBlockListener : Listener {
         if (rightClicked) isCancelled = true
         if (block.isVanillaNoteBlock()) {
             if (rightClicked) block.updateBlockyNote()
-            //playBlockyNoteBlock(block, player)
+            block.playBlockyNoteBlock()
         }
     }
 
@@ -92,8 +92,7 @@ class BlockyNoteBlockListener : Listener {
         block.state.update(true, false)
 
         if (block.isBlockIndirectlyPowered) {
-            val p = block.location.getNearbyPlayers(48.0).firstOrNull() ?: return
-            playBlockyNoteBlock(block, p)
+            block.playBlockyNoteBlock()
         }
         if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
             block.updateNoteBlockAbove()

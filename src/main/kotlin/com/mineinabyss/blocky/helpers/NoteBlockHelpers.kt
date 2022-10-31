@@ -10,7 +10,10 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
-import org.bukkit.entity.Player
+import org.bukkit.event.block.NotePlayEvent
+import org.bukkit.persistence.PersistentDataType
+
+val NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "note_block")
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == getDirectionalId(face) }.keys.first() as NoteBlock
@@ -31,24 +34,21 @@ fun Block.isVanillaNoteBlock(): Boolean {
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {
-    val noteBlock = NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase())
     val pdc = CustomBlockData(this, blockyPlugin)
-    val note = (pdc.get(noteBlock, DataType.INTEGER) ?: 0) + 1
-    pdc.set(noteBlock, DataType.INTEGER, note)
+    val note = pdc.getOrDefault(NOTEBLOCK_KEY, PersistentDataType.INTEGER, 0) + 1
+    pdc.set(NOTEBLOCK_KEY, DataType.INTEGER, note)
     return Note(note % 25)
 }
 
-fun playBlockyNoteBlock(block: Block, player: Player) {
-    val noteBlock = NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase())
-    val map = CustomBlockData(block, blockyPlugin).get(noteBlock, DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER)) ?: return
-    val data = map.entries.first().key as NoteBlock
-    val color = (map.entries.first().value / 24f).toDouble()
-    val loc = block.getRelative(BlockFace.UP).location.add(0.5, 0.0, 0.5)
+fun Block.getBlockyNote(): Note {
+    val pdc = CustomBlockData(this, blockyPlugin)
+    val note = pdc.get(NOTEBLOCK_KEY, PersistentDataType.INTEGER) ?: 0
+    return Note(note % 25)
+}
 
-    player.location.getNearbyPlayers(50.0).forEach {p ->
-        p.playNote(loc, block.getBlockyInstrument(), data.note)
-        p.spawnParticle(Particle.NOTE, loc, 0, color, 0.0, 1.0)
-    }
+//TODO This only needs to store the note, the instrument is determined based on block beneath
+fun Block.playBlockyNoteBlock() {
+    NotePlayEvent(this, this.getBlockyInstrument(), this.getBlockyNote()).callEvent()
 }
 
 fun Block.getBlockyInstrument(): Instrument {

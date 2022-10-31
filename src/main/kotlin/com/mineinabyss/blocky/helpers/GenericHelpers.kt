@@ -46,6 +46,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
+import org.bukkit.persistence.PersistentDataContainer
 import kotlin.random.Random
 
 const val VANILLA_STONE_PLACE = "blocky.stone.place"
@@ -131,7 +132,7 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
         if (player?.gameMode == GameMode.CREATIVE) return
 
         if (drop.exp < 0)
-                (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
+            (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
         (1..amount).forEach { _ -> item?.let { item -> location.world.dropItemNaturally(location, item) } }
     }
 }
@@ -166,6 +167,16 @@ fun Block.isBlockyBlock() = getGearyEntityFromBlock()?.has<BlockyBlock>() ?: fal
 fun BlockFace.isCardinal() =
     this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 
+val Block.persistentDataContainer
+    get() : PersistentDataContainer {
+        return CustomBlockData(this, blockyPlugin)
+    }
+
+val Block.customBlockData
+    get(): CustomBlockData {
+        return CustomBlockData(this, blockyPlugin)
+    }
+
 fun placeBlockyBlock(
     player: Player,
     hand: EquipmentSlot,
@@ -198,7 +209,8 @@ fun placeBlockyBlock(
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand).run { this.call(); this }
+    val blockPlaceEvent =
+        BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand).run { this.call(); this }
     val blockyEvent = when (newData) { //TODO Make sure the proper events get called here
         is NoteBlock -> NoteBlockPlaceEvent(targetBlock, player)
         is Tripwire -> WireBlockPlaceEvent(targetBlock, player)
