@@ -19,8 +19,10 @@ class WorldEditSupport {
     class BlockyInputParser : InputParser<BaseBlock>(WorldEdit.getInstance()) {
         override fun parseFromInput(input: String, context: ParserContext): BaseBlock? {
             // To prevent the parser from parsing note_block[direction=up] as a blocky block
-            if (input.startsWith("minecraft:note_block") || input.startsWith("note_block")) {
+            if (input == "minecraft:note_block" || input == "note_block") {
                 return BukkitAdapter.adapt(Bukkit.createBlockData(Material.NOTE_BLOCK)).toBaseBlock()
+            } else if (input == "minecraft:tripwire" || input == "tripwire") {
+                return BukkitAdapter.adapt(Bukkit.createBlockData(Material.TRIPWIRE)).toBaseBlock()
             }
 
             val gearyEntity = PrefabKey.ofOrNull(input.replace("[direction=up]", "")
@@ -52,20 +54,6 @@ class WorldEditSupport {
                     gearyEntity.getBlockyNoteBlock(BlockFace.UP)
                 }
             }
-
-            /*context.selection.boundingBox.run {
-                (pos1.blockX..pos2.blockX).forEach x@{ x ->
-                    (pos1.blockY..pos2.blockY).forEach y@{ y ->
-                        (pos1.blockZ..pos2.blockZ).forEach z@{ z ->
-                            val block = BukkitAdapter.adapt(context.world.broadcastVal() ?: return@z).getBlockAt(x, y, z)
-                            block.isBlockyBlock().broadcastVal() || return@z
-                            if (gearyEntity.has<BlockyLight>().broadcastVal())
-                                broadcast("Lighting block at ${block.location}")//
-                                //handleLight.createBlockLight(block.location, gearyEntity.get<BlockyLight>()!!.lightLevel)
-                        }
-                    }
-                }
-            }*/
 
             return BukkitAdapter.adapt(blockData).toBaseBlock()
         }
