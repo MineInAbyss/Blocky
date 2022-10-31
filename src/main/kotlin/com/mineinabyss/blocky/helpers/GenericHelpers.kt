@@ -232,6 +232,7 @@ fun placeBlockyBlock(
         else item.amount = item.amount - 1
     }
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
+    player.swingMainHand()
     return targetBlock
 }
 

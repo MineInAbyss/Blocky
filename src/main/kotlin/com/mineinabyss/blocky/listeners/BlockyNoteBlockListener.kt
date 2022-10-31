@@ -84,6 +84,7 @@ class BlockyNoteBlockListener : Listener {
         if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, Bukkit.createBlockData(type))
     }
 
+    //TODO Change this to call NotePlayEvent?
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
         if (block.type != Material.NOTE_BLOCK) return

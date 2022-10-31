@@ -5,7 +5,9 @@ import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.type
 import okio.Path.Companion.toPath
+import org.bukkit.Bukkit
 import org.bukkit.Instrument
+import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.CaveVines
@@ -38,6 +40,7 @@ class ResourcepackGeneration {
         val variants = JsonObject()
         val blockModel = JsonObject()
         val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.NOTEBLOCK }.map { it.type }
+        blockModel.add(Bukkit.createBlockData(Material.NOTE_BLOCK).getNoteBlockData(), "minecraft:block/note_block".getModelJson())
         blockMap.filter { it.key is NoteBlock }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getNoteBlockData(), modelID.getModelJson())
@@ -60,6 +63,7 @@ class ResourcepackGeneration {
         val variants = JsonObject()
         val blockModel = JsonObject()
         val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.TRIPWIRE }.map { it.type }
+        blockModel.add(Bukkit.createBlockData(Material.TRIPWIRE).getTripwireData(), "minecraft:block/barrier".getModelJson())
         blockMap.filter { it.key is Tripwire }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getTripwireData(), modelID.getModelJson())
@@ -86,6 +90,7 @@ class ResourcepackGeneration {
         val variants = JsonObject()
         val blockModel = JsonObject()
         val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.LEAF }.map { it.type }
+        //blockModel.add(Bukkit.createBlockData().getNoteBlockData(), "minecraft:block/note_block".getModelJson())
         blockMap.filter { it.key is Leaves }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add((block.key as Leaves).getLeafBlockStates(), modelID.getModelJson())
@@ -102,6 +107,7 @@ class ResourcepackGeneration {
         val variants = JsonObject()
         val blockModel = JsonObject()
         val blockyQuery = BlockyTypeQuery.filter { it.type.blockType == BlockType.CAVEVINE }.map { it.type }
+        blockModel.add(Bukkit.createBlockData(Material.CAVE_VINES).getCaveVineBlockStates(), "minecraft:block/cave_vines".getModelJson())
         blockMap.filter { it.key is CaveVines }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
             blockModel.add(block.key.getCaveVineBlockStates(), modelID.getModelJson())
