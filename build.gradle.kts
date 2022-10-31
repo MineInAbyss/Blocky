@@ -14,7 +14,6 @@ repositories {
     maven("https://repo.mineinabyss.com/releases")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") { metadataSources { artifact() } } // Model Engine
-    maven("https://repo.dmulloy2.net/nexus/repository/public/") //ProtocolLib
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
@@ -40,7 +39,6 @@ dependencies {
     compileOnly(libs.minecraft.plugin.modelengine)
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
-    compileOnly(libs.minecraft.plugin.protocollib)
     compileOnly(libs.minecraft.headlib)
     compileOnly(libs.minecraft.anvilgui)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
