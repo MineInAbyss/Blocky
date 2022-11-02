@@ -12,7 +12,8 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.block.NotePlayEvent
 
-val NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "note_block")
+val NOTE_KEY = NamespacedKey(blockyPlugin, "note")
+val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "vanilla_note_block")
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == this.getDirectionalId(face) }.keys.firstOrNull() ?: return Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
@@ -26,21 +27,21 @@ fun Block.updateNoteBlockAbove() {
 }
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block
-val Block.isVanillaNoteBlock get() = blockMap is NoteBlock && blockData !in blockMap
+val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in blockMap
 
 val Block.isBlockyNoteBlock get() = blockData in blockMap && blockData is NoteBlock
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {
     val pdc = CustomBlockData(this, blockyPlugin)
-    val note = pdc.getOrDefault(NOTEBLOCK_KEY, DataType.INTEGER, 0) + 1
-    pdc.set(NOTEBLOCK_KEY, DataType.INTEGER, note)
+    val note = pdc.getOrDefault(NOTE_KEY, DataType.INTEGER, 0) + 1
+    pdc.set(NOTE_KEY, DataType.INTEGER, note)
     return Note(note % 25)
 }
 
 fun Block.getBlockyNote(): Note {
     val pdc = CustomBlockData(this, blockyPlugin)
-    val note = pdc.get(NOTEBLOCK_KEY, DataType.INTEGER) ?: 0
+    val note = pdc.get(NOTE_KEY, DataType.INTEGER) ?: 0
     return Note(note % 25)
 }
 

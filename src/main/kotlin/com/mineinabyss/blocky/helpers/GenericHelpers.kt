@@ -7,6 +7,7 @@ import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
@@ -194,9 +195,10 @@ fun placeBlockyBlock(
             ?.has<BlockyBlock>() != true
     ) return null
     if (isStandingInside(player, targetBlock)) return null
-    if (against.isVanillaNoteBlock()) return null
-    if (targetBlock.isVanillaNoteBlock())
-        targetBlock.customBlockData.set(NOTEBLOCK_KEY, DataType.INTEGER, 0)
+    if (against.isVanillaNoteBlock) return null
+    targetBlock.isVanillaNoteBlock
+    if (!blockyConfig.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
+        targetBlock.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
     targetBlock.updateBlockyNote()
 
     val currentData = targetBlock.blockData

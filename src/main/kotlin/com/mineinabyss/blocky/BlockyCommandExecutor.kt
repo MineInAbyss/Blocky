@@ -108,7 +108,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "blocky") {
             when (args.size) {
-                1 -> listOf("give", "menu", "modelengine").filter { it.startsWith(args[0]) }
+                1 -> listOf("reload", "give", "menu", "modelengine").filter { it.startsWith(args[0]) }
                 2 -> {
                     when (args[0]) {
                         "give" ->
