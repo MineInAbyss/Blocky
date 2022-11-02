@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.compatibility
 
-import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.helpers.getBlockyNoteBlock
 import com.mineinabyss.blocky.helpers.getBlockyTripWire
 import com.mineinabyss.geary.prefabs.PrefabKey

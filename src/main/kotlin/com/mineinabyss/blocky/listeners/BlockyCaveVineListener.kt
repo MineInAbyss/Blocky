@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*

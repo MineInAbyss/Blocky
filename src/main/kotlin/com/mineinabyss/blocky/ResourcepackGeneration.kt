@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.google.gson.JsonObject
-import com.mineinabyss.blocky.components.core.BlockType
+import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.type
 import okio.Path.Companion.toPath

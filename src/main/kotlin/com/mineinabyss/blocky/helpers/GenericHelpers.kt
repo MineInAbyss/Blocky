@@ -8,8 +8,8 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.*
 import com.mineinabyss.blocky.components.mining.BlockyMining

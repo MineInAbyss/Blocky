@@ -5,7 +5,6 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.mining.BlockyMining
 import com.mineinabyss.blocky.components.mining.PlayerIsMining
@@ -49,7 +48,6 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
-        val blockyBlock = block.gearyEntity?.get<BlockyBlock>() ?: return
         val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
         val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /

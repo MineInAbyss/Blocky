@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.compatibility
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.components.core.BlockType
+import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*

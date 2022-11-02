@@ -10,6 +10,7 @@ import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.BlockFace
+import org.bukkit.entity.LivingEntity
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.block.BlockBreakEvent
@@ -67,9 +68,7 @@ class BlockySoundListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun GenericGameEvent.onSound() {
-        // Some builds of Paper apparently crash when this is fired for an unloaded chunk
-        // Usually only when going to new dimensions before it is fully loaded.
-        if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
+        if (entity !is  LivingEntity || !location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
         val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
         val stepGroup = block.blockSoundGroup.stepSound
         if (stepGroup != Sound.BLOCK_WOOD_STEP && stepGroup != Sound.BLOCK_STONE_STEP) return
