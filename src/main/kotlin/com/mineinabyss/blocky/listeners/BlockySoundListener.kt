@@ -6,7 +6,6 @@ import com.mineinabyss.blocky.components.core.BlockySound
 import com.mineinabyss.blocky.components.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.delay
 import org.bukkit.*
@@ -18,6 +17,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageAbortEvent
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.player.PlayerAttemptPickupItemEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.event.world.GenericGameEvent
@@ -74,6 +74,7 @@ class BlockySoundListener : Listener {
         val stepGroup = block.blockSoundGroup.stepSound
         if (stepGroup != Sound.BLOCK_WOOD_STEP && stepGroup != Sound.BLOCK_STONE_STEP) return
         if (event != GameEvent.STEP && event != GameEvent.HIT_GROUND) return
+        if (event == GameEvent.HIT_GROUND && (entity as LivingEntity).lastDamageCause?.cause != EntityDamageEvent.DamageCause.FALL) return
 
         val blockySound = block.gearyEntity?.get<BlockySound>()
         val currentBlock = entity?.location?.block ?: return
@@ -98,7 +99,7 @@ class BlockySoundListener : Listener {
             GameEvent.HIT_GROUND -> DEFAULT_FALL_PITCH
             else -> return
         }
-        eventName.broadcastVal()
+
         block.world.playSound(block.location, sound, SoundCategory.PLAYERS, volume, pitch)
     }
 
