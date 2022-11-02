@@ -35,7 +35,7 @@ fun fixClientsideUpdate(blockLoc: Location) {
 }
 
 fun breakTripwireBlock(block: Block, player: Player?) {
-    val gearyBlock = block.getGearyEntityFromBlock() ?: return
+    val gearyBlock = block.gearyEntity ?: return
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
     //block.state.update(true, false)
 

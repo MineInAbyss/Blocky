@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.components.features
 
-import com.mineinabyss.blocky.helpers.getGearyEntityFromBlock
-import com.mineinabyss.blocky.helpers.getPrefabFromBlock
+import com.mineinabyss.blocky.helpers.gearyEntity
+import com.mineinabyss.blocky.helpers.prefabKey
 import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -22,10 +22,10 @@ class BlockyPlacableOn(
 )
 
 fun Block.isPlacableOn(face: BlockFace) : Boolean {
-    val placable = getGearyEntityFromBlock()?.get<BlockyPlacableOn>() ?: return false
+    val placable = gearyEntity?.get<BlockyPlacableOn>() ?: return false
     val against = getRelative(face)
     if (!placable.placableOnFace.contains(face)) return false
-    if (against.getPrefabFromBlock() !in placable.blockyBlocks &&
+    if (against.prefabKey !in placable.blockyBlocks &&
         !against.isInProvidedTags(placable.blockTags) && against.type !in placable.blocks
     ) return false
 

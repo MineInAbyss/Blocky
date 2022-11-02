@@ -22,7 +22,7 @@ fun Block.isBlockyCaveVine() : Boolean {
 }
 
 fun breakCaveVineBlock(block: Block, player: Player?) {
-    val gearyBlock = block.getGearyEntityFromBlock() ?: return
+    val gearyBlock = block.gearyEntity ?: return
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
 
     val caveVineEvent = CaveVineBlockBreakEvent(block, player).run { this.call(); this }

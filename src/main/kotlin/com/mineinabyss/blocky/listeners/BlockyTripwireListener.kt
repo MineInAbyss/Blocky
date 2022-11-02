@@ -29,7 +29,7 @@ class BlockyTripwireListener : Listener {
     @EventHandler
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         blocks.filter { it.type == Material.TRIPWIRE }.forEach { wire ->
-            val gearyEntity = wire.getPrefabFromBlock() ?: return@forEach
+            val gearyEntity = wire.prefabKey ?: return@forEach
             LootyFactory.createFromPrefab(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
             wire.type = Material.AIR
         }
@@ -42,7 +42,7 @@ class BlockyTripwireListener : Listener {
             block.state.update(true, false)
         }
 
-        BlockFace.values().filter { it.isCardinal() }.forEach { f ->
+        BlockFace.values().filter { it.isCardinal }.forEach { f ->
             val changed = block.getRelative(f)
             if (changed.type != Material.TRIPWIRE) return@forEach
 
@@ -99,7 +99,7 @@ class BlockyTripwireListener : Listener {
         if (block.type != Material.TRIPWIRE) return
         BlockFace.values().forEach { face ->
             if (block.getRelative(face).type != Material.TRIPWIRE) return@forEach
-            if (block.isBlockyBlock() && player.gameMode != GameMode.CREATIVE)
+            if (block.isBlockyBlock && player.gameMode != GameMode.CREATIVE)
                 block.drops.forEach { player.world.dropItemNaturally(block.location, it) }
 
             block.setType(Material.AIR, false)
@@ -134,7 +134,7 @@ class BlockyTripwireListener : Listener {
         // Fixes tripwire updating when placing blocks next to it
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (clickedBlock.getRelative(it).getGearyEntityFromBlock() == null) return@forEach
+                if (clickedBlock.getRelative(it).gearyEntity == null) return@forEach
                 placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, Bukkit.createBlockData(item!!.type))
                 fixClientsideUpdate(clickedBlock.location)
             }

@@ -36,7 +36,7 @@ class WorldEditListener : Listener {
                 val loc = Location(world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
 
                 // Handle removing old entities before setting new
-                val oldEntity = loc.block.getPrefabFromBlock()?.toEntityOrNull()
+                val oldEntity = loc.block.prefabKey?.toEntityOrNull()
                     ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
 
                 if (oldEntity.has<BlockyLight>())

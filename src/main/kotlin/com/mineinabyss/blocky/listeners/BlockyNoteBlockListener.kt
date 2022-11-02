@@ -58,7 +58,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyNoteBlock() {
         if (!block.isBlockyNoteBlock()) return
-        if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() != true) isCancelled = true
+        if (block.gearyEntity?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
@@ -121,7 +121,7 @@ class BlockyNoteBlockListener : Listener {
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val against = clickedBlock ?: return
 
-        if ((against.type.isInteractable && against.getGearyEntityFromBlock() == null) && !player.isSneaking) return
+        if ((against.type.isInteractable && against.gearyEntity == null) && !player.isSneaking) return
         if (!gearyItem.has<BlockyInfo>()) return
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
 
@@ -160,7 +160,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
         blockList().forEach { block ->
-            val prefab = block.getGearyEntityFromBlock() ?: return@forEach
+            val prefab = block.gearyEntity ?: return@forEach
             if (!block.isBlockyNoteBlock()) return@forEach
             if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)

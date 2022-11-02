@@ -40,7 +40,7 @@ class BlockyLeafListener : Listener {
     fun BlockBurnEvent.onBurnBlockyLeaf() {
         if (!block.isBlockyLeaf()) return
         if (blockyConfig.leafBlocks.disableBurnForBlockyLeaves) isCancelled = true
-        if (block.getGearyEntityFromBlock()?.has<BlockyBurnable>() == true) isCancelled = false
+        if (block.gearyEntity?.has<BlockyBurnable>() == true) isCancelled = false
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -53,7 +53,7 @@ class BlockyLeafListener : Listener {
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val against = clickedBlock ?: return
-        if ((against.type.isInteractable && against.getPrefabFromBlock()
+        if ((against.type.isInteractable && against.prefabKey
                 ?.toEntity() == null) && !player.isSneaking
         ) return
 
@@ -80,7 +80,7 @@ class BlockyLeafListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
         blockList().forEach { block ->
-            val prefab = block.getGearyEntityFromBlock() ?: return@forEach
+            val prefab = block.gearyEntity ?: return@forEach
             if (!block.isBlockyLeaf()) return@forEach
             if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)
