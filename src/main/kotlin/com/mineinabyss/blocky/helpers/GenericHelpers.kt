@@ -4,9 +4,12 @@ import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockBreakEvent
 import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockPlaceEvent
 import com.mineinabyss.blocky.api.events.leafblock.LeafBlockPlaceEvent
+import com.mineinabyss.blocky.api.events.noteblock.NoteBlockBreakEvent
 import com.mineinabyss.blocky.api.events.noteblock.NoteBlockPlaceEvent
+import com.mineinabyss.blocky.api.events.wireblock.WireBlockBreakEvent
 import com.mineinabyss.blocky.api.events.wireblock.WireBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
@@ -75,11 +78,17 @@ const val DEFAULT_FALL_PITCH = 0.75f
 fun Block.attemptBreakBlockyBlock(player: Player) {
     val prefab = this.gearyEntity ?: return
     val itemInHand = player.inventory.itemInMainHand
-    val blockBreakEvent = BlockBreakEvent(this, player)
-    blockBreakEvent.call()
+    val blockBreakEvent = BlockBreakEvent(this, player).run { call(); this }
+    val blockyBreakEvent = when (prefab.get<BlockyBlock>()?.blockType ?: return) {
+        BlockType.NOTEBLOCK -> NoteBlockBreakEvent(this, player)
+        BlockType.TRIPWIRE -> WireBlockBreakEvent(this, player)
+        BlockType.CAVEVINE -> CaveVineBlockBreakEvent(this, player)
+        //BlockType.LEAF -> BlockDamageEvent(player, block, player.inventory.itemInMainHand, true)
+        else -> return
+    }.run { call(); this }
 
-    if (!ProtectionLib.canBreak(player, this.location)) return
-    if (blockBreakEvent.isCancelled) return
+    if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
+    if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)

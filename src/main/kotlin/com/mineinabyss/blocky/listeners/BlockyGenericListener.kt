@@ -2,13 +2,19 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockDamageEvent
+import com.mineinabyss.blocky.api.events.noteblock.NoteBlockDamageEvent
+import com.mineinabyss.blocky.api.events.wireblock.WireBlockDamageEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.components.core.BlockType
+import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.mining.BlockyMining
 import com.mineinabyss.blocky.components.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
@@ -46,6 +52,7 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
+        val blockyBlock = block.gearyEntity?.get<BlockyBlock>() ?: return
         val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
         val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /
@@ -54,6 +61,16 @@ class BlockyGenericListener : Listener {
         if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
         if (mining.miningTask != null) return
         isCancelled = true
+
+        val damageEvent = when (blockyBlock.blockType) {
+            BlockType.NOTEBLOCK -> NoteBlockDamageEvent(block, player)
+            BlockType.TRIPWIRE -> WireBlockDamageEvent(block, player)
+            BlockType.CAVEVINE -> CaveVineBlockDamageEvent(block, player)
+            //BlockType.LEAF -> BlockDamageEvent(player, block, player.inventory.itemInMainHand, true)
+            else -> return
+        }.run { call(); this }
+
+        if (damageEvent.isCancelled) return
 
         mining.miningTask = blockyPlugin.launch {
             val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
@@ -72,6 +89,7 @@ class BlockyGenericListener : Listener {
     }
 
     // Cancel the custom break task if player stops breaking
+    //TODO This might resend the original blockdata?
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreak() {
         player.resetCustomBreak(block)
