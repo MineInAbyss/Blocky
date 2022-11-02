@@ -1,8 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
@@ -16,9 +14,7 @@ import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
 import org.bukkit.GameEvent
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -28,6 +24,7 @@ import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.world.GenericGameEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.persistence.PersistentDataType
 
 class BlockyNoteBlockListener : Listener {
 
@@ -131,29 +128,11 @@ class BlockyNoteBlockListener : Listener {
         if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
-    /*@EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        val gearyItem = itemInHand.toGearyOrNull(player) ?: return
-        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val blockFace = blockAgainst.getFace(blockPlaced) ?: BlockFace.UP
-
-        if (!gearyItem.has<BlockyInfo>()) return
-        if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
-
-        block.setBlockData(gearyItem.getBlockyNoteBlock(blockFace), false)
-        player.swingMainHand()
-    }*/
-
+    // Set default note of normal noteblock
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {
         if (blockPlaced.isVanillaNoteBlock()) {
-            val map = mutableMapOf<BlockData?, Int?>()
-            map[blockPlaced.blockData] = 0
-            CustomBlockData(blockPlaced, blockyPlugin).set(
-                NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase()),
-                DataType.asMap(DataType.BLOCK_DATA, DataType.INTEGER),
-                map
-            )
+            blockPlaced.customBlockData.set(NOTEBLOCK_KEY, PersistentDataType.INTEGER, 0)
         }
     }
 

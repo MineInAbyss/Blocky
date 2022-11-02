@@ -11,7 +11,6 @@ import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.block.NotePlayEvent
-import org.bukkit.persistence.PersistentDataType
 
 val NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "note_block")
 
@@ -35,14 +34,14 @@ fun Block.isVanillaNoteBlock(): Boolean {
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {
     val pdc = CustomBlockData(this, blockyPlugin)
-    val note = pdc.getOrDefault(NOTEBLOCK_KEY, PersistentDataType.INTEGER, 0) + 1
+    val note = pdc.getOrDefault(NOTEBLOCK_KEY, DataType.INTEGER, 0) + 1
     pdc.set(NOTEBLOCK_KEY, DataType.INTEGER, note)
     return Note(note % 25)
 }
 
 fun Block.getBlockyNote(): Note {
     val pdc = CustomBlockData(this, blockyPlugin)
-    val note = pdc.get(NOTEBLOCK_KEY, PersistentDataType.INTEGER) ?: 0
+    val note = pdc.get(NOTEBLOCK_KEY, DataType.INTEGER) ?: 0
     return Note(note % 25)
 }
 

@@ -12,8 +12,8 @@ import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.*
-import com.mineinabyss.blocky.components.mining.BlockyMining
-import com.mineinabyss.blocky.components.mining.ToolType
+import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
@@ -74,18 +74,18 @@ const val DEFAULT_FALL_PITCH = 0.75f
 fun Block.attemptBreakBlockyBlock(player: Player) {
     val prefab = this.gearyEntity ?: return
     val itemInHand = player.inventory.itemInMainHand
-    val blockBreakEvent = BlockBreakEvent(this, player).run { call(); this }
+    val blockBreakEvent = BlockBreakEvent(this, player)
     val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
 
-    if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
+    if (!ProtectionLib.canBreak(player, this.location)) blockBreakEvent.isCancelled = true
     if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
-    if (player.gameMode != GameMode.CREATIVE)
-        if (itemInHand.hasItemMeta() && itemInHand is Damageable)
-            PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
+    if (player.gameMode != GameMode.CREATIVE && itemInHand.hasItemMeta() && itemInHand is Damageable)
+        PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
+    this.customBlockData.clear()
     this.setType(Material.AIR, false)
 }
 
@@ -196,11 +196,7 @@ fun placeBlockyBlock(
     if (isStandingInside(player, targetBlock)) return null
     if (against.isVanillaNoteBlock()) return null
     if (targetBlock.isVanillaNoteBlock())
-        CustomBlockData(targetBlock, blockyPlugin).set(
-            NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase()),
-            DataType.BLOCK_DATA,
-            newData
-        )
+        targetBlock.customBlockData.set(NOTEBLOCK_KEY, DataType.INTEGER, 0)
     targetBlock.updateBlockyNote()
 
     val currentData = targetBlock.blockData

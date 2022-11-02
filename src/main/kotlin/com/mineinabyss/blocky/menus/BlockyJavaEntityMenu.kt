@@ -2,8 +2,8 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.mineinabyss.blocky.components.core.BlockyEntity
-import com.mineinabyss.blocky.components.core.EntityType
+import com.mineinabyss.blocky.components.core.BlockyFurniture
+import com.mineinabyss.blocky.components.core.BlockyFurniture.EntityType
 import com.mineinabyss.blocky.systems.BlockyTypeQuery
 import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
 import com.mineinabyss.guiy.components.Grid
@@ -16,8 +16,8 @@ fun BlockyUIScope.BlockyJavaEntityMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
             BlockyTypeQuery.filter {
-                it.entity.get<BlockyEntity>()?.entityType == EntityType.JAVA ||
-                        it.entity.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME
+                it.entity.get<BlockyFurniture>()?.entityType == EntityType.JAVA ||
+                        it.entity.get<BlockyFurniture>()?.entityType == EntityType.ITEM_FRAME
             }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }

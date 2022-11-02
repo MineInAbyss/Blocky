@@ -6,12 +6,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("blocky:entity")
-data class BlockyEntity(
+data class BlockyFurniture(
     val entityType: EntityType = EntityType.ITEM_FRAME,
     val itemFrameId: Int? = null,
     val collisionHitbox: List<BlockLocation> = listOf(),
-)
-
-enum class EntityType {
-    JAVA, ITEM_FRAME
+) {
+    enum class EntityType {
+        JAVA, ITEM_FRAME
+    }
 }

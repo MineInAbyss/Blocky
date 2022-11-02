@@ -3,7 +3,7 @@
 package com.mineinabyss.blocky.components.core
 
 import com.mineinabyss.blocky.components.features.BlockyDrops
-import com.mineinabyss.blocky.components.mining.ToolType
+import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.idofront.serialization.DurationSerializer
 import com.mineinabyss.idofront.serialization.IntRangeSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack

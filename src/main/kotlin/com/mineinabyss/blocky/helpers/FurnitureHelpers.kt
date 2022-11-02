@@ -3,7 +3,7 @@ package com.mineinabyss.blocky.helpers
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBarrierHitbox
-import com.mineinabyss.blocky.components.core.BlockyEntity
+import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockySeat
@@ -54,7 +54,7 @@ fun getYaw(rotation: Rotation): Float {
     return listOf(*Rotation.values()).indexOf(rotation) * 360f / 8f
 }
 
-fun BlockyEntity.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
+fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     return if (collisionHitbox.isEmpty()) true
     else collisionHitbox.let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
 }
@@ -66,8 +66,8 @@ fun GearyEntity.placeBlockyFrame(
     loc: Location,
     player: Player
 ) {
-    if (!has<BlockyEntity>()) return
-    if (get<BlockyEntity>()?.hasEnoughSpace(loc, yaw) != true) return
+    if (!has<BlockyFurniture>()) return
+    if (get<BlockyFurniture>()?.hasEnoughSpace(loc, yaw) != true) return
     if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock()) return
     if (!ProtectionLib.canBuild(player, loc)) return
 
@@ -95,7 +95,7 @@ fun GearyEntity.placeBlockyFrame(
         return
     }
 
-    if (gearyItem.get<BlockyEntity>()?.collisionHitbox?.isNotEmpty() == true) {
+    if (gearyItem.get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
         newFrame.placeBarrierHitbox(yaw, loc, player)
     } else if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(
         loc,
@@ -107,7 +107,7 @@ fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
     val gearyItem = item.toGearyOrNull(player) ?: return
     toGearyOrNull() ?: return
 
-    getLocations(yaw, loc, gearyItem.get<BlockyEntity>()?.collisionHitbox!!).forEach { adjacentLoc ->
+    getLocations(yaw, loc, gearyItem.get<BlockyFurniture>()?.collisionHitbox!!).forEach { adjacentLoc ->
         adjacentLoc.block.setType(Material.BARRIER, false)
         toGeary().get<BlockyBarrierHitbox>()?.barriers?.add(adjacentLoc.block.location)
 
@@ -121,7 +121,7 @@ fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
 }
 
 fun ItemFrame.removeBlockyFrame(player: Player?, event: Event) {
-    this.toGearyOrNull()?.get<BlockyEntity>() ?: return
+    this.toGearyOrNull()?.get<BlockyFurniture>() ?: return
 
     val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player).run { this.call(); this }
     if (furnitureBreakEvent.isCancelled) return

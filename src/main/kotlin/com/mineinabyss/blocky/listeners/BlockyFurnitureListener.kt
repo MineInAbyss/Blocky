@@ -1,8 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.core.BlockyEntity
+import com.mineinabyss.blocky.components.core.BlockyFurniture
+import com.mineinabyss.blocky.components.core.BlockyFurniture.EntityType
 import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.core.EntityType
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
@@ -35,7 +35,7 @@ class BlockyFurnitureListener : Listener {
     fun HangingPlaceEvent.onPlacingItemFrame() {
         val player = player ?: return
         val item = itemStack?.toGearyOrNull(player) ?: return
-        if (item.get<BlockyEntity>()?.entityType == EntityType.ITEM_FRAME) isCancelled = true
+        if (item.get<BlockyFurniture>()?.entityType == EntityType.ITEM_FRAME) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -43,19 +43,19 @@ class BlockyFurnitureListener : Listener {
         val item = item ?: return
         val hand = hand ?: return
         val gearyItem = item.toGearyOrNull(player) ?: return
-        val blockyEntity = gearyItem.get<BlockyEntity>() ?: return
+        val furniture = gearyItem.get<BlockyFurniture>() ?: return
         val against = clickedBlock ?: return
         val targetBlock = getTargetBlock(against, blockFace) ?: return
         val targetData = targetBlock.blockData
 
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
-        if (blockyEntity.entityType != EntityType.ITEM_FRAME) return
+        if (furniture.entityType != EntityType.ITEM_FRAME) return
         targetBlock.setType(Material.AIR, false)
         val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-        val frameRotation = getRotation(player.eyeLocation.yaw, blockyEntity.collisionHitbox.isNotEmpty())
+        val frameRotation = getRotation(player.eyeLocation.yaw, furniture.collisionHitbox.isNotEmpty())
         val frameYaw = getYaw(frameRotation)
 
-        if (!blockyEntity.hasEnoughSpace(targetBlock.location, frameYaw)) {
+        if (!furniture.hasEnoughSpace(targetBlock.location, frameYaw)) {
             blockyPlace.isCancelled = true
             player.error("There is not enough space to place this block here.")
             return
@@ -86,7 +86,7 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEntityEvent.onRotatingFrame() {
-        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyEntity>() == true) isCancelled = true
+        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyFurniture>() == true) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -102,7 +102,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun ProjectileHitEvent.onProjectileHit() {
         (hitBlock != null && hitBlock?.type == Material.BARRIER &&
-        hitEntity != null && hitEntity is ItemFrame && hitEntity?.toGearyOrNull()?.has<BlockyEntity>() == true) || return
+        hitEntity != null && hitEntity is ItemFrame && hitEntity?.toGearyOrNull()?.has<BlockyFurniture>() == true) || return
 
         //TODO Consider making shooter handle for drops
         if (entity is Explosive) { (hitEntity as ItemFrame).removeBlockyFrame(null,this) }
@@ -120,7 +120,7 @@ class BlockyFurnitureListener : Listener {
     fun EntityDamageByEntityEvent.onBreakingFrame() {
         if (entity !is ItemFrame) return
         val gearyEntity = entity.toGearyOrNull() ?: return
-        if (!gearyEntity.has<BlockyEntity>() || !gearyEntity.has<BlockyInfo>()) return
+        if (!gearyEntity.has<BlockyFurniture>() || !gearyEntity.has<BlockyInfo>()) return
         if (gearyEntity.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
     }
 

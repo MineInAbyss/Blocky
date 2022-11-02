@@ -2,15 +2,18 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.mining.BlockyMining
-import com.mineinabyss.blocky.components.mining.PlayerIsMining
+import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
@@ -25,6 +28,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
+import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -64,7 +68,7 @@ class BlockyGenericListener : Listener {
             val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
             var stage = 0
 
-            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, true))
+            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, false))
             do { //TODO Fix visual glitch for blockbreaker
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
@@ -77,13 +81,6 @@ class BlockyGenericListener : Listener {
     }
 
     // Cancel the custom break task if player stops breaking
-    //TODO This might resend the original blockdata?
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreak() {
-        player.resetCustomBreak(block)
-    }
-
-    // Cancel the custom break task if player stops breaking
     @EventHandler(priority = EventPriority.LOWEST)
     fun BlockDamageAbortEvent.onCancelMine() {
         player.resetCustomBreak(block)
@@ -93,6 +90,19 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerSwapHandItemsEvent.onSwapHand() {
         player.resetCustomBreak(player.getTargetBlock(null, 5))
+    }
+
+    // If player drops an item, cancel breaking to prevent exploits
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun PlayerDropItemEvent.onDropHand() {
+        player.resetCustomBreak(player.getTargetBlock(null, 5))
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockBreakEvent.onBreakBlockyBlock() {
+        if (player.gameMode == GameMode.CREATIVE && block.isBlockyBlock) {
+            block.attemptBreakBlockyBlock(player)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -186,7 +196,22 @@ class BlockyGenericListener : Listener {
             Material.STRING -> Material.TRIPWIRE
             else -> itemInHand.type
         }
-        block.setBlockData(Bukkit.createBlockData(material), false)
+        block.blockData = Bukkit.createBlockData(material)
         player.swingMainHand()
+    }
+
+    @EventHandler
+    fun BlockyBlockPlaceEvent.o() {
+        broadcast("BlockyBlockPlaceEvent")
+    }
+
+    @EventHandler
+    fun BlockyBlockBreakEvent.d() {
+        broadcast("BlockyBlockBreakEvent")
+    }
+
+    @EventHandler
+    fun BlockyBlockDamageEvent.d() {
+        broadcast("BlockyBlockDamageEvent")
     }
 }
