@@ -2,8 +2,11 @@
 # Keep in mind it disables all custom sounds from place/break/hit etc
 disableCustomSounds: false
 
+# [restoreFunctionality]: Restores redstone and vanilla note functionality for noteblocks
+# NOTE: This reduces the total amount of custom block slots from 799 to 750
 noteBlocks:
   isEnabled: true
+  restoreFunctionality: false
 
 tripWires:
   isEnabled: true

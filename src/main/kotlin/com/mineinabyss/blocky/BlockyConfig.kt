@@ -14,6 +14,7 @@ data class BlockyConfig(
     @Serializable
     data class BlockyNoteBlockConfig(
         val isEnabled: Boolean = true,
+        val restoreFunctionality: Boolean = false,
     )
 
     @Serializable

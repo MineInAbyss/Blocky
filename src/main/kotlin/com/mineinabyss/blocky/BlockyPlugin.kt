@@ -126,14 +126,36 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         // Calculates noteblock states
-        if (blockyConfig.noteBlocks.isEnabled) for (j in 0..799) {
-            val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
-            if (j >= 399) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
-            else noteBlockData.instrument = Instrument.getByType((j / 25 % 400).toByte()) ?: continue
-            noteBlockData.note = Note((j % 25))
-            noteBlockData.isPowered = j !in 0..399
+        // We do 25-825 to skip PIANO at first
+        if (blockyConfig.noteBlocks.isEnabled) {
+            for (j in 50..799) {
+                //val id = if (blockyConfig.noteBlocks.restoreNormalFunctionality && j <= 50) j + 799 else j
+                val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+                noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
 
-            blockMap.putIfAbsent(noteBlockData, j)
+                noteBlockData.note = Note((j % 25))
+                noteBlockData.isPowered = j / 25 % 2 == 1
+
+                blockMap.putIfAbsent(noteBlockData, j)
+            }
+            if (blockyConfig.noteBlocks.restoreFunctionality) {
+                for (j in 1..49) {
+                    val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+                    noteBlockData.instrument = Instrument.PIANO
+                    noteBlockData.note = Note((j % 25))
+                    noteBlockData.isPowered = j / 25 % 2 == 1
+
+                    blockMap.putIfAbsent(noteBlockData, j + 750)
+                }
+            }
+
+
+            /*
+            if restore then blockmap should not contain harp 1-24 powered or not
+            if not restore then blockmap should contain all states except one harp, ideally harp note 0
+            if not restore then blockmap should end with harp not begin to allow for swapping between the two safely
+            issue being that instrument and note checks rely on the id in order
+             */
         }
 
         // Calculates leaf states

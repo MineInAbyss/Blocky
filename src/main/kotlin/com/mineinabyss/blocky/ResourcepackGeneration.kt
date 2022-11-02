@@ -54,7 +54,7 @@ class ResourcepackGeneration {
         return String.format(
             "instrument=%s,note=%s,powered=%s",
             getInstrument(this.instrument),
-            blockMap[this]?.rem(25)!!,
+            blockMap[this],
             this.isPowered
         )
     }

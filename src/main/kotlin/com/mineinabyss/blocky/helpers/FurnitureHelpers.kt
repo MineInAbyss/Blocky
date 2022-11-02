@@ -68,7 +68,7 @@ fun GearyEntity.placeBlockyFrame(
 ) {
     if (!has<BlockyFurniture>()) return
     if (get<BlockyFurniture>()?.hasEnoughSpace(loc, yaw) != true) return
-    if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock()) return
+    if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock) return
     if (!ProtectionLib.canBuild(player, loc)) return
 
     val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return

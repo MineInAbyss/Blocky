@@ -1,6 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
@@ -44,27 +46,29 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        if (blocks.any { it.isBlockyNoteBlock() }) isCancelled = true
+        if (blocks.any { it.isBlockyNoteBlock }) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPistonRetractEvent.cancelBlockyPiston() {
-        if (blocks.any { it.isBlockyNoteBlock() }) isCancelled = true
+        if (blocks.any { it.isBlockyNoteBlock }) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyNoteBlock() {
-        if (!block.isBlockyNoteBlock()) return
+        if (!block.isBlockyNoteBlock) return
         if (block.gearyEntity?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
+    // If not restoreFunctionality handle interaction if vanilla block otherwise return cuz vanilla handles it
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
         if (block.type != Material.NOTE_BLOCK) return
+        if (blockyConfig.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
 
         if (rightClicked) isCancelled = true
-        if (block.isVanillaNoteBlock()) {
+        if (block.isVanillaNoteBlock) {
             if (rightClicked) block.updateBlockyNote()
             block.playBlockyNoteBlock()
         }
@@ -81,10 +85,13 @@ class BlockyNoteBlockListener : Listener {
         if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, Bukkit.createBlockData(type))
     }
 
-    //TODO Change this to call NotePlayEvent?
+    // Handle playing the sound. If BlockData isnt in map, it means this should be handled by vanilla
+    // AKA restoreFunctionality enabled and normal block
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
         if (block.type != Material.NOTE_BLOCK) return
+        if (block.blockData !in blockMap) return
+
         isCancelled = true
         block.state.update(true, false)
 
@@ -100,7 +107,7 @@ class BlockyNoteBlockListener : Listener {
         val block = location.block
         val data = block.blockData.clone() as? NoteBlock ?: return
 
-        if (!block.isBlockyNoteBlock() || event != GameEvent.NOTE_BLOCK_PLAY) return
+        if (!block.isBlockyNoteBlock || event != GameEvent.NOTE_BLOCK_PLAY) return
 
         blockyPlugin.launch {
             delay(1)
@@ -128,10 +135,10 @@ class BlockyNoteBlockListener : Listener {
         if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
-    // Set default note of normal noteblock
+    // Set default note of normal noteblock only if not restoreFunctionality is enabled
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {
-        if (blockPlaced.isVanillaNoteBlock()) {
+        if (!blockyConfig.noteBlocks.restoreFunctionality && blockPlaced.isVanillaNoteBlock) {
             blockPlaced.customBlockData.set(NOTEBLOCK_KEY, PersistentDataType.INTEGER, 0)
         }
     }
@@ -140,7 +147,7 @@ class BlockyNoteBlockListener : Listener {
     fun EntityExplodeEvent.onExplodingBlocky() {
         blockList().forEach { block ->
             val prefab = block.gearyEntity ?: return@forEach
-            if (!block.isBlockyNoteBlock()) return@forEach
+            if (!block.isBlockyNoteBlock) return@forEach
             if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)
         }

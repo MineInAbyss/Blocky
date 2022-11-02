@@ -18,8 +18,6 @@ fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == this.getDirectionalId(face) }.keys.firstOrNull() ?: return Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
 }
 
-fun Block.isBlockyNoteBlock() : Boolean = blockMap.contains(blockData) && type == Material.NOTE_BLOCK
-
 fun Block.updateNoteBlockAbove() {
     val above = getRelative(BlockFace.UP)
     above.state.update(true, true)
@@ -27,9 +25,10 @@ fun Block.updateNoteBlockAbove() {
         above.updateNoteBlockAbove()
 }
 
-fun Block.isVanillaNoteBlock(): Boolean {
-    return blockData == Bukkit.createBlockData(Material.NOTE_BLOCK)
-}
+// If the blockmap doesn't contain data, it means it's a vanilla note block
+val Block.isVanillaNoteBlock get() = blockMap is NoteBlock && blockData !in blockMap
+
+val Block.isBlockyNoteBlock get() = blockData in blockMap && blockData is NoteBlock
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {
