@@ -1,15 +1,15 @@
-package com.mineinabyss.blocky.api.events.wireblock
+package com.mineinabyss.blocky.api.events.block
 
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.HandlerList
 
-class WireBlockPlaceEvent(
-    wire: Block,
+class BlockyBlockPlaceEvent(
+    block: Block,
     val player: Player,
-) : WireBlockEvent(wire), Cancellable {
-private var cancelled = false
+) : BlockyBlockEvent(block), Cancellable {
+    private var cancelled = false
 
     override fun isCancelled() = cancelled
 

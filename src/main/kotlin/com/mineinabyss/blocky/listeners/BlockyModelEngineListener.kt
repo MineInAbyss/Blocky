@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.api.events.furniture.FurniturePlaceEvent
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.getRotation
 import com.mineinabyss.blocky.helpers.getYaw
@@ -27,7 +27,7 @@ class BlockyModelEngineListener : Listener {
         val rotation = getRotation(player.location.yaw, false).rotateCounterClockwise()
         entity.setRotation(getYaw(rotation), 0f)
 
-        val furniturePlaceEvent = FurniturePlaceEvent(entity, player).run { this.call(); this }
+        val furniturePlaceEvent = BlockyFurniturePlaceEvent(entity, player).run { this.call(); this }
         if (furniturePlaceEvent.isCancelled) entity.remove()
     }
 }

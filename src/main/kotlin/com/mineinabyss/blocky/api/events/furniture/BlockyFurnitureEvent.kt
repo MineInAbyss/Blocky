@@ -1,26 +1,19 @@
 package com.mineinabyss.blocky.api.events.furniture
 
+import com.mineinabyss.blocky.components.core.BlockyEntity
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import org.bukkit.entity.Entity
-import org.bukkit.entity.Player
-import org.bukkit.event.Cancellable
 import org.bukkit.event.HandlerList
+import org.bukkit.event.entity.EntityEvent
 
-class FurnitureBreakEvent(
-    furniture: Entity,
-    val player: Player?
-) : FurnitureEvent(furniture), Cancellable {
+open class BlockyFurnitureEvent(entity: Entity) : EntityEvent(entity) {
+
+    val furniture get() = entity.toGearyOrNull()?.get<BlockyEntity>()
 
     val isModelEngineFurniture get() : Boolean {
         return entity.toGeary().has<BlockyModelEngine>()
-    }
-    private var cancelled = false
-
-    override fun isCancelled() = cancelled
-
-    override fun setCancelled(cancel: Boolean) {
-        cancelled = cancel
     }
 
     override fun getHandlers() = handlerList
@@ -29,5 +22,4 @@ class FurnitureBreakEvent(
         @JvmStatic
         val handlerList = HandlerList()
     }
-
 }

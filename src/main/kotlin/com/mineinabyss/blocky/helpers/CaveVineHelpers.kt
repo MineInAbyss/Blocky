@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockBreakEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -25,7 +25,7 @@ fun breakCaveVineBlock(block: Block, player: Player?) {
     val gearyBlock = block.gearyEntity ?: return
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
 
-    val caveVineEvent = CaveVineBlockBreakEvent(block, player).run { this.call(); this }
+    val caveVineEvent = BlockyBlockBreakEvent(block, player).run { this.call(); this }
     if (caveVineEvent.isCancelled) return
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)

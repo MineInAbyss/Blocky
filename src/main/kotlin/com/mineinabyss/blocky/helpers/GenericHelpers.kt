@@ -4,13 +4,8 @@ import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockBreakEvent
-import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockPlaceEvent
-import com.mineinabyss.blocky.api.events.leafblock.LeafBlockPlaceEvent
-import com.mineinabyss.blocky.api.events.noteblock.NoteBlockBreakEvent
-import com.mineinabyss.blocky.api.events.noteblock.NoteBlockPlaceEvent
-import com.mineinabyss.blocky.api.events.wireblock.WireBlockBreakEvent
-import com.mineinabyss.blocky.api.events.wireblock.WireBlockPlaceEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockType
@@ -79,13 +74,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) {
     val prefab = this.gearyEntity ?: return
     val itemInHand = player.inventory.itemInMainHand
     val blockBreakEvent = BlockBreakEvent(this, player).run { call(); this }
-    val blockyBreakEvent = when (prefab.get<BlockyBlock>()?.blockType ?: return) {
-        BlockType.NOTEBLOCK -> NoteBlockBreakEvent(this, player)
-        BlockType.TRIPWIRE -> WireBlockBreakEvent(this, player)
-        BlockType.CAVEVINE -> CaveVineBlockBreakEvent(this, player)
-        //BlockType.LEAF -> BlockDamageEvent(player, block, player.inventory.itemInMainHand, true)
-        else -> return
-    }.run { call(); this }
+    val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
 
     if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
     if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
@@ -220,13 +209,7 @@ fun placeBlockyBlock(
 
     val blockPlaceEvent =
         BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand).run { this.call(); this }
-    val blockyEvent = when (newData) { //TODO Make sure the proper events get called here
-        is NoteBlock -> NoteBlockPlaceEvent(targetBlock, player)
-        is Tripwire -> WireBlockPlaceEvent(targetBlock, player)
-        is CaveVines -> CaveVineBlockPlaceEvent(targetBlock, player)
-        is Leaves -> LeafBlockPlaceEvent(targetBlock, player)
-        else -> return null // This should never be the case
-    }.run { this.call(); this }
+    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player).run { this.call(); this }
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 

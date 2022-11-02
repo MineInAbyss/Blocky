@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.events.wireblock.WireBlockBreakEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
@@ -39,7 +39,7 @@ fun breakTripwireBlock(block: Block, player: Player?) {
     if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
     //block.state.update(true, false)
 
-    val blockyEvent = WireBlockBreakEvent(block, player).run { this.call(); this }
+    val blockyEvent = BlockyBlockBreakEvent(block, player).run { this.call(); this }
     if (blockyEvent.isCancelled) return
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)

@@ -2,12 +2,9 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.events.cavevineblock.CaveVineBlockDamageEvent
-import com.mineinabyss.blocky.api.events.noteblock.NoteBlockDamageEvent
-import com.mineinabyss.blocky.api.events.wireblock.WireBlockDamageEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.core.BlockType
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.mining.BlockyMining
@@ -62,14 +59,7 @@ class BlockyGenericListener : Listener {
         if (mining.miningTask != null) return
         isCancelled = true
 
-        val damageEvent = when (blockyBlock.blockType) {
-            BlockType.NOTEBLOCK -> NoteBlockDamageEvent(block, player)
-            BlockType.TRIPWIRE -> WireBlockDamageEvent(block, player)
-            BlockType.CAVEVINE -> CaveVineBlockDamageEvent(block, player)
-            //BlockType.LEAF -> BlockDamageEvent(player, block, player.inventory.itemInMainHand, true)
-            else -> return
-        }.run { call(); this }
-
+        val damageEvent = BlockyBlockDamageEvent(block, player).run { call(); this }
         if (damageEvent.isCancelled) return
 
         mining.miningTask = blockyPlugin.launch {

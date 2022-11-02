@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.api.events.furniture.FurnitureBreakEvent
-import com.mineinabyss.blocky.api.events.furniture.FurniturePlaceEvent
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBarrierHitbox
 import com.mineinabyss.blocky.components.core.BlockyEntity
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -89,7 +89,7 @@ fun GearyEntity.placeBlockyFrame(
     gearyFrame.getOrSetPersisting { BlockySeatLocations() }
     gearyFrame.getOrSetPersisting { BlockyBarrierHitbox() }
 
-    val furniturePlaceEvent = FurniturePlaceEvent(newFrame, player).run { this.call(); this }
+    val furniturePlaceEvent = BlockyFurniturePlaceEvent(newFrame, player).run { this.call(); this }
     if (furniturePlaceEvent.isCancelled) {
         newFrame.remove()
         return
@@ -123,7 +123,7 @@ fun ItemFrame.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
 fun ItemFrame.removeBlockyFrame(player: Player?, event: Event) {
     this.toGearyOrNull()?.get<BlockyEntity>() ?: return
 
-    val furnitureBreakEvent = FurnitureBreakEvent(this, player).run { this.call(); this }
+    val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player).run { this.call(); this }
     if (furnitureBreakEvent.isCancelled) return
 
     this.removeAssosiatedSeats()
