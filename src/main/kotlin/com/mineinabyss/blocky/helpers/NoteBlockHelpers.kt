@@ -16,7 +16,7 @@ import org.bukkit.persistence.PersistentDataType
 val NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "note_block")
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
-    return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == getDirectionalId(face) }.keys.first() as NoteBlock
+    return blockMap.filter { it.key is NoteBlock && it.key.material == Material.NOTE_BLOCK && it.value == this.getDirectionalId(face) }.keys.firstOrNull() ?: return Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
 }
 
 fun Block.isBlockyNoteBlock() : Boolean = blockMap.contains(blockData) && type == Material.NOTE_BLOCK

@@ -182,8 +182,11 @@ class BlockyGenericListener : Listener {
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
-
-        block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+        val material = when (itemInHand.type) {
+            Material.STRING -> Material.TRIPWIRE
+            else -> itemInHand.type
+        }
+        block.setBlockData(Bukkit.createBlockData(material), false)
         player.swingMainHand()
     }
 }

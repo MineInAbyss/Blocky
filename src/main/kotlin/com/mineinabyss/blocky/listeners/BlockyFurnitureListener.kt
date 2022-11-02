@@ -29,7 +29,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
 
-class BlockyItemFrameListener : Listener {
+class BlockyFurnitureListener : Listener {
 
     @EventHandler
     fun HangingPlaceEvent.onPlacingItemFrame() {

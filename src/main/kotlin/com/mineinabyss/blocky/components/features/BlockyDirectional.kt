@@ -5,6 +5,7 @@ import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
+//TODO Since directional blocks are skipped, requiring BlockyBlock component is dumb, fix
 @Serializable
 @SerialName("blocky:directional")
 class BlockyDirectional(

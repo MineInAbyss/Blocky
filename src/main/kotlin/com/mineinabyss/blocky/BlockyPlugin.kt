@@ -58,7 +58,7 @@ class BlockyPlugin : JavaPlugin() {
 
         listeners(
             BlockyGenericListener(),
-            BlockyItemFrameListener(),
+            BlockyFurnitureListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
         )

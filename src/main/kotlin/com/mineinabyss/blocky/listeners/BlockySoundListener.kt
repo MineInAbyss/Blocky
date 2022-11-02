@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.components.core.BlockySound
 import com.mineinabyss.blocky.components.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.ticks
 import kotlinx.coroutines.delay
 import org.bukkit.*
@@ -97,7 +98,7 @@ class BlockySoundListener : Listener {
             GameEvent.HIT_GROUND -> DEFAULT_FALL_PITCH
             else -> return
         }
-
+        eventName.broadcastVal()
         block.world.playSound(block.location, sound, SoundCategory.PLAYERS, volume, pitch)
     }
 

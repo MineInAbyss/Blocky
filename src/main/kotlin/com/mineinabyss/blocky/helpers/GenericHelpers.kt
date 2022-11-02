@@ -20,6 +20,7 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.util.randomOrMin
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
@@ -116,7 +117,6 @@ private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
     this.forEach { drop ->
-        val tempAmount = if (drop.minAmount < drop.maxAmount) Random.nextInt(drop.minAmount, drop.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
             if (drop.affectedBySilkTouch && Enchantment.SILK_TOUCH in hand.enchantments)
@@ -124,8 +124,8 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
             else drop.item?.toItemStack()
         val amount =
             if (drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments)
-                tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
-            else tempAmount
+                drop.amount.randomOrMin() * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
+            else drop.amount.randomOrMin()
 
         if (player?.gameMode == GameMode.CREATIVE) return
 
