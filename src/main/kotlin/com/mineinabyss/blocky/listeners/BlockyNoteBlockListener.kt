@@ -13,7 +13,6 @@ import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
@@ -38,7 +37,6 @@ class BlockyNoteBlockListener : Listener {
     fun NotePlayEvent.cancelBlockyNotes() {
         if (!block.isVanillaNoteBlock) isCancelled = true
         else if (block.isVanillaNoteBlock && !blockyConfig.noteBlocks.restoreFunctionality) {
-            broadcast("Note block functionality is disabled in the config")
             note = block.updateBlockyNote()
             instrument = block.getBlockyInstrument()
         } else return
@@ -148,7 +146,9 @@ class BlockyNoteBlockListener : Listener {
     // Set default note of normal noteblock only if not restoreFunctionality is enabled
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {
-        if (!blockyConfig.noteBlocks.restoreFunctionality && blockPlaced.isVanillaNoteBlock)
+        if (!blockPlaced.isVanillaNoteBlock) return
+
+        if (!blockyConfig.noteBlocks.restoreFunctionality)
             blockPlaced.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
         else blockPlaced.customBlockData.set(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN, true)
     }
@@ -158,6 +158,11 @@ class BlockyNoteBlockListener : Listener {
     fun ChunkLoadEvent.migrateOnChunkLoad() {
         CustomBlockData.getBlocksWithCustomData(blockyPlugin, chunk)
             .filter { it.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN) }.forEach { block ->
+
+                if (block.blockData !is NoteBlock) {
+                    block.customBlockData.remove(VANILLA_NOTEBLOCK_KEY)
+                    return@forEach
+                }
 
                 // Convert any VANILLA_NOTEBLOCK_KEY blocks to custom if restoreFunctionality is disabled
                 if (!blockyConfig.noteBlocks.restoreFunctionality) {

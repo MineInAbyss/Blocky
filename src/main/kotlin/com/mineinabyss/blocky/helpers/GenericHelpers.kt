@@ -15,8 +15,8 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.*
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
-import com.mineinabyss.blocky.systems.BlockyTypeQuery
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyBlockQuery
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -139,7 +139,7 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
 val Block.prefabKey get(): PrefabKey? {
     val type =
         when {
-            type == Material.BARRIER -> return this.getAssociatedBlockyFrame(10.0)?.toGearyOrNull()?.get()
+            type == Material.BARRIER -> return this.getBlockyFurniture()?.toGearyOrNull()?.get()
             type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
             type == Material.TRIPWIRE -> BlockType.TRIPWIRE
             type == Material.CAVE_VINES -> BlockType.CAVEVINE
@@ -147,7 +147,7 @@ val Block.prefabKey get(): PrefabKey? {
             else -> null
         }
 
-    return BlockyTypeQuery.firstOrNull {
+    return BlockyBlockQuery.firstOrNull {
         val blockyBlock = it.entity.get<BlockyBlock>()
         if (it.entity.has<Directional>()) {
             val directional = it.entity.get<BlockyDirectional>()

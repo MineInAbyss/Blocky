@@ -2,9 +2,7 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
-import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -13,7 +11,6 @@ import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
@@ -186,6 +183,7 @@ class BlockyGenericListener : Listener {
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         when {
             itemInHand.isBlockyBlock(player) -> return
+            itemInHand.type !in (setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES)) -> return
             blockPlaced.isBlockyBlock -> return
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
@@ -198,20 +196,5 @@ class BlockyGenericListener : Listener {
         }
         block.blockData = Bukkit.createBlockData(material)
         player.swingMainHand()
-    }
-
-    @EventHandler
-    fun BlockyBlockPlaceEvent.o() {
-        broadcast("BlockyBlockPlaceEvent")
-    }
-
-    @EventHandler
-    fun BlockyBlockBreakEvent.d() {
-        broadcast("BlockyBlockBreakEvent")
-    }
-
-    @EventHandler
-    fun BlockyBlockDamageEvent.d() {
-        broadcast("BlockyBlockDamageEvent")
     }
 }

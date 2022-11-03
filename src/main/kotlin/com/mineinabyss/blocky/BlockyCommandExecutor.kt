@@ -2,8 +2,8 @@ package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.menus.BlockyMainMenu
-import com.mineinabyss.blocky.systems.BlockyTypeQuery
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -33,7 +33,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "give" {
-                val type by optionArg(options = BlockyTypeQuery.map { it.prefabKey.toString() }) {
+                val type by optionArg(options = BlockyQuery.map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
                 playerAction {
@@ -112,7 +112,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 2 -> {
                     when (args[0]) {
                         "give" ->
-                            BlockyTypeQuery.filter {
+                            BlockyQuery.filter {
                                 val arg = args[1].lowercase()
                                 it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
                             }.map { it.prefabKey.toString() }
