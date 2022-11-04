@@ -41,19 +41,19 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
+        val against = clickedBlock ?: return
         val item = item ?: return
         val hand = hand ?: return
         val gearyItem = item.toGearyOrNull(player) ?: return
         val furniture = gearyItem.get<BlockyFurniture>() ?: return
-        val against = clickedBlock ?: return
         val targetBlock = getTargetBlock(against, blockFace) ?: return
         val targetData = targetBlock.blockData
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
         targetBlock.setType(Material.AIR, false)
         val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-        val rotation = getRotation(player.eyeLocation.yaw, furniture.collisionHitbox.isNotEmpty())
-        val yaw = getYaw(rotation)
+        val rotation = getRotation(player.eyeLocation.yaw, furniture.collisionHitbox.isNotEmpty() || furniture.strictRotation)
+        val yaw = if (furniture.furnitureType == FurnitureType.ITEM_FRAME || furniture.strictRotation) getYaw(rotation) else player.eyeLocation.yaw - 180
 
         if (!furniture.hasEnoughSpace(targetBlock.location, yaw)) {
             blockyPlace.isCancelled = true
@@ -81,7 +81,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBarrier() {
         if (block.type != Material.BARRIER || player.gameMode != GameMode.CREATIVE) return
-        block.getBlockyFurniture()?.removeBlockyFurniture(player)
+        block.blockyFurniture?.removeBlockyFurniture(player)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -95,7 +95,7 @@ class BlockyFurnitureListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
         if (block.type != Material.BARRIER || player.isSneaking) return
 
-        block.sitOnSeat(player)
+        player.sitOnBlockySeat(block)
         if (!player.inventory.itemInMainHand.type.isAir) isCancelled = true
     }
 
@@ -111,8 +111,8 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun BlockExplodeEvent.onBlockExplode() {
-        val blockyBlocks = blockList().filter { it.type == Material.BARRIER && it.getBlockyFurniture() != null }
-        blockyBlocks.map { it.getBlockyFurniture() }.toSet()
+        val blockyBlocks = blockList().filter { it.type == Material.BARRIER && it.blockyFurniture != null }
+        blockyBlocks.map { it.blockyFurniture }.toSet()
             .forEach { it?.removeBlockyFurniture(null) }
     }
 

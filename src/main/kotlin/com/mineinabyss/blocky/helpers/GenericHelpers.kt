@@ -2,7 +2,6 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
@@ -36,7 +35,6 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
@@ -139,7 +137,7 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
 val Block.prefabKey get(): PrefabKey? {
     val type =
         when {
-            type == Material.BARRIER -> return this.getBlockyFurniture()?.toGearyOrNull()?.get()
+            type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get()
             type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
             type == Material.TRIPWIRE -> BlockType.TRIPWIRE
             type == Material.CAVE_VINES -> BlockType.CAVEVINE
@@ -236,13 +234,6 @@ fun placeBlockyBlock(
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     player.swingMainHand()
     return targetBlock
-}
-
-//TODO Make sure this still removes it and that it doesnt need to be also cleared later
-fun Block.clearCustomBlockData(event: Event) {
-    if (CustomBlockData.hasCustomBlockData(this, blockyPlugin)) {
-        CustomBlockDataRemoveEvent(blockyPlugin, this, event).call()
-    }
 }
 
 //TODO This might be better to call via an event or something in stead of this god awful method

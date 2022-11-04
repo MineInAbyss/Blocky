@@ -8,6 +8,7 @@ import kotlinx.serialization.Serializable
 @SerialName("blocky:furniture")
 data class BlockyFurniture(
     val furnitureType: FurnitureType = FurnitureType.ITEM_FRAME,
+    val strictRotation: Boolean = true,
     val collisionHitbox: List<BlockLocation> = listOf(),
     val originOffset: BlockLocation = BlockLocation(0, 0, 0),
 ) {

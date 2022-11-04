@@ -43,7 +43,7 @@ class WorldEditListener : Listener {
                 if (oldEntity.has<BlockyLight>())
                     handleLight.removeBlockLight(loc)
                 if (oldEntity.has<BlockySeat>()) //TODO Consider if this should even be handled?
-                    loc.block.getBlockyFurniture()?.removeAssosiatedSeats()
+                    loc.block.blockyFurniture?.removeAssosiatedSeats()
 
                 // Get the BlockyType of the new block
                 val type = when {
@@ -79,5 +79,4 @@ class WorldEditListener : Listener {
             it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
         }.map { it.prefabKey.toString() })
     }
-
 }

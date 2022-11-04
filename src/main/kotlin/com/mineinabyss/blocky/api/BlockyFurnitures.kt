@@ -9,7 +9,7 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.inventory.ItemStack
 
 
-object BlockyFurniture {
+object BlockyFurnitures {
 
     val Entity.furnitureItem: ItemStack? get() {
         return when (this) {
