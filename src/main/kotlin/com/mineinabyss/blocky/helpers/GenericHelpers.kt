@@ -11,7 +11,10 @@ import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.features.*
+import com.mineinabyss.blocky.components.features.BlockyDirectional
+import com.mineinabyss.blocky.components.features.BlockyDrops
+import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
@@ -209,7 +212,8 @@ fun placeBlockyBlock(
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
-    if (targetBlock.gearyEntity?.has<BlockyPlacableOn>() == true && !targetBlock.isPlacableOn(face))
+    val placableOn = targetBlock.gearyEntity?.get<BlockyPlacableOn>()
+    if (placableOn?.isPlacableOn(targetBlock, face) == true)
         blockPlaceEvent.isCancelled = true
 
     if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())

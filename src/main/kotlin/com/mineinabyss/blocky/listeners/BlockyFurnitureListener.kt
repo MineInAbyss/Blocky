@@ -67,7 +67,7 @@ class BlockyFurnitureListener : Listener {
             return
         }
 
-        gearyItem.placeBlockyFurniture(rotation, yaw, targetBlock.location, player)
+        gearyItem.placeBlockyFurniture(rotation, yaw, targetBlock.location, blockFace, player)
         player.swingMainHand()
         if (player.gameMode != GameMode.CREATIVE) item.subtract()
     }

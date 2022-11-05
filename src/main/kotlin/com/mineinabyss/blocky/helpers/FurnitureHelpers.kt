@@ -8,6 +8,7 @@ import com.mineinabyss.blocky.components.core.BlockyBarrierHitbox
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.components.features.BlockySeatLocations
 import com.mineinabyss.blocky.systems.BlockLocation
@@ -67,14 +68,12 @@ fun GearyEntity.placeBlockyFurniture(
     rotation: Rotation,
     yaw: Float,
     loc: Location,
+    blockFace: BlockFace,
     player: Player
 ) {
     val furniture = get<BlockyFurniture>() ?: return
     val seats = get() ?: BlockySeat()
-
-    if (!furniture.hasEnoughSpace(loc, yaw)) return
-    if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock) return
-    if (!ProtectionLib.canBuild(player, loc)) return
+    val placableOn = get() ?: BlockyPlacableOn()
 
     val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return
     val newFurniture = when (furniture.furnitureType) {
@@ -106,9 +105,16 @@ fun GearyEntity.placeBlockyFurniture(
     newFurniture.toGeary().apply {
         this.setPersisting(furniture)
         this.setPersisting(seats)
+        this.setPersisting(placableOn)
     }
 
     val furniturePlaceEvent = BlockyFurniturePlaceEvent(newFurniture, player).run { this.call(); this }
+
+    if (!furniture.hasEnoughSpace(loc, yaw)) furniturePlaceEvent.isCancelled = true
+    if (!ProtectionLib.canBuild(player, loc)) furniturePlaceEvent.isCancelled = true
+    if (!placableOn.isPlacableOn(loc.block, blockFace)) furniturePlaceEvent.isCancelled = true
+    if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock) furniturePlaceEvent.isCancelled = true
+
     if (furniturePlaceEvent.isCancelled) {
         newFurniture.remove()
         return
