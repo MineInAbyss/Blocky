@@ -2,13 +2,15 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.BlockyInfo
-import com.mineinabyss.blocky.components.BlockyMining
-import com.mineinabyss.blocky.components.PlayerIsMining
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
@@ -23,6 +25,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
+import org.bukkit.event.player.PlayerDropItemEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -45,7 +48,7 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
-        val info = block.getGearyEntityFromBlock()?.get<BlockyInfo>() ?: return
+        val info = block.gearyEntity?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
         val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /
@@ -55,11 +58,14 @@ class BlockyGenericListener : Listener {
         if (mining.miningTask != null) return
         isCancelled = true
 
+        val damageEvent = BlockyBlockDamageEvent(block, player).run { call(); this }
+        if (damageEvent.isCancelled) return
+
         mining.miningTask = blockyPlugin.launch {
             val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
             var stage = 0
 
-            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, true))
+            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, false))
             do { //TODO Fix visual glitch for blockbreaker
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
@@ -72,12 +78,6 @@ class BlockyGenericListener : Listener {
     }
 
     // Cancel the custom break task if player stops breaking
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreak() {
-        player.resetCustomBreak(block)
-    }
-
-    // Cancel the custom break task if player stops breaking
     @EventHandler(priority = EventPriority.LOWEST)
     fun BlockDamageAbortEvent.onCancelMine() {
         player.resetCustomBreak(block)
@@ -87,6 +87,19 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun PlayerSwapHandItemsEvent.onSwapHand() {
         player.resetCustomBreak(player.getTargetBlock(null, 5))
+    }
+
+    // If player drops an item, cancel breaking to prevent exploits
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun PlayerDropItemEvent.onDropHand() {
+        player.resetCustomBreak(player.getTargetBlock(null, 5))
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockBreakEvent.onBreakBlockyBlock() {
+        if (player.gameMode == GameMode.CREATIVE && block.isBlockyBlock) {
+            block.attemptBreakBlockyBlock(player)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -170,15 +183,18 @@ class BlockyGenericListener : Listener {
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         when {
             itemInHand.isBlockyBlock(player) -> return
-            !blockPlaced.isBlockyBlock() -> return
+            itemInHand.type !in (setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES)) -> return
+            blockPlaced.isBlockyBlock -> return
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
-            !blockyConfig.chorusPlant.isEnabled && itemInHand.type == Material.CHORUS_PLANT -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
-
-        block.setBlockData(Bukkit.createBlockData(itemInHand.type), false)
+        val material = when (itemInHand.type) {
+            Material.STRING -> Material.TRIPWIRE
+            else -> itemInHand.type
+        }
+        block.blockData = Bukkit.createBlockData(material)
         player.swingMainHand()
     }
 }

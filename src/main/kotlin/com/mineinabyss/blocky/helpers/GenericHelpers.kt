@@ -2,17 +2,25 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.customblockdata.events.CustomBlockDataRemoveEvent
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.*
-import com.mineinabyss.blocky.systems.BlockyTypeQuery
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
+import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.*
+import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.components.features.mining.ToolType
+import com.mineinabyss.blocky.systems.BlockyBlockQuery
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.util.randomOrMin
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
@@ -27,7 +35,6 @@ import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.EntityType
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
-import org.bukkit.event.Event
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerItemDamageEvent
@@ -37,34 +44,47 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
+import org.bukkit.persistence.PersistentDataContainer
 import kotlin.random.Random
 
-const val woodPlaceSound = "blocky.wood.place"
-const val woodBreakSound = "blocky.wood.break"
-const val woodHitSound = "blocky.wood.hit"
-const val woodStepSound = "blocky.wood.step"
-const val woodFallSound = "blocky.wood.fall"
-const val stonePlaceSound = "blocky.stone.place"
-const val stoneBreakSound = "blocky.stone.break"
-const val stoneHitSound = "blocky.stone.hit"
-const val stoneStepSound = "blocky.stone.step"
-const val stoneFallSound = "blocky.stone.fall"
+const val VANILLA_STONE_PLACE = "blocky.stone.place"
+const val VANILLA_STONE_BREAK = "blocky.stone.break"
+const val VANILLA_STONE_HIT = "blocky.stone.hit"
+const val VANILLA_STONE_STEP = "blocky.stone.step"
+const val VANILLA_STONE_FALL = "blocky.stone.fall"
+
+const val VANILLA_WOOD_PLACE = "blocky.wood.place"
+const val VANILLA_WOOD_BREAK = "blocky.wood.break"
+const val VANILLA_WOOD_HIT = "blocky.wood.hit"
+const val VANILLA_WOOD_STEP = "blocky.wood.step"
+const val VANILLA_WOOD_FALL = "blocky.wood.fall"
+
+const val DEFAULT_PLACE_VOLUME = 1.0f
+const val DEFAULT_PLACE_PITCH = 0.8f
+const val DEFAULT_BREAK_VOLUME = 1.0f
+const val DEFAULT_BREAK_PITCH = 0.8f
+const val DEFAULT_HIT_VOLUME = 0.25f
+const val DEFAULT_HIT_PITCH = 0.5f
+const val DEFAULT_STEP_VOLUME = 0.15f
+const val DEFAULT_STEP_PITCH = 1.0f
+const val DEFAULT_FALL_VOLUME = 0.5f
+const val DEFAULT_FALL_PITCH = 0.75f
 
 fun Block.attemptBreakBlockyBlock(player: Player) {
-    val prefab = this.getGearyEntityFromBlock() ?: return
+    val prefab = this.gearyEntity ?: return
     val itemInHand = player.inventory.itemInMainHand
     val blockBreakEvent = BlockBreakEvent(this, player)
-    blockBreakEvent.call()
+    val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
 
-    if (!ProtectionLib.canBreak(player, this.location)) return
-    if (blockBreakEvent.isCancelled) return
+    if (!ProtectionLib.canBreak(player, this.location)) blockBreakEvent.isCancelled = true
+    if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
-    if (player.gameMode != GameMode.CREATIVE)
-        if (itemInHand.hasItemMeta() && itemInHand is Damageable)
-            PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
+    if (player.gameMode != GameMode.CREATIVE && itemInHand.hasItemMeta() && itemInHand is Damageable)
+        PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
+    this.customBlockData.clear()
     this.setType(Material.AIR, false)
 }
 
@@ -73,7 +93,7 @@ fun ItemStack.isBlockyBlock(player: Player): Boolean {
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
-    val gearyBlock = block.getGearyEntityFromBlock() ?: return
+    val gearyBlock = block.gearyEntity ?: return
     val info = gearyBlock.get<BlockyInfo>() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
 
@@ -87,7 +107,7 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 }
 
 private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
-    val gearyBlock = block.getGearyEntityFromBlock() ?: return false
+    val gearyBlock = block.gearyEntity ?: return false
     val info = gearyBlock.get<BlockyInfo>() ?: return false
     val allowedToolTypes = toGearyOrNull(player)?.get<BlockyMining>()?.toolTypes ?: return false
 
@@ -96,7 +116,6 @@ private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
     this.forEach { drop ->
-        val tempAmount = if (drop.minAmount < drop.maxAmount) Random.nextInt(drop.minAmount, drop.maxAmount) else 1
         val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
         val item =
             if (drop.affectedBySilkTouch && Enchantment.SILK_TOUCH in hand.enchantments)
@@ -104,47 +123,56 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
             else drop.item?.toItemStack()
         val amount =
             if (drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments)
-                tempAmount * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
-            else tempAmount
+                drop.amount.randomOrMin() * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
+            else drop.amount.randomOrMin()
 
         if (player?.gameMode == GameMode.CREATIVE) return
 
         if (drop.exp < 0)
-                (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
+            (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
         (1..amount).forEach { _ -> item?.let { item -> location.world.dropItemNaturally(location, item) } }
     }
 }
 
-fun Block.getPrefabFromBlock(): PrefabKey? {
+val Block.prefabKey get(): PrefabKey? {
     val type =
         when {
-            type == Material.BARRIER -> return this.getAssociatedBlockyFrame(10.0)?.toGearyOrNull()?.get()
-            type == Material.NOTE_BLOCK -> BlockType.CUBE
-            type == Material.TRIPWIRE -> BlockType.GROUND
-            type == Material.CHORUS_PLANT -> BlockType.TRANSPARENT
+            type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get()
+            type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
+            type == Material.TRIPWIRE -> BlockType.TRIPWIRE
             type == Material.CAVE_VINES -> BlockType.CAVEVINE
             Tag.LEAVES.isTagged(type) -> BlockType.LEAF
             else -> null
         }
 
-    return BlockyTypeQuery.firstOrNull {
+    return BlockyBlockQuery.firstOrNull {
         val blockyBlock = it.entity.get<BlockyBlock>()
         if (it.entity.has<Directional>()) {
             val directional = it.entity.get<BlockyDirectional>()
-            (directional?.yBlockId == blockMap[blockData] ||
-                    directional?.xBlockId == blockMap[blockData] ||
-                    directional?.zBlockId == blockMap[blockData]) &&
+            ((directional?.yBlock?.toEntityOrNull() ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
+                    (directional?.xBlock?.toEntityOrNull() ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
+                    (directional?.zBlock?.toEntityOrNull() ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData]) &&
                     blockyBlock?.blockType == type
         } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
     }?.prefabKey ?: return null
 }
 
-fun Block.getGearyEntityFromBlock() = getPrefabFromBlock()?.toEntity()
+val Block.gearyEntity get() = prefabKey?.toEntity()
 
-fun Block.isBlockyBlock() = getGearyEntityFromBlock()?.has<BlockyBlock>() ?: false
+val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() ?: false
 
-fun BlockFace.isCardinal() =
+val BlockFace.isCardinal get() =
     this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
+
+val Block.persistentDataContainer
+    get() : PersistentDataContainer {
+        return CustomBlockData(this, blockyPlugin)
+    }
+
+val Block.customBlockData
+    get(): CustomBlockData {
+        return CustomBlockData(this, blockyPlugin)
+    }
 
 fun placeBlockyBlock(
     player: Player,
@@ -161,32 +189,34 @@ fun placeBlockyBlock(
         if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
     }
 
-    if (against.getGearyEntityFromBlock()?.has<BlockyBlock>() != true && item.toGearyOrNull(player)
+    if (against.gearyEntity?.has<BlockyBlock>() != true && item.toGearyOrNull(player)
             ?.has<BlockyBlock>() != true
     ) return null
     if (isStandingInside(player, targetBlock)) return null
-    if (against.isVanillaNoteBlock()) return null
-    if (targetBlock.isVanillaNoteBlock())
-        CustomBlockData(targetBlock, blockyPlugin).set(
-            NamespacedKey(blockyPlugin, Material.NOTE_BLOCK.toString().lowercase()),
-            DataType.BLOCK_DATA,
-            newData
-        )
+    if (against.isVanillaNoteBlock) return null
+    targetBlock.isVanillaNoteBlock
+    if (!blockyConfig.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
+        targetBlock.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
     targetBlock.updateBlockyNote()
 
     val currentData = targetBlock.blockData
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-    blockPlaceEvent.call()
+    val blockPlaceEvent =
+        BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand).run { this.call(); this }
+    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player).run { this.call(); this }
 
     if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
 
-    if (targetBlock.getGearyEntityFromBlock()?.has<BlockyPlacableOn>() == true && !targetBlock.isPlacableOn(face))
+    if (targetBlock.gearyEntity?.has<BlockyPlacableOn>() == true && !targetBlock.isPlacableOn(face))
         blockPlaceEvent.isCancelled = true
 
-    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled) {
+    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())
+        blockPlaceEvent.isCancelled = true
+
+    if (blockyEvent.isCancelled || blockPlaceEvent.isCancelled) {
+        blockyEvent.isCancelled = true
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
@@ -202,16 +232,11 @@ fun placeBlockyBlock(
         else item.amount = item.amount - 1
     }
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
+    player.swingMainHand()
     return targetBlock
 }
 
-//TODO Make sure this still removes it and that it doesnt need to be also cleared later
-fun Block.clearCustomBlockData(event: Event) {
-    if (CustomBlockData.hasCustomBlockData(this, blockyPlugin)) {
-        CustomBlockDataRemoveEvent(blockyPlugin, this, event).call()
-    }
-}
-
+//TODO This might be better to call via an event or something in stead of this god awful method
 private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: ItemStack): Boolean {
     val data = blockData.clone()
     val state = state
@@ -446,12 +471,14 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
     setBlockData(data, false)
 }
 
-fun GearyEntity.getDirectionalId(face: BlockFace): Int? = when {
-    !has<BlockyDirectional>() -> get<BlockyBlock>()?.blockId
-    get<BlockyDirectional>()?.hasYVariant() == true && (face == BlockFace.UP || face == BlockFace.DOWN) -> get<BlockyDirectional>()?.yBlockId
-    get<BlockyDirectional>()?.hasXVariant() == true && (face == BlockFace.NORTH || face == BlockFace.SOUTH) -> get<BlockyDirectional>()?.xBlockId
-    get<BlockyDirectional>()?.hasZVariant() == true && (face == BlockFace.WEST || face == BlockFace.EAST) -> get<BlockyDirectional>()?.zBlockId
-    else -> null
+fun GearyEntity.getDirectionalId(face: BlockFace): Int {
+    val directional = get<BlockyDirectional>()
+    return when (face) {
+        BlockFace.UP, BlockFace.DOWN-> directional?.yBlock?.toEntityOrNull() ?: this
+        BlockFace.NORTH, BlockFace.SOUTH -> directional?.xBlock?.toEntityOrNull() ?: this
+        BlockFace.WEST, BlockFace.EAST -> directional?.zBlock?.toEntityOrNull() ?: this
+        else -> this
+    }.get<BlockyBlock>()?.blockId ?: 0
 }
 
 fun Block.getLeftBlock(player: Player): Block {

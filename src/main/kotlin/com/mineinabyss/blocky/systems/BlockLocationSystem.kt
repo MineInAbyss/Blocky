@@ -6,17 +6,13 @@ import kotlin.math.cos
 import kotlin.math.roundToInt
 import kotlin.math.sin
 
+//TODO Make this more of my own
 @Serializable
-class BlockLocation {
-    private var x: Int
-    private var y: Int
-    private var z: Int
-
-    constructor(x: Int, y: Int, z: Int) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
+class BlockLocation(
+    var x: Int,
+    var y: Int,
+    var z: Int,
+) {
 
     override fun toString(): String {
         return "$x,$y,$z"
@@ -38,6 +34,7 @@ class BlockLocation {
         val output = BlockLocation(x, y, z)
         val fixedAngle = 360 - angle
         val radians = Math.toRadians(fixedAngle.toDouble())
+
         output.x = (cos(radians) * x - sin(radians) * z).roundToInt()
         output.z = (sin(radians) * x - cos(radians) * z).roundToInt()
         if (fixedAngle % 180 > 1) output.z = -output.z

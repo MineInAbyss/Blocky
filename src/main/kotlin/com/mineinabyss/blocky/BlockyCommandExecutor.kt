@@ -1,9 +1,9 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.components.BlockyModelEngine
+import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.menus.BlockyMainMenu
-import com.mineinabyss.blocky.systems.BlockyTypeQuery
-import com.mineinabyss.blocky.systems.BlockyTypeQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -29,10 +29,11 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 action {
                     blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
                     blockyPlugin.runStartupFunctions()
+                    sender.success("Blocky has been reloaded!")
                 }
             }
             "give" {
-                val type by optionArg(options = BlockyTypeQuery.map { it.prefabKey.toString() }) {
+                val type by optionArg(options = BlockyQuery.map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
                 playerAction {
@@ -107,11 +108,11 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "blocky") {
             when (args.size) {
-                1 -> listOf("give", "menu", "modelengine").filter { it.startsWith(args[0]) }
+                1 -> listOf("reload", "give", "menu", "modelengine").filter { it.startsWith(args[0]) }
                 2 -> {
                     when (args[0]) {
                         "give" ->
-                            BlockyTypeQuery.filter {
+                            BlockyQuery.filter {
                                 val arg = args[1].lowercase()
                                 it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
                             }.map { it.prefabKey.toString() }

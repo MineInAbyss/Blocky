@@ -1,9 +1,8 @@
 package com.mineinabyss.blocky
 
 import com.jeff_media.customblockdata.CustomBlockData
-import com.mineinabyss.blocky.helpers.getBlockMapEntryForLeaf
-import com.mineinabyss.blocky.helpers.getLeafDistance
-import com.mineinabyss.blocky.helpers.getLeafMaterial
+import com.mineinabyss.blocky.compatibility.WorldEditListener
+import com.mineinabyss.blocky.compatibility.WorldEditSupport
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.GearyLoadPhase
 import com.mineinabyss.geary.addon.autoscan
@@ -11,8 +10,11 @@ import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.Services
 import com.mineinabyss.idofront.plugin.listeners
+import com.sk89q.worldedit.WorldEdit
+import com.sk89q.worldedit.bukkit.WorldEditPlugin
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceLocation
@@ -24,9 +26,7 @@ import org.bukkit.Material
 import org.bukkit.Note
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.MultipleFacing
 import org.bukkit.block.data.type.CaveVines
-import org.bukkit.block.data.type.Leaves
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.block.data.type.Tripwire
 import org.bukkit.plugin.java.JavaPlugin
@@ -50,20 +50,25 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
         CustomBlockData.registerListener(blockyPlugin)
+
+        if (Plugins.isEnabled<WorldEditPlugin>()) {
+            WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
+            listeners(WorldEditListener())
+        }
+
         listeners(
             BlockyGenericListener(),
-            BlockyItemFrameListener(),
+            BlockyFurnitureListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
-            WorldEditListener()
         )
 
         //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
         if (server.pluginManager.isPluginEnabled("Mobzy")) listeners(BlockyModelEngineListener())
         blockyConfig.run {
-            if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
+            // Until reworked deprecate leaf blocks
+            //if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
-            if (chorusPlant.isEnabled) listeners(BlockyChorusPlantListener())
             if (tripWires.isEnabled) listeners(BlockyTripwireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
@@ -121,32 +126,33 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         // Calculates noteblock states
-        if (blockyConfig.noteBlocks.isEnabled) for (j in 0..799) {
-            val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
-            if (j >= 399) noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
-            else noteBlockData.instrument = Instrument.getByType((j / 25 % 400).toByte()) ?: continue
-            noteBlockData.note = Note((j % 25))
-            noteBlockData.isPowered = j !in 0..399
+        // We do 25-825 to skip PIANO at first
+        if (blockyConfig.noteBlocks.isEnabled) {
+            for (j in 50..799) {
+                //val id = if (blockyConfig.noteBlocks.restoreNormalFunctionality && j <= 50) j + 799 else j
+                val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+                noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
 
-            blockMap.putIfAbsent(noteBlockData, j)
-        }
+                noteBlockData.note = Note((j % 25))
+                noteBlockData.isPowered = j / 25 % 2 == 1
 
-        // Calculates chorus plant states
-        if (blockyConfig.chorusPlant.isEnabled) for (k in 0..63) {
-            val chorusData = Bukkit.createBlockData(Material.CHORUS_PLANT) as MultipleFacing
-            if (k and 1 == 1) chorusData.setFace(BlockFace.NORTH, true)
-            if (k shr 1 and 1 == 1) chorusData.setFace(BlockFace.EAST, true)
-            if (k shr 2 and 1 == 1) chorusData.setFace(BlockFace.SOUTH, true)
-            if (k shr 3 and 1 == 1) chorusData.setFace(BlockFace.WEST, true)
-            if (k shr 4 and 1 == 1) chorusData.setFace(BlockFace.UP, true)
-            if (k shr 5 and 1 == 1) chorusData.setFace(BlockFace.DOWN, true)
+                blockMap.putIfAbsent(noteBlockData, j - 50)
+            }
+            if (!blockyConfig.noteBlocks.restoreFunctionality) {
+                for (j in 1..49) {
+                    val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+                    noteBlockData.instrument = Instrument.PIANO
+                    noteBlockData.note = Note((j % 25))
+                    noteBlockData.isPowered = j / 25 % 2 == 1
 
-            blockMap.putIfAbsent(chorusData, k)
+                    blockMap.putIfAbsent(noteBlockData, j + 750)
+                }
+            }
         }
 
         // Calculates leaf states
         // Should waterlog be used aswell?
-        if (blockyConfig.leafBlocks.isEnabled) for (l in 1..63) {
+        /*if (blockyConfig.leafBlocks.isEnabled) for (l in 1..63) {
             val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
             val distance = getLeafDistance(l)
             if (distance == 1 && blockyConfig.leafBlocks.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
@@ -155,7 +161,7 @@ class BlockyPlugin : JavaPlugin() {
             leafData.distance = distance
             // Due to map using material before distance the Int is scued by 1 if set to reserve 1 state
             blockMap.putIfAbsent(leafData, getBlockMapEntryForLeaf(l))
-        }
+        }*/
 
         // Calculates cave-vine states
         if (blockyConfig.caveVineBlocks.isEnabled) {

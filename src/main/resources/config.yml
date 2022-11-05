@@ -2,18 +2,19 @@
 # Keep in mind it disables all custom sounds from place/break/hit etc
 disableCustomSounds: false
 
-# Replacement sounds for wood as its entirely removed in resourcepack
+# [restoreFunctionality]: Restores redstone and vanilla note functionality for noteblocks
+# NOTE: This reduces the total amount of custom block slots from 799 to 750
 noteBlocks:
   isEnabled: true
+  restoreFunctionality: false
 
 tripWires:
   isEnabled: true
 
-chorusPlant:
-  isEnabled: true
-
+# This is experimental and should not be used
+# A rework is planned to allow for a much better functionality
 leafBlocks:
-  isEnabled: true
+  isEnabled: false
   disableBurnForBlockyLeaves: false
   disableAllLeafDecay: false
   shouldReserveOnePersistentLeafPerType: true

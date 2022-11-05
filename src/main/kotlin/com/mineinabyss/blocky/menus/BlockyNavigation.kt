@@ -18,9 +18,8 @@ import org.bukkit.entity.Player
 sealed class BlockyScreen(val title: Component, val height: Int) {
     object Default : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 5)
     object NoteBlock : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
-    object Decoration : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
-    object JavaEntity : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
-    object AnimatedEntity : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
+    object Wire : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
+    object Furniture : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
 
 }
 
@@ -43,9 +42,8 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
                 when (screen) {
                     BlockyScreen.Default -> BlockyMenu()
                     BlockyScreen.NoteBlock -> BlockyNoteBlockMenu()
-                    BlockyScreen.Decoration -> BlockyDecorationMenu()
-                    BlockyScreen.JavaEntity -> BlockyJavaEntityMenu()
-                    BlockyScreen.AnimatedEntity -> BlockyAnimatedEntityMenu()
+                    BlockyScreen.Wire -> BlockyWireMenu()
+                    BlockyScreen.Furniture -> BlockyFurnitureMenu()
                 }
             }
         }

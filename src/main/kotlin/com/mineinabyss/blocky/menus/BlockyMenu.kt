@@ -26,19 +26,13 @@ fun BlockyUIScope.BlockyMenu() {
     Item(ItemStack(Material.TRIPWIRE_HOOK).editItemMeta {
         displayName("<#7fa256><b>Plants".miniMsg())
     }, Modifier.at(3,2).clickable {
-        nav.open(BlockyScreen.Decoration)
+        nav.open(BlockyScreen.Wire)
     })
 
     Item(ItemStack(Material.ARMOR_STAND).editItemMeta {
         displayName("<#e91e63><b>Furniture".miniMsg())
     }, Modifier.at(5,2).clickable {
-        nav.open(BlockyScreen.JavaEntity)
-    })
-
-    Item(ItemStack(Material.ARMOR_STAND,2).editItemMeta {
-        displayName("<#4f80c3><b>ModelEngine Furniture / Blocks".miniMsg())
-    }, Modifier.at(7,2).clickable {
-        nav.open(BlockyScreen.AnimatedEntity)
+        nav.open(BlockyScreen.Furniture)
     })
 
     BackButton(Modifier.at(0, 4))

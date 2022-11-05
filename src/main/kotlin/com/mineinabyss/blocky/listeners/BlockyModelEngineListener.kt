@@ -1,10 +1,12 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.BlockyModelEngine
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
+import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.getRotation
 import com.mineinabyss.blocky.helpers.getYaw
 import com.mineinabyss.geary.papermc.helpers.spawnFromPrefab
 import com.mineinabyss.geary.prefabs.helpers.prefabs
+import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.event.EventHandler
@@ -24,5 +26,8 @@ class BlockyModelEngineListener : Listener {
         val entity = clickedBlock?.getRelative(blockFace)?.location?.toCenterLocation()?.spawnFromPrefab(gearyItem.prefabs.first()) ?: return
         val rotation = getRotation(player.location.yaw, false).rotateCounterClockwise()
         entity.setRotation(getYaw(rotation), 0f)
+
+        val furniturePlaceEvent = BlockyFurniturePlaceEvent(entity, player).run { this.call(); this }
+        if (furniturePlaceEvent.isCancelled) entity.remove()
     }
 }
