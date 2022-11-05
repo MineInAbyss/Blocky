@@ -48,7 +48,7 @@ class WorldEditListener : Listener {
                 // Get the BlockyType of the new block
                 val type = when {
                     blockData.material == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
-                    blockData.material == Material.TRIPWIRE -> BlockType.TRIPWIRE
+                    blockData.material == Material.TRIPWIRE -> BlockType.WIRE
                     blockData.material == Material.CAVE_VINES -> BlockType.CAVEVINE
                     Tag.LEAVES.isTagged(blockData.material) -> BlockType.LEAF
                     // The new block isn't a blockyBlock so just return

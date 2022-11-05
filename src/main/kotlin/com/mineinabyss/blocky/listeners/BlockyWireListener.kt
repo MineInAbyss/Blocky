@@ -1,11 +1,14 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.tracking.toGearyOrNull
@@ -13,7 +16,6 @@ import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -24,7 +26,7 @@ import org.bukkit.event.block.*
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
 
-class BlockyTripwireListener : Listener {
+class BlockyWireListener : Listener {
 
     @EventHandler
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
@@ -67,10 +69,7 @@ class BlockyTripwireListener : Listener {
 
             if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true)
                 block.setBlockData(Bukkit.createBlockData(Material.TRIPWIRE), false)
-            blockyPlugin.launch {
-                delay(1)
-                fixClientsideUpdate(block.location)
-            }
+            block.fixClientsideUpdate()
         }
     }
 
@@ -94,29 +93,18 @@ class BlockyTripwireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
-        if (block.type != Material.TRIPWIRE) return
-        BlockFace.values().forEach { face ->
-            if (block.getRelative(face).type != Material.TRIPWIRE) return@forEach
-            if (block.isBlockyBlock && player.gameMode != GameMode.CREATIVE)
-                block.drops.forEach { player.world.dropItemNaturally(block.location, it) }
+        if (block.type != Material.TRIPWIRE || !block.isBlockyBlock) return
 
-            block.setType(Material.AIR, false)
-            blockyPlugin.launch {
-                delay(1)
-                fixClientsideUpdate(block.location)
-            }
-        }
-
-        breakTripwireBlock(block, player)
+        breakWireBlock(block, player)
         isDropItems = false
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakBlockEvent.onWaterCollide() {
         if (block.type == Material.TRIPWIRE) {
-            breakTripwireBlock(block, null)
+            breakWireBlock(block, null)
             drops.removeIf { it.type == Material.STRING }
         }
     }
@@ -136,13 +124,13 @@ class BlockyTripwireListener : Listener {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
                 if (clickedBlock.getRelative(it).gearyEntity == null) return@forEach
                 placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, Bukkit.createBlockData(item!!.type))
-                fixClientsideUpdate(clickedBlock.location)
+                clickedBlock.fixClientsideUpdate()
             }
         }
 
         val blockyWire = item?.toGearyOrNull(player) ?: return
         val wireBlock = blockyWire.get<BlockyBlock>() ?: return
-        if (wireBlock.blockType != BlockType.TRIPWIRE) return
+        if (wireBlock.blockType != BlockType.WIRE) return
         if (!blockyWire.has<BlockyInfo>()) return
 
         val placedWire =
@@ -151,9 +139,31 @@ class BlockyTripwireListener : Listener {
         if (blockyWire.has<BlockyLight>())
             handleLight.createBlockLight(placedWire.location, blockyWire.get<BlockyLight>()?.lightLevel ?: 0)
 
-        blockyPlugin.launch {
-            delay(1)
-            fixClientsideUpdate(placedWire.location)
-        }
+        placedWire.fixClientsideUpdate()
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    fun BlockyBlockPlaceEvent.onPlaceTallWire() {
+        val blockAbove = block.getRelative(BlockFace.UP)
+
+        if (!blockAbove.isReplaceable) return
+        if (blockyBlock?.blockType != BlockType.WIRE) return
+        if (block.gearyEntity?.has<BlockyTallWire>() != true) return
+
+        blockAbove.type = Material.TRIPWIRE
+        blockAbove.persistentDataContainer.set(BlockyTallWire().getKey(), DataType.LOCATION, block.location)
+        block.persistentDataContainer.set(BlockyTallWire().getKey(), DataType.LOCATION, blockAbove.location)
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    fun BlockBreakEvent.onBreakTallWire() {
+        if (block.type != Material.TRIPWIRE) return
+        if (block.gearyEntity?.has<BlockyTallWire>() == true) return
+
+        val mainWire = block.persistentDataContainer.get(BlockyTallWire().getKey(), DataType.LOCATION)?.block ?: return
+        if (mainWire.type != Material.TRIPWIRE) return
+        if (mainWire.gearyEntity?.has<BlockyTallWire>() != true) return
+        breakWireBlock(mainWire, player)
+        isDropItems = false
     }
 }

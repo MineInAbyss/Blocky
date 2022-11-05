@@ -62,7 +62,7 @@ class ResourcepackGeneration {
     private fun getTripwireBlockStates(): JsonObject {
         val variants = JsonObject()
         val blockModel = JsonObject()
-        val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.TRIPWIRE }.map { it.type }
+        val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.WIRE }.map { it.type }
         blockModel.add(Bukkit.createBlockData(Material.TRIPWIRE).getTripwireData(), "minecraft:block/barrier".getModelJson())
         blockMap.filter { it.key is Tripwire }.forEach { block ->
             val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach

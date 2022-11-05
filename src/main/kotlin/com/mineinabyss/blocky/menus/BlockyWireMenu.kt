@@ -16,7 +16,7 @@ fun BlockyUIScope.BlockyWireMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
             BlockyBlockQuery.filter {
-                it.entity.get<BlockyBlock>()?.blockType == BlockType.TRIPWIRE
+                it.entity.get<BlockyBlock>()?.blockType == BlockType.WIRE
             }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }

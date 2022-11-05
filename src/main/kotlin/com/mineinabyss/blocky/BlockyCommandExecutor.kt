@@ -48,7 +48,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         return@playerAction
                     }
 
-                    player.inventory.setItem(slot, item)
+                    player.inventory.addItem(item)
                 }
             }
             "menu" {
