@@ -6,7 +6,6 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
-import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
@@ -61,15 +60,12 @@ class BlockyFurnitureListener : Listener {
             return
         }
 
-        blockyPlace.call()
         if (!blockyPlace.canBuild() || blockyPlace.isCancelled) {
             targetBlock.setBlockData(targetData, false)
             return
         }
 
         gearyItem.placeBlockyFurniture(rotation, yaw, targetBlock.location, blockFace, player)
-        player.swingMainHand()
-        if (player.gameMode != GameMode.CREATIVE) item.subtract()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

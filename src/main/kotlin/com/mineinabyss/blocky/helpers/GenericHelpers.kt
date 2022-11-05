@@ -88,7 +88,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) {
         PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
     this.customBlockData.clear()
-    this.setType(Material.AIR, false)
+    this.type = Material.AIR
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
@@ -206,21 +206,18 @@ fun placeBlockyBlock(
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
     targetBlock.setBlockData(newData, isFlowing)
 
-    val blockPlaceEvent =
-        BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand).run { this.call(); this }
-    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player).run { this.call(); this }
+    val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
+    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player)
 
-    if (!targetBlock.correctAllBlockStates(player, face, item)) blockPlaceEvent.isCancelled = true
-
-    val placableOn = targetBlock.gearyEntity?.get<BlockyPlacableOn>()
-    if (placableOn?.isPlacableOn(targetBlock, face) == true)
-        blockPlaceEvent.isCancelled = true
-
-    if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())
-        blockPlaceEvent.isCancelled = true
-
-    if (blockyEvent.isCancelled || blockPlaceEvent.isCancelled) {
+    if (blockPlaceEvent.isCancelled) blockyEvent.isCancelled = true
+    else if (targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true)
         blockyEvent.isCancelled = true
+    else if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())
+        blockyEvent.isCancelled = true
+    else if (!targetBlock.correctAllBlockStates(player, face, item)) blockyEvent.isCancelled = true
+
+    blockyEvent.call()
+    if (blockyEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
@@ -235,6 +232,11 @@ fun placeBlockyBlock(
         if (MaterialTags.BUCKETS.isTagged(item)) item.type = Material.BUCKET
         else item.amount = item.amount - 1
     }
+
+    targetBlock.gearyEntity?.apply {
+        if (has<BlockyLight>()) handleLight.createBlockLight(against.getRelative(face).location, get<BlockyLight>()!!.lightLevel)
+    }
+
     player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     player.swingMainHand()
     return targetBlock
