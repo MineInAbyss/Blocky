@@ -11,6 +11,6 @@ data class BlockyBlock (
     val blockModel: String,
 ) {
     enum class BlockType {
-        NOTEBLOCK, TRIPWIRE, LEAF, CAVEVINE
+        NOTEBLOCK, WIRE, LEAF, CAVEVINE
     }
 }

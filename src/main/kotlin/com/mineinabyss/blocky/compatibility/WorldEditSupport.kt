@@ -34,7 +34,7 @@ class WorldEditSupport {
             val type = gearyEntity.get<BlockyBlock>()?.blockType ?: return null
 
             val blockData = when {
-                type == BlockType.TRIPWIRE -> gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
+                type == BlockType.WIRE -> gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
                 input.endsWith("[direction=up]") -> {
                     gearyEntity.getBlockyNoteBlock(BlockFace.UP)
                 }

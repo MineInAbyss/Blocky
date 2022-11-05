@@ -139,11 +139,11 @@ val Block.prefabKey get(): PrefabKey? {
         when {
             type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get()
             type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
-            type == Material.TRIPWIRE -> BlockType.TRIPWIRE
+            type == Material.TRIPWIRE -> BlockType.WIRE
             type == Material.CAVE_VINES -> BlockType.CAVEVINE
             Tag.LEAVES.isTagged(type) -> BlockType.LEAF
             else -> null
-        }
+        } ?: return null
 
     return BlockyBlockQuery.firstOrNull {
         val blockyBlock = it.entity.get<BlockyBlock>()

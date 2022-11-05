@@ -69,7 +69,7 @@ class BlockyPlugin : JavaPlugin() {
             // Until reworked deprecate leaf blocks
             //if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
-            if (tripWires.isEnabled) listeners(BlockyTripwireListener())
+            if (tripWires.isEnabled) listeners(BlockyWireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
