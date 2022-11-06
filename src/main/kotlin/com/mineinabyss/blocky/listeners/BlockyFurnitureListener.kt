@@ -65,7 +65,7 @@ class BlockyFurnitureListener : Listener {
             return
         }
 
-        gearyItem.placeBlockyFurniture(rotation, yaw, targetBlock.location, blockFace, player)
+        gearyItem.placeBlockyFurniture(rotation, yaw, targetBlock.location, blockFace, player, item)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

@@ -32,6 +32,9 @@ import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.meta.LeatherArmorMeta
+import org.bukkit.inventory.meta.PotionMeta
 import kotlin.time.Duration.Companion.seconds
 
 val FURNITURE_ORIGIN = NamespacedKey(blockyPlugin, "furniture_origin")
@@ -69,11 +72,12 @@ fun GearyEntity.placeBlockyFurniture(
     yaw: Float,
     loc: Location,
     blockFace: BlockFace,
-    player: Player
+    player: Player,
+    item: ItemStack = player.inventory.itemInMainHand,
 ) {
     val furniture = get<BlockyFurniture>() ?: return
     val placableOn = getOrSetPersisting { BlockyPlacableOn() }
-    val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, player.inventory.itemInMainHand, player, true, EquipmentSlot.HAND)
+    val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, item, player, true, EquipmentSlot.HAND)
 
     if (!furniture.hasEnoughSpace(loc, yaw)) blockPlaceEvent.isCancelled = true
     else if (!ProtectionLib.canBuild(player, loc) || !blockPlaceEvent.canBuild()) blockPlaceEvent.isCancelled = true
@@ -81,7 +85,13 @@ fun GearyEntity.placeBlockyFurniture(
     else if (loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock) blockPlaceEvent.isCancelled = true
     if (blockPlaceEvent.isCancelled) return
 
-    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) } ?: return
+    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) }?.editItemMeta {
+        displayName(Component.empty())
+        ((item.itemMeta as? LeatherArmorMeta)?.color ?: (item.itemMeta as? PotionMeta)?.color)?.let { color ->
+            (this as? LeatherArmorMeta)?.setColor(color) ?: (this as? PotionMeta)?.setColor(color) ?: return@editItemMeta
+        }  ?: return@editItemMeta
+    } ?: return
+
     val newFurniture = when (furniture.furnitureType) {
         BlockyFurniture.FurnitureType.ITEM_FRAME -> {
             loc.spawn<ItemFrame>()?.apply {
@@ -91,7 +101,7 @@ fun GearyEntity.placeBlockyFurniture(
                 itemDropChance = 0F
                 isCustomNameVisible = false
                 this.rotation = rotation
-                setItem(lootyItem.clone().editItemMeta { displayName(Component.empty()) }, false)
+                setItem(lootyItem, false)
             }
         }
 
@@ -101,9 +111,7 @@ fun GearyEntity.placeBlockyFurniture(
                 isPersistent = true
                 isCustomNameVisible = false
                 setRotation(yaw, 0F)
-                this.equipment.setItem(
-                    EquipmentSlot.HEAD,
-                    lootyItem.clone().editItemMeta { displayName(Component.empty()) })
+                this.equipment.setItem(EquipmentSlot.HEAD, lootyItem)
             }
         }
     } ?: return
