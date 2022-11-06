@@ -35,7 +35,9 @@ class BlockyFurnitureListener : Listener {
     fun HangingPlaceEvent.onPlacingItemFrame() {
         val player = player ?: return
         val item = itemStack?.toGearyOrNull(player) ?: return
-        if (item.get<BlockyFurniture>()?.furnitureType == FurnitureType.ITEM_FRAME) isCancelled = true
+        if (item.get<BlockyFurniture>()?.furnitureType
+                .run { this == FurnitureType.ITEM_FRAME || this == FurnitureType.GLOW_ITEM_FRAME }
+        ) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -51,8 +53,13 @@ class BlockyFurnitureListener : Listener {
 
         targetBlock.setType(Material.AIR, false)
         val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-        val rotation = getRotation(player.eyeLocation.yaw, furniture.collisionHitbox.isNotEmpty() || furniture.strictRotation)
-        val yaw = if (furniture.furnitureType == FurnitureType.ITEM_FRAME || furniture.strictRotation) getYaw(rotation) else player.eyeLocation.yaw - 180
+        val rotation =
+            getRotation(player.eyeLocation.yaw, furniture.collisionHitbox.isNotEmpty() || furniture.strictRotation)
+        val yaw =
+            if (furniture.furnitureType == FurnitureType.ITEM_FRAME
+                || furniture.furnitureType == FurnitureType.GLOW_ITEM_FRAME
+                || furniture.strictRotation
+            ) getYaw(rotation) else player.eyeLocation.yaw - 180
 
         if (!furniture.hasEnoughSpace(targetBlock.location, yaw)) {
             blockyPlace.isCancelled = true
@@ -82,7 +89,8 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEntityEvent.onRotatingFrame() {
-        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyFurniture>() == true) isCancelled = true
+        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyFurniture>() == true) isCancelled =
+            true
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -98,11 +106,13 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun ProjectileHitEvent.onProjectileHit() {
         (hitBlock != null && hitBlock?.type == Material.BARRIER &&
-        hitEntity != null && hitEntity is ItemFrame && hitEntity?.toGearyOrNull()?.has<BlockyFurniture>() == true) || return
+                hitEntity != null && hitEntity is ItemFrame && hitEntity?.toGearyOrNull()
+            ?.has<BlockyFurniture>() == true) || return
 
         //TODO Consider making shooter handle for drops
-        if (entity is Explosive) { (hitEntity as ItemFrame).removeBlockyFurniture(null) }
-        else isCancelled = true
+        if (entity is Explosive) {
+            (hitEntity as ItemFrame).removeBlockyFurniture(null)
+        } else isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)

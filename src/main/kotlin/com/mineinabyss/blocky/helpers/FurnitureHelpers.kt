@@ -26,10 +26,7 @@ import net.kyori.adventure.text.Component
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.entity.ArmorStand
-import org.bukkit.entity.Entity
-import org.bukkit.entity.ItemFrame
-import org.bukkit.entity.Player
+import org.bukkit.entity.*
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
@@ -42,7 +39,7 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 
     return if (placedAgainst.isReplaceable) placedAgainst else {
         val target = placedAgainst.getRelative(blockFace)
-        if (!target.type.isAir && target.type != Material.WATER) null else target
+        if (!target.type.isAir && target.isReplaceable) null else target
     }
 }
 
@@ -95,8 +92,20 @@ fun GearyEntity.placeBlockyFurniture(
     val newFurniture = when (furniture.furnitureType) {
         BlockyFurniture.FurnitureType.ITEM_FRAME -> {
             loc.spawn<ItemFrame>()?.apply {
-                isVisible = false
-                isFixed = false
+                isVisible = true
+                isFixed = true
+                isPersistent = true
+                itemDropChance = 0F
+                isCustomNameVisible = false
+                this.rotation = rotation
+                setItem(lootyItem, false)
+            }
+        }
+
+        BlockyFurniture.FurnitureType.GLOW_ITEM_FRAME -> {
+            loc.spawn<GlowItemFrame>()?.apply {
+                isVisible = true
+                isFixed = true
                 isPersistent = true
                 itemDropChance = 0F
                 isCustomNameVisible = false
@@ -126,11 +135,11 @@ fun GearyEntity.placeBlockyFurniture(
     }
     val furniturePlaceEvent = BlockyFurniturePlaceEvent(newFurniture, player)
 
+    furniturePlaceEvent.call()
     if (furniturePlaceEvent.isCancelled) {
         newFurniture.remove()
         return
     }
-    furniturePlaceEvent.call()
 
     newFurniture.toGeary {
         if (get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
@@ -141,7 +150,6 @@ fun GearyEntity.placeBlockyFurniture(
 
     player.swingMainHand()
     if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
-    return
 }
 
 fun GearyEntity.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
