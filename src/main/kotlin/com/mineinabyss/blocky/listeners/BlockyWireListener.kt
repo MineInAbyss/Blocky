@@ -7,7 +7,6 @@ import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.LootyFactory
@@ -135,9 +134,6 @@ class BlockyWireListener : Listener {
 
         val placedWire =
             placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
-
-        if (blockyWire.has<BlockyLight>())
-            handleLight.createBlockLight(placedWire.location, blockyWire.get<BlockyLight>()?.lightLevel ?: 0)
 
         placedWire.fixClientsideUpdate()
     }

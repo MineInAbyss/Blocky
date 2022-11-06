@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.systems
 
-import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineEntity
+import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -35,4 +35,4 @@ object BlockyFurnitureQuery : GearyQuery() {
     }
 }
 
-val blockyModelEngineQuery = BlockyFurnitureQuery.filter { it.entity.isModelEngineEntity }.map { it.prefabKey.toString() }
+val blockyModelEngineQuery = BlockyFurnitureQuery.filter { it.entity.isModelEngineFurniture }.map { it.prefabKey.toString() }

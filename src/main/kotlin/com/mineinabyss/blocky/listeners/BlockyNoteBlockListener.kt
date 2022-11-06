@@ -130,7 +130,6 @@ class BlockyNoteBlockListener : Listener {
         val placed =
             placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace))
                 ?: return
-        if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
     @EventHandler(ignoreCancelled = true)

@@ -2,14 +2,20 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
@@ -35,6 +41,12 @@ import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
 class BlockyGenericListener : Listener {
 
     private fun Player.resetCustomBreak(block: Block) {
+        when {
+            block.gearyEntity?.has<BlockyBlock>() == true -> BlockyBlockDamageAbortEvent(block, this)
+            block.gearyEntity?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageAbortEvent(block.blockyFurniture ?: return, this)
+            else -> return
+        }.run { call(); this }
+
         toGeary {
             get<PlayerIsMining>()?.miningTask?.cancel() ?: return
             get<PlayerIsMining>()?.miningTask = null
@@ -58,7 +70,11 @@ class BlockyGenericListener : Listener {
         if (mining.miningTask != null) return
         isCancelled = true
 
-        val damageEvent = BlockyBlockDamageEvent(block, player).run { call(); this }
+        val damageEvent = when {
+            block.gearyEntity?.has<BlockyBlock>() == true -> BlockyBlockDamageEvent(block, player)
+            block.blockyFurniture?.toGearyOrNull()?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageEvent(block.blockyFurniture ?: return, player)
+            else -> return
+        }.run { call(); this }
         if (damageEvent.isCancelled) return
 
         mining.miningTask = blockyPlugin.launch {
@@ -77,7 +93,7 @@ class BlockyGenericListener : Listener {
         }
     }
 
-    // Cancel the custom break task if player stops breaking
+    // Call the BlockyAbortDamage events or ancel the break task if player stops breaking a normal block
     @EventHandler(priority = EventPriority.LOWEST)
     fun BlockDamageAbortEvent.onCancelMine() {
         player.resetCustomBreak(block)
