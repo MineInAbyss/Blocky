@@ -200,8 +200,7 @@ private fun Entity.clearAssosiatedBarrierChunkEntries() {
 }
 
 private fun Entity.handleFurnitureDrops(player: Player?) {
-    this.toGeary().has<GearyEntity>() || return
-    this.toGeary().get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, this.location) ?: return
+    this.toGearyOrNull()?.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, this.location) ?: return
 }
 
 val Block.blockyFurniture get(): Entity? {

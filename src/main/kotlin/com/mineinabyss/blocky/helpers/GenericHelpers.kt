@@ -480,7 +480,7 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
 fun GearyEntity.getDirectionalId(face: BlockFace): Int {
     val directional = get<BlockyDirectional>()
     return when (face) {
-        BlockFace.UP, BlockFace.DOWN-> directional?.yBlock?.toEntityOrNull() ?: this
+        BlockFace.UP, BlockFace.DOWN -> directional?.yBlock?.toEntityOrNull() ?: this
         BlockFace.NORTH, BlockFace.SOUTH -> directional?.xBlock?.toEntityOrNull() ?: this
         BlockFace.WEST, BlockFace.EAST -> directional?.zBlock?.toEntityOrNull() ?: this
         else -> this

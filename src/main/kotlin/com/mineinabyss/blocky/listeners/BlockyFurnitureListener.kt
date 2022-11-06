@@ -13,6 +13,7 @@ import org.bukkit.Material
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Explosive
 import org.bukkit.entity.ItemFrame
+import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -128,6 +129,7 @@ class BlockyFurnitureListener : Listener {
         val gearyEntity = entity.toGearyOrNull() ?: return
         if (!gearyEntity.has<BlockyFurniture>() || !gearyEntity.has<BlockyInfo>()) return
         if (gearyEntity.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
+        else entity.removeBlockyFurniture(damager as? Player)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
