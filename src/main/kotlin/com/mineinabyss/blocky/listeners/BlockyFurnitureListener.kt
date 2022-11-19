@@ -55,12 +55,12 @@ class BlockyFurnitureListener : Listener {
         targetBlock.setType(Material.AIR, false)
         val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
         val rotation =
-            getRotation(player.eyeLocation.yaw, furniture.collisionHitbox.isNotEmpty() || furniture.strictRotation)
+            getRotation(player.location.yaw, furniture.collisionHitbox.isNotEmpty() || furniture.strictRotation)
         val yaw =
             if (furniture.furnitureType == FurnitureType.ITEM_FRAME
                 || furniture.furnitureType == FurnitureType.GLOW_ITEM_FRAME
                 || furniture.strictRotation
-            ) getYaw(rotation) else player.eyeLocation.yaw - 180
+            ) getYaw(rotation) else player.location.yaw - 180
 
         if (!furniture.hasEnoughSpace(targetBlock.location, yaw)) {
             blockyPlace.isCancelled = true
@@ -90,8 +90,8 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEntityEvent.onRotatingFrame() {
-        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyFurniture>() == true) isCancelled =
-            true
+        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyFurniture>() == true)
+            isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

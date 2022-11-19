@@ -90,21 +90,9 @@ fun GearyEntity.placeBlockyFurniture(
     } ?: return
 
     val newFurniture = when (furniture.furnitureType) {
-        BlockyFurniture.FurnitureType.ITEM_FRAME -> {
-            loc.spawn<ItemFrame>()?.apply {
-                isVisible = false
-                isFixed = false
-                isPersistent = true
-                itemDropChance = 0F
-                isCustomNameVisible = false
-                setFacingDirection(blockFace)
-                this.rotation = rotation
-                setItem(lootyItem, false)
-            }
-        }
-
-        BlockyFurniture.FurnitureType.GLOW_ITEM_FRAME -> {
-            loc.spawn<GlowItemFrame>()?.apply {
+        BlockyFurniture.FurnitureType.ITEM_FRAME, BlockyFurniture.FurnitureType.GLOW_ITEM_FRAME  -> {
+            loc.spawn(EntityType.valueOf(furniture.furnitureType.name)) {
+                this as ItemFrame
                 isVisible = false
                 isFixed = false
                 isPersistent = true
@@ -117,7 +105,8 @@ fun GearyEntity.placeBlockyFurniture(
         }
 
         BlockyFurniture.FurnitureType.ARMOR_STAND -> {
-            loc.toBlockCenterLocation().spawn<ArmorStand>()?.apply {
+            loc.toBlockCenterLocation().spawn(EntityType.ARMOR_STAND) {
+                this as ArmorStand
                 isVisible = false
                 isPersistent = true
                 isCustomNameVisible = false
