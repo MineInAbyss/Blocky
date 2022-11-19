@@ -79,7 +79,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) {
     val blockBreakEvent = BlockBreakEvent(this, player)
     val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
 
-    if (!ProtectionLib.canBreak(player, this.location)) blockBreakEvent.isCancelled = true
+    if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
     if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
@@ -209,12 +209,12 @@ fun placeBlockyBlock(
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
     val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player)
 
-    if (blockPlaceEvent.isCancelled) blockyEvent.isCancelled = true
-    else if (targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true)
-        blockyEvent.isCancelled = true
-    else if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())
-        blockyEvent.isCancelled = true
-    else if (!targetBlock.correctAllBlockStates(player, face, item)) blockyEvent.isCancelled = true
+    when {
+        blockPlaceEvent.isCancelled -> blockyEvent.isCancelled = true
+        targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockyEvent.isCancelled = true
+        !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() -> blockyEvent.isCancelled = true
+        !targetBlock.correctAllBlockStates(player, face, item) -> blockyEvent.isCancelled = true
+    }
 
     blockyEvent.call()
     if (blockyEvent.isCancelled) {
@@ -233,11 +233,11 @@ fun placeBlockyBlock(
         else item.amount = item.amount - 1
     }
 
-    targetBlock.gearyEntity?.apply {
-        if (has<BlockyLight>()) handleLight.createBlockLight(against.getRelative(face).location, get<BlockyLight>()!!.lightLevel)
+    targetBlock.gearyEntity?.let {entity ->
+        if (entity.has<BlockyLight>()) handleLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
     }
 
-    player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
+    targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     player.swingMainHand()
     return targetBlock
 }

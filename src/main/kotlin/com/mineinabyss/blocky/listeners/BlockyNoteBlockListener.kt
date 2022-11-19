@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.listeners
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
@@ -87,13 +86,11 @@ class BlockyNoteBlockListener : Listener {
     // AKA restoreFunctionality enabled and normal block
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
-        if (block.type != Material.NOTE_BLOCK) return
-        if (block.blockData !in blockMap) return
+        if (!block.isBlockyNoteBlock) return
 
         isCancelled = true
         block.state.update(true, false)
-
-        if (block.isBlockIndirectlyPowered) {
+        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!)) {
             block.playBlockyNoteBlock()
         }
         if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
@@ -105,7 +102,7 @@ class BlockyNoteBlockListener : Listener {
         val block = location.block
         val data = block.blockData.clone() as? NoteBlock ?: return
 
-        if (!block.isBlockyNoteBlock || event != GameEvent.NOTE_BLOCK_PLAY) return
+        if (event != GameEvent.NOTE_BLOCK_PLAY) return
 
         blockyPlugin.launch {
             delay(1)

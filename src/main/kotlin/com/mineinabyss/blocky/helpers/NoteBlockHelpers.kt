@@ -27,8 +27,10 @@ fun Block.updateNoteBlockAbove() {
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block
 val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in blockMap
+val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in blockMap
 
 val Block.isBlockyNoteBlock get() = blockData in blockMap && blockData is NoteBlock
+val BlockData.isBlockyNoteBlock get() = this in blockMap && this is NoteBlock
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {
