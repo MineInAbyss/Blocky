@@ -1,9 +1,11 @@
 package com.mineinabyss.blocky.helpers
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.geary.datatypes.GearyEntity
+import kotlinx.coroutines.yield
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -20,7 +22,13 @@ fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
 
 fun Block.updateNoteBlockAbove() {
     val above = getRelative(BlockFace.UP)
-    above.state.update(true, true)
+    val data = above.blockData.clone()
+    above.state.update(true, false)
+    blockyPlugin.launch {
+        yield()
+        above.setBlockData(data, false)
+    }
+
     if (above.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
         above.updateNoteBlockAbove()
 }

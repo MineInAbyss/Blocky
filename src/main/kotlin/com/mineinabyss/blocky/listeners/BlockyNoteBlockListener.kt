@@ -13,7 +13,7 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 import org.bukkit.Bukkit
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
@@ -89,7 +89,6 @@ class BlockyNoteBlockListener : Listener {
         if (!block.isBlockyNoteBlock) return
 
         isCancelled = true
-        block.state.update(true, false)
         if (block.isBlockFacePowered(block.getFace(sourceBlock)!!)) {
             block.playBlockyNoteBlock()
         }
@@ -97,15 +96,15 @@ class BlockyNoteBlockListener : Listener {
             block.updateNoteBlockAbove()
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     fun GenericGameEvent.disableRedstone() {
         val block = location.block
         val data = block.blockData.clone() as? NoteBlock ?: return
 
         if (event != GameEvent.NOTE_BLOCK_PLAY) return
-
+        isCancelled = true
         blockyPlugin.launch {
-            delay(1)
+            yield()
             block.setBlockData(data, false)
         }
     }
