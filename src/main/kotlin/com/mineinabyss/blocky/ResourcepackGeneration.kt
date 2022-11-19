@@ -59,52 +59,12 @@ class ResourcepackGeneration {
         return variants
     }
 
-    private fun PrefabKey.getJsonProperties(): JsonObject? {
-        val entity = this.toEntityOrNull() ?: return null
-        val blockyBlock = entity.get<BlockyBlock>() ?: return null
-        val directional = entity.get<BlockyDirectional>()
-
-        return when {
-            directional?.parentBlock?.toEntityOrNull() != null ->
-                this.directionalJsonProperties(directional.parentBlock.toEntity())
-
-            directional?.isParentBlock != true ->
-                JsonObject().apply { addProperty("model", blockyBlock.blockModel) }
-
-            else -> null
-        }
-    }
-
-    private fun PrefabKey.directionalJsonProperties(parent: GearyEntity): JsonObject? {
-        return JsonObject().apply {
-
-            this.addProperty(
-                "model", parent.get<BlockyBlock>()?.blockModel
-                    ?: this@directionalJsonProperties.toEntityOrNull()?.get<BlockyBlock>()?.blockModel
-                    ?: return null
-            )
-            parent.get<BlockyDirectional>()?.let { p ->
-                when {
-                    this@directionalJsonProperties == p.xBlock -> {
-                        this.addProperty("x", 90)
-                        this.addProperty("z", 90)
-                    }
-
-                    this@directionalJsonProperties == p.zBlock -> {
-                        this.addProperty("x", 90)
-                        this.addProperty("y", 90)
-                    }
-                }
-            }
-        }
-    }
-
     private fun BlockData.getNoteBlockData(): String {
         this as NoteBlock
         return String.format(
             "instrument=%s,note=%s,powered=%s",
             getInstrument(this.instrument),
-            blockMap[this] ?: 0,
+            blockMap[this]?.mod(25) ?: 0,
             this.isPowered
         )
     }
@@ -175,6 +135,46 @@ class ResourcepackGeneration {
     private fun BlockData.getCaveVineBlockStates(): String {
         this as CaveVines
         return "age=${age},berries=$isBerries"
+    }
+
+    private fun PrefabKey.getJsonProperties(): JsonObject? {
+        val entity = this.toEntityOrNull() ?: return null
+        val blockyBlock = entity.get<BlockyBlock>() ?: return null
+        val directional = entity.get<BlockyDirectional>()
+
+        return when {
+            directional?.parentBlock?.toEntityOrNull() != null ->
+                this.directionalJsonProperties(directional.parentBlock.toEntity())
+
+            directional?.isParentBlock != false ->
+                JsonObject().apply { addProperty("model", blockyBlock.blockModel) }
+
+            else -> null
+        }
+    }
+
+    private fun PrefabKey.directionalJsonProperties(parent: GearyEntity): JsonObject? {
+        return JsonObject().apply {
+
+            this.addProperty(
+                "model", parent.get<BlockyBlock>()?.blockModel
+                    ?: this@directionalJsonProperties.toEntityOrNull()?.get<BlockyBlock>()?.blockModel
+                    ?: return null
+            )
+            parent.get<BlockyDirectional>()?.let { p ->
+                when {
+                    this@directionalJsonProperties == p.xBlock -> {
+                        this.addProperty("x", 90)
+                        this.addProperty("z", 90)
+                    }
+
+                    this@directionalJsonProperties == p.zBlock -> {
+                        this.addProperty("x", 90)
+                        this.addProperty("y", 90)
+                    }
+                }
+            }
+        }
     }
 
     private fun String.getModelJson(): JsonObject {

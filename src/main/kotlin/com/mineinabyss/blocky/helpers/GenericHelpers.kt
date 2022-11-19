@@ -88,7 +88,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) {
         PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
     this.customBlockData.clear()
-    this.type = Material.AIR
+    this.setType(Material.AIR, false)
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
