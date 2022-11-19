@@ -2,6 +2,7 @@ package com.mineinabyss.blocky
 
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
+import com.mineinabyss.blocky.components.features.BlockyDirectional
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
@@ -40,12 +41,12 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "give" {
-                val type by optionArg(options = BlockyQuery.map { it.prefabKey.toString() }) {
+                val type by optionArg(options = BlockyQuery.filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
+                    .map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
                 playerAction {
-                    val slot = player.inventory.firstEmpty()
-                    if (slot == -1) {
+                    if (player.inventory.firstEmpty() == -1) {
                         player.error("No empty slots in inventory")
                         return@playerAction
                     }
@@ -140,7 +141,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         "give" ->
                             BlockyQuery.filter {
                                 val arg = args[1].lowercase()
-                                it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
+                                (it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)) &&
+                                        it.entity.get<BlockyDirectional>()?.isParentBlock != false
                             }.map { it.prefabKey.toString() }
 
                         "modelengine" -> listOf("give", "remove").filter { it.startsWith(args[1]) }
