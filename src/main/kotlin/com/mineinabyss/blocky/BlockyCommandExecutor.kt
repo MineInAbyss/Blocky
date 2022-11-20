@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.components.features.BlockyDirectional
@@ -20,7 +21,9 @@ import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
+import com.mineinabyss.idofront.plugin.actions
 import com.mineinabyss.looty.LootyFactory
+import com.mineinabyss.looty.LootySerializablePrefabItemService.prefabManager
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.Color
 import org.bukkit.command.Command
@@ -34,10 +37,22 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands: CommandHolder = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
-                action {
-                    blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
-                    blockyPlugin.runStartupFunctions()
-                    sender.success("Blocky has been reloaded!")
+                "config" {
+                    actions {
+                        blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
+                        blockyPlugin.runStartupFunctions()
+                        sender.success("Blocky configs has been reloaded!")
+                    }
+                }
+                "items" {
+                    actions {
+                        blockyPlugin.launch {
+                            BlockyQuery.forEach {
+                                prefabManager.reread(it.entity)
+                            }
+                            sender.success("Blocky items have been reloaded!")
+                        }
+                    }
                 }
             }
             "give" {
@@ -138,6 +153,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 1 -> listOf("reload", "give", "dye", "menu", "modelengine").filter { it.startsWith(args[0]) }
                 2 -> {
                     when (args[0]) {
+                        "reload" -> listOf("config", "items").filter { it.startsWith(args[1]) }
                         "give" ->
                             BlockyQuery.filter {
                                 val arg = args[1].lowercase()
