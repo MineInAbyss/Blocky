@@ -32,6 +32,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.PotionMeta
+import kotlin.math.max
 import kotlin.time.Duration.Companion.seconds
 
 val FURNITURE_ORIGIN = NamespacedKey(blockyPlugin, "furniture_origin")
@@ -194,7 +195,7 @@ private fun Entity.handleFurnitureDrops(player: Player?) {
 
 val Block.blockyFurniture get(): Entity? {
     return this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
-        origin.world?.getNearbyEntities(this.boundingBox)?.firstOrNull { entity ->
+        origin.world?.getNearbyEntities(origin.block.boundingBox)?.firstOrNull { entity ->
             entity.toGearyOrNull()?.has<BlockyFurniture>() == true
         }
     }
@@ -207,8 +208,9 @@ private fun Entity.checkFurnitureHitbox(): Boolean {
     return false
 }
 
+//TODO Fix seat breaking below 0.0 offset and remove max() check here
 fun spawnFurnitureSeat(loc: Location, yaw: Float, heightOffset: Double) {
-    val location = loc.add(0.0, heightOffset, 0.0).toCenterLocation()
+    val location = loc.add(0.0, max(0.0, heightOffset), 0.0).toCenterLocation()
     location.yaw = yaw
     location.spawn<ArmorStand>()?.apply {
         isVisible = false
@@ -234,7 +236,9 @@ fun Entity.removeAssosiatedSeats() {
 
 val Block.blockySeat
     get(): Entity? {
-        return this.world.getNearbyEntities(this.boundingBox).firstOrNull {
-            it.toGearyOrNull() != null && it.toGeary().has<BlockySeat>() && !it.toGeary().has<BlockyFurniture>()
+        val seatLoc = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION) ?: return null
+        return this.world.getNearbyEntities(this.boundingBox.expand(1.0)).firstOrNull {
+            it.toGearyOrNull() != null && it.toGeary().has<BlockySeat>() && !it.toGeary().has<BlockyFurniture>() &&
+                    it.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION) == seatLoc
         }
     }
