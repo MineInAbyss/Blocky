@@ -63,8 +63,6 @@ class BlockyPlugin : JavaPlugin() {
             BlockyNMSListener(),
         )
 
-        //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
-        if (server.pluginManager.isPluginEnabled("Mobzy")) listeners(BlockyModelEngineListener())
         blockyConfig.run {
             // Until reworked deprecate leaf blocks
             //if (leafBlocks.isEnabled) listeners(BlockyLeafListener())

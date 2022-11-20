@@ -316,18 +316,19 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
 }
 
 private fun Block.booleanChecks(face: BlockFace, item: ItemStack): Boolean? {
-    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
-    else if (blockData is Sapling && face != BlockFace.UP) return false
-    else if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
-    else if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
-    else if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
-    else if (state is Sign && face == BlockFace.DOWN) return false
-    else if (isCoralNotBlock() && face == BlockFace.DOWN) return false
-    else if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
-    else if (blockData is MultipleFacing && blockData !is GlassPane && face == BlockFace.UP) return false
-    else if (blockData is CoralWallFan && face == BlockFace.DOWN) return false
-
-    return null
+    return when {
+        blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT -> true
+        blockData is Sapling && face != BlockFace.UP -> false
+        blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN) -> false
+        type == Material.HANGING_ROOTS && face != BlockFace.DOWN -> false
+        MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN -> false
+        state is Sign && face == BlockFace.DOWN -> false
+        isCoralNotBlock() && face == BlockFace.DOWN -> false
+        MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR -> false
+        blockData is MultipleFacing && blockData !is GlassPane && face == BlockFace.UP -> false
+        blockData is CoralWallFan && face == BlockFace.DOWN -> false
+        else -> null
+    }
 }
 
 private fun Block.handleWaterlogged(face: BlockFace) {

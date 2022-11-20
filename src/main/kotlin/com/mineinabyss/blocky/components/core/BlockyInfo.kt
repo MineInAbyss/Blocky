@@ -11,6 +11,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.UseSerializers
 import kotlin.time.Duration
+import kotlin.time.Duration.Companion.seconds
 
 @Serializable
 @SerialName("blocky:info")
@@ -19,6 +20,6 @@ data class BlockyInfo (
     val isUnbreakable: Boolean = false,
     val acceptedToolTypes: Set<ToolType> = setOf(ToolType.ANY),
     val onlyDropWithCorrectTool: Boolean = false,
-    val blockBreakTime: @Serializable(with = DurationSerializer::class) Duration,
+    val blockBreakTime: @Serializable(with = DurationSerializer::class) Duration = 2.seconds,
     val blockDrop: List<BlockyDrops> = listOf(),
 )

@@ -5,4 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("blocky:modelengine")
-class BlockyModelEngine
+data class BlockyModelEngine(
+    val modelId: String,
+)

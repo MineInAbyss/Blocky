@@ -6,7 +6,6 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
-import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.GameMode
 import org.bukkit.Material
@@ -20,7 +19,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
-import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.ProjectileHitEvent
 import org.bukkit.event.hanging.HangingBreakEvent
@@ -47,33 +45,10 @@ class BlockyFurnitureListener : Listener {
         val item = item ?: return
         val hand = hand ?: return
         val gearyItem = item.toGearyOrNull(player) ?: return
-        val furniture = gearyItem.get<BlockyFurniture>() ?: return
         val targetBlock = getTargetBlock(against, blockFace) ?: return
-        val targetData = targetBlock.blockData
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
-        targetBlock.setType(Material.AIR, false)
-        val blockyPlace = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-        val rotation =
-            getRotation(player.location.yaw, furniture.collisionHitbox.isNotEmpty() || furniture.strictRotation)
-        val yaw =
-            if (furniture.furnitureType == FurnitureType.ITEM_FRAME
-                || furniture.furnitureType == FurnitureType.GLOW_ITEM_FRAME
-                || furniture.strictRotation
-            ) getYaw(rotation) else player.location.yaw - 180
-
-        if (!furniture.hasEnoughSpace(targetBlock.location, yaw)) {
-            blockyPlace.isCancelled = true
-            player.error("There is not enough space to place this block here.")
-            return
-        }
-
-        if (!blockyPlace.canBuild() || blockyPlace.isCancelled) {
-            targetBlock.setBlockData(targetData, false)
-            return
-        }
-
-        gearyItem.placeBlockyFurniture(rotation, yaw, targetBlock.location, blockFace, player, item)
+        gearyItem.placeBlockyFurniture(player, targetBlock.location, blockFace, item)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
