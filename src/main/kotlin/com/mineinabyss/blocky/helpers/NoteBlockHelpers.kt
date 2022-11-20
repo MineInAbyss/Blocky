@@ -1,9 +1,11 @@
 package com.mineinabyss.blocky.helpers
 
+import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.geary.datatypes.GearyEntity
+import kotlinx.coroutines.yield
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -20,15 +22,23 @@ fun GearyEntity.getBlockyNoteBlock(face: BlockFace): BlockData {
 
 fun Block.updateNoteBlockAbove() {
     val above = getRelative(BlockFace.UP)
-    above.state.update(true, true)
+    val data = above.blockData.clone()
+    above.state.update(true, false)
+    blockyPlugin.launch {
+        yield()
+        above.setBlockData(data, false)
+    }
+
     if (above.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
         above.updateNoteBlockAbove()
 }
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block
 val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in blockMap
+val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in blockMap
 
 val Block.isBlockyNoteBlock get() = blockData in blockMap && blockData is NoteBlock
+val BlockData.isBlockyNoteBlock get() = this in blockMap && this is NoteBlock
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {

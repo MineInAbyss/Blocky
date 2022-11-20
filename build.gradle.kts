@@ -30,7 +30,6 @@ dependencies {
 
     // Geary platform
     compileOnly(blockyLibs.geary.papermc.core)
-    compileOnly(blockyLibs.geary.commons.papermc)
     compileOnly(blockyLibs.looty)
     compileOnly(blockyLibs.deeperworld)
     compileOnly(blockyLibs.guiy)

@@ -116,6 +116,10 @@ class BlockyGenericListener : Listener {
         if (player.gameMode == GameMode.CREATIVE && block.isBlockyBlock) {
             block.attemptBreakBlockyBlock(player)
         }
+
+        if (block.getRelative(BlockFace.UP).isBlockyBlock) {
+            block.updateNoteBlockAbove()
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

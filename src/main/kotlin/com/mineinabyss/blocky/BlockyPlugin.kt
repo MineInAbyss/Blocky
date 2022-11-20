@@ -63,8 +63,6 @@ class BlockyPlugin : JavaPlugin() {
             BlockyNMSListener(),
         )
 
-        //TODO Currently relies on Mobzy, perhaps copy the spawning stuff into blocky
-        if (server.pluginManager.isPluginEnabled("Mobzy")) listeners(BlockyModelEngineListener())
         blockyConfig.run {
             // Until reworked deprecate leaf blocks
             //if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
@@ -128,7 +126,7 @@ class BlockyPlugin : JavaPlugin() {
         // Calculates noteblock states
         // We do 25-825 to skip PIANO at first
         if (blockyConfig.noteBlocks.isEnabled) {
-            for (j in 50..799) {
+            for (j in 51..799) {
                 //val id = if (blockyConfig.noteBlocks.restoreNormalFunctionality && j <= 50) j + 799 else j
                 val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
                 noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
@@ -139,7 +137,7 @@ class BlockyPlugin : JavaPlugin() {
                 blockMap.putIfAbsent(noteBlockData, j - 50)
             }
             if (!blockyConfig.noteBlocks.restoreFunctionality) {
-                for (j in 1..49) {
+                for (j in 1..50) {
                     val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
                     noteBlockData.instrument = Instrument.PIANO
                     noteBlockData.note = Note((j % 25))

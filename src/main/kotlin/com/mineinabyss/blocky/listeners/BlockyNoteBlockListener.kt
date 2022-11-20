@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.listeners
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
@@ -14,7 +13,7 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 import org.bukkit.Bukkit
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
@@ -87,28 +86,25 @@ class BlockyNoteBlockListener : Listener {
     // AKA restoreFunctionality enabled and normal block
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
-        if (block.type != Material.NOTE_BLOCK) return
-        if (block.blockData !in blockMap) return
+        if (!block.isBlockyNoteBlock) return
 
         isCancelled = true
-        block.state.update(true, false)
-
-        if (block.isBlockIndirectlyPowered) {
+        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!)) {
             block.playBlockyNoteBlock()
         }
         if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
             block.updateNoteBlockAbove()
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    @EventHandler(priority = EventPriority.LOWEST)
     fun GenericGameEvent.disableRedstone() {
         val block = location.block
         val data = block.blockData.clone() as? NoteBlock ?: return
 
-        if (!block.isBlockyNoteBlock || event != GameEvent.NOTE_BLOCK_PLAY) return
-
+        if (event != GameEvent.NOTE_BLOCK_PLAY) return
+        isCancelled = true
         blockyPlugin.launch {
-            delay(1)
+            yield()
             block.setBlockData(data, false)
         }
     }

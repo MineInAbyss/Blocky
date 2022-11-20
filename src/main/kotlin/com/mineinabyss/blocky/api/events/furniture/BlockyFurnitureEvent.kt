@@ -10,7 +10,7 @@ import org.bukkit.event.entity.EntityEvent
 
 open class BlockyFurnitureEvent(entity: Entity) : EntityEvent(entity) {
 
-    val furniture get() = entity.toGearyOrNull()?.get<BlockyFurniture>()
+    open val furniture get() = entity.toGearyOrNull()?.get<BlockyFurniture>()
 
     val isModelEngineFurniture get() : Boolean {
         return entity.toGeary().has<BlockyModelEngine>()

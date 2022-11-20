@@ -79,7 +79,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) {
     val blockBreakEvent = BlockBreakEvent(this, player)
     val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
 
-    if (!ProtectionLib.canBreak(player, this.location)) blockBreakEvent.isCancelled = true
+    if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
     if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
@@ -88,7 +88,7 @@ fun Block.attemptBreakBlockyBlock(player: Player) {
         PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
 
     this.customBlockData.clear()
-    this.type = Material.AIR
+    this.setType(Material.AIR, false)
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
@@ -209,12 +209,12 @@ fun placeBlockyBlock(
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
     val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player)
 
-    if (blockPlaceEvent.isCancelled) blockyEvent.isCancelled = true
-    else if (targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true)
-        blockyEvent.isCancelled = true
-    else if (!ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild())
-        blockyEvent.isCancelled = true
-    else if (!targetBlock.correctAllBlockStates(player, face, item)) blockyEvent.isCancelled = true
+    when {
+        blockPlaceEvent.isCancelled -> blockyEvent.isCancelled = true
+        targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockyEvent.isCancelled = true
+        !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() -> blockyEvent.isCancelled = true
+        !targetBlock.correctAllBlockStates(player, face, item) -> blockyEvent.isCancelled = true
+    }
 
     blockyEvent.call()
     if (blockyEvent.isCancelled) {
@@ -233,11 +233,11 @@ fun placeBlockyBlock(
         else item.amount = item.amount - 1
     }
 
-    targetBlock.gearyEntity?.apply {
-        if (has<BlockyLight>()) handleLight.createBlockLight(against.getRelative(face).location, get<BlockyLight>()!!.lightLevel)
+    targetBlock.gearyEntity?.let {entity ->
+        if (entity.has<BlockyLight>()) handleLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
     }
 
-    player.playSound(targetBlock.location, sound, 1.0f, 1.0f)
+    targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     player.swingMainHand()
     return targetBlock
 }
@@ -316,18 +316,19 @@ private fun Block.correctAllBlockStates(player: Player, face: BlockFace, item: I
 }
 
 private fun Block.booleanChecks(face: BlockFace, item: ItemStack): Boolean? {
-    if (blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT) return true
-    else if (blockData is Sapling && face != BlockFace.UP) return false
-    else if (blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN)) return false
-    else if (type == Material.HANGING_ROOTS && face != BlockFace.DOWN) return false
-    else if (MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN) return false
-    else if (state is Sign && face == BlockFace.DOWN) return false
-    else if (isCoralNotBlock() && face == BlockFace.DOWN) return false
-    else if (MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR) return false
-    else if (blockData is MultipleFacing && blockData !is GlassPane && face == BlockFace.UP) return false
-    else if (blockData is CoralWallFan && face == BlockFace.DOWN) return false
-
-    return null
+    return when {
+        blockData is CaveVines || blockData is Tripwire || type == Material.CHORUS_PLANT -> true
+        blockData is Sapling && face != BlockFace.UP -> false
+        blockData is Ladder && (face == BlockFace.UP || face == BlockFace.DOWN) -> false
+        type == Material.HANGING_ROOTS && face != BlockFace.DOWN -> false
+        MaterialTags.TORCHES.isTagged(item) && face == BlockFace.DOWN -> false
+        state is Sign && face == BlockFace.DOWN -> false
+        isCoralNotBlock() && face == BlockFace.DOWN -> false
+        MaterialTags.CORAL.isTagged(this) && getRelative(BlockFace.DOWN).type == Material.AIR -> false
+        blockData is MultipleFacing && blockData !is GlassPane && face == BlockFace.UP -> false
+        blockData is CoralWallFan && face == BlockFace.DOWN -> false
+        else -> null
+    }
 }
 
 private fun Block.handleWaterlogged(face: BlockFace) {
