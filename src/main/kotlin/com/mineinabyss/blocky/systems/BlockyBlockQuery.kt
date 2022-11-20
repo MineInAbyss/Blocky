@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.systems
 
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.geary.datatypes.family.family
@@ -16,7 +16,11 @@ object BlockyQuery : GearyQuery() {
     val TargetScope.prefabKey by get<PrefabKey>()
     val TargetScope.isPrefab by family {
         has<Prefab>()
-        has<BlockyInfo>()
+        or {
+            has<BlockyBlock>()
+            has<BlockyFurniture>()
+            has<BlockyModelEngine>()
+        }
     }
 }
 
@@ -24,7 +28,14 @@ object BlockyBlockQuery : GearyQuery() {
 
     val TargetScope.prefabKey by get<PrefabKey>()
     val TargetScope.type by get<BlockyBlock>()
-    val TargetScope.isPrefab by family { has<Prefab>() }
+    val TargetScope.isPrefab by family {
+        has<Prefab>()
+        has<BlockyBlock>()
+        not {
+            has<BlockyFurniture>()
+            has<BlockyModelEngine>()
+        }
+    }
 }
 
 object BlockyFurnitureQuery : GearyQuery() {
@@ -32,6 +43,13 @@ object BlockyFurnitureQuery : GearyQuery() {
     val TargetScope.type by get<BlockyModelEngine>()
     val TargetScope.modelEngine by family {
         has<Prefab>()
+        or {
+            has<BlockyFurniture>()
+            has<BlockyModelEngine>()
+        }
+        not {
+            has<BlockyBlock>()
+        }
     }
 }
 
