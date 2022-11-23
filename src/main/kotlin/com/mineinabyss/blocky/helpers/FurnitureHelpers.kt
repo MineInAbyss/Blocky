@@ -42,16 +42,18 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 }
 
 fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
-    val output: MutableList<Location> = ArrayList()
-    for (modifier in relativeCoordinates) output.add(modifier.groundRotate(rotation).add(center))
-    return output
+    return mutableListOf<Location>().apply {
+        relativeCoordinates.forEach {blockLoc ->
+            this.add(blockLoc.groundRotate(rotation).add(center))
+        }
+    }
 }
 
 fun BlockyFurniture.getRotation(yaw: Float): Rotation {
-    val restricted = this.hasStrictRotation || this.collisionHitbox.isNotEmpty()
-    val rotationDegree = if (this.hasStrictRotation && this.rotationType == BlockyFurniture.RotationType.STRICT) 8 else 16
-    var id = ((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % rotationDegree
-    if (restricted && id % 2 != 0) id -= 1
+    val rotationDegree = if (this.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
+    val id = (((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8).apply {
+        if (this@getRotation.hasStrictRotation && this % 2 != 0) this - rotationDegree
+    }
     return Rotation.values()[id]
 }
 

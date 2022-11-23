@@ -63,7 +63,7 @@ class WorldEditListener : Listener {
                 if (gearyEntity.has<BlockyLight>())
                     handleLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()?.lightLevel!!)
                 if (gearyEntity.has<BlockySeat>()) // This is probably never called until we go insane and support furniture in WorldEdit
-                    spawnFurnitureSeat(loc, ((actor as? Player)?.location?.yaw?.minus(180) ?: 0f), gearyEntity.get<BlockySeat>()?.heightOffset ?: 0.0)
+                    spawnFurnitureSeat(loc, ((actor as? Player)?.location?.yaw?.minus(180) ?: 0f))
 
                 return extent.setBlock(pos.blockX, pos.blockY, pos.blockZ, block)
             }
