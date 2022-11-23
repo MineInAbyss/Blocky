@@ -8,7 +8,7 @@ import kotlinx.serialization.Serializable
 data class BlockyBlock (
     val blockType: BlockType,
     val blockId: Int,
-    val blockModel: String,
+    val blockModel: String? = null,
 ) {
     enum class BlockType {
         NOTEBLOCK, WIRE, LEAF, CAVEVINE

@@ -25,37 +25,26 @@ class WorldEditSupport {
                 return BukkitAdapter.adapt(Bukkit.createBlockData(Material.TRIPWIRE)).toBaseBlock()
             }
 
-            val gearyEntity = PrefabKey.ofOrNull(input.replace("[direction=up]", "")
+            val gearyEntity = PrefabKey.ofOrNull(input.replaceDirectionText())?.toEntityOrNull() ?: return null
+            val type = gearyEntity.get<BlockyBlock>()?.blockType ?: return null
+            val blockData =
+                if (type == BlockType.WIRE) gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
+                else gearyEntity.getBlockyNoteBlock(
+                    BlockFace.valueOf(
+                        input.substringAfter("[direction=", "up]").substringBefore("]", "UP").uppercase()
+                    ), null
+                )
+
+            return BukkitAdapter.adapt(blockData).toBaseBlock()
+        }
+
+        private fun String.replaceDirectionText(): String {
+            return this.replace("[direction=up]", "")
                 .replace("[direction=down]", "")
                 .replace("[direction=north]", "")
                 .replace("[direction=south]", "")
                 .replace("[direction=west]", "")
-                .replace("[direction=east]", ""))?.toEntityOrNull() ?: return null
-            val type = gearyEntity.get<BlockyBlock>()?.blockType ?: return null
-
-            val blockData = when {
-                type == BlockType.WIRE -> gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
-                input.endsWith("[direction=up]") -> {
-                    gearyEntity.getBlockyNoteBlock(BlockFace.UP)
-                }
-                input.endsWith("[direction=north]") -> {
-                    gearyEntity.getBlockyNoteBlock(BlockFace.NORTH)
-                }
-                input.endsWith("[direction=south]") -> {
-                    gearyEntity.getBlockyNoteBlock(BlockFace.SOUTH)
-                }
-                input.endsWith("[direction=west]") -> {
-                    gearyEntity.getBlockyNoteBlock(BlockFace.WEST)
-                }
-                input.endsWith("[direction=east]") -> {
-                    gearyEntity.getBlockyNoteBlock(BlockFace.EAST)
-                }
-                else -> {
-                    gearyEntity.getBlockyNoteBlock(BlockFace.UP)
-                }
-            }
-
-            return BukkitAdapter.adapt(blockData).toBaseBlock()
+                .replace("[direction=east]", "")
         }
     }
 }

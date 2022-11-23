@@ -155,22 +155,37 @@ class ResourcepackGeneration {
 
     private fun PrefabKey.directionalJsonProperties(parent: GearyEntity): JsonObject? {
         return JsonObject().apply {
+            val childModel = this@directionalJsonProperties.toEntityOrNull()?.get<BlockyBlock>()?.blockModel
+            val parentModel = parent.get<BlockyBlock>()?.blockModel
+            this.addProperty("model", childModel ?: parentModel ?: return null)
 
-            this.addProperty(
-                "model", parent.get<BlockyBlock>()?.blockModel
-                    ?: this@directionalJsonProperties.toEntityOrNull()?.get<BlockyBlock>()?.blockModel
-                    ?: return null
-            )
-            parent.get<BlockyDirectional>()?.let { p ->
-                when {
-                    this@directionalJsonProperties == p.xBlock -> {
-                        this.addProperty("x", 90)
-                        this.addProperty("z", 90)
-                    }
+            // If using the parent model, we need to add the rotation depending on the childDirection
+            if (childModel == null || childModel == parentModel) {
+                parent.get<BlockyDirectional>()?.let { p ->
+                    when {
+                        this@directionalJsonProperties == p.xBlock -> {
+                            this.addProperty("x", 90)
+                            this.addProperty("z", 90)
+                        }
 
-                    this@directionalJsonProperties == p.zBlock -> {
-                        this.addProperty("x", 90)
-                        this.addProperty("y", 90)
+                        this@directionalJsonProperties == p.zBlock || this@directionalJsonProperties == p.eastBlock -> {
+                            this.addProperty("x", 90)
+                            this.addProperty("y", 90)
+                        }
+
+                        this@directionalJsonProperties == p.southBlock ->
+                            this.addProperty("y", 180)
+
+                        this@directionalJsonProperties == p.westBlock -> {
+                            this.addProperty("z", 90)
+                            this.addProperty("y", 270)
+                        }
+
+                        this@directionalJsonProperties == p.upBlock ->
+                            this.addProperty("y", 270)
+
+                        this@directionalJsonProperties == p.downBlock ->
+                            this.addProperty("x", 180)
                     }
                 }
             }
@@ -178,9 +193,9 @@ class ResourcepackGeneration {
     }
 
     private fun String.getModelJson(): JsonObject {
-        val content = JsonObject()
-        content.addProperty("model", this)
-        return content
+        return JsonObject().apply {
+            addProperty("model", this@getModelJson)
+        }
     }
 
     private fun getInstrument(id: Instrument): String {
