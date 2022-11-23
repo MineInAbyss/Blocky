@@ -168,17 +168,16 @@ fun GearyEntity.placeBlockyFurniture(
 private fun GearyEntity.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
     val furniture = get<BlockyFurniture>() ?: return
     val locations = getLocations(yaw, loc, furniture.collisionHitbox).toMutableList()
-    locations.forEach { adjacentLoc ->
-        adjacentLoc.block.setType(Material.BARRIER, false)
+    locations.forEach { l ->
+        val location = l.toBlockCenterLocation()
+        location.yaw = yaw
+        location.block.setType(Material.BARRIER, false)
 
-        if (has<BlockyLight>()) {
-            handleLight.createBlockLight(adjacentLoc, get<BlockyLight>()!!.lightLevel)
-        }
 
-        if (has<BlockySeat>()) {
-            spawnFurnitureSeat(adjacentLoc, (player.location.yaw - 180), get<BlockySeat>()?.heightOffset ?: 0.0)
-        }
-        adjacentLoc.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, loc)
+        this.get<BlockyLight>()?.let { handleLight.createBlockLight(location, it.lightLevel) }
+        this.get<BlockySeat>()?.let { spawnFurnitureSeat(location.apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
+
+        location.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, loc)
     }
 
     if (locations.isNotEmpty()) {
@@ -223,16 +222,8 @@ val Block.blockyFurniture
         }
     }
 
-private fun Entity.checkFurnitureHitbox(): Boolean {
-    toGearyOrNull()?.get<BlockyBarrierHitbox>()?.barriers?.forEach { barrierLoc ->
-        if (barrierLoc.toBlockLocation() == this.location.toBlockLocation()) return true
-    }
-    return false
-}
-
 //TODO Fix seat breaking below 0.0 offset and remove max() check here
-fun spawnFurnitureSeat(loc: Location, yaw: Float, heightOffset: Double) {
-    val location = loc.add(0.0, max(0.0, heightOffset), 0.0).toCenterLocation()
+fun spawnFurnitureSeat(location: Location, yaw: Float) {
     location.yaw = yaw
     location.spawn<ArmorStand>()?.apply {
         isVisible = false
@@ -240,27 +231,28 @@ fun spawnFurnitureSeat(loc: Location, yaw: Float, heightOffset: Double) {
         isSilent = true
         isSmall = true
         setGravity(false)
-        toGeary().setPersisting(BlockySeat(heightOffset))
+        toGeary().setPersisting(BlockySeat(location.y - location.toBlockCenterLocation().y))
         persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, location)
     } ?: return
 }
 
 fun Player.sitOnBlockySeat(block: Block) {
-    val stand = block.blockySeat ?: return
-    if (stand.passengers.isEmpty()) stand.addPassenger(this)
+    block.blockySeat?.let {
+        if (this.passengers.isEmpty()) it.addPassenger(this)
+    }
 }
 
 fun Entity.removeAssosiatedSeats() {
-    this.toGearyOrNull()?.get<BlockySeatLocations>()?.seats?.forEach seatLoc@{ seatLoc ->
+    this.toGearyOrNull()?.get<BlockySeatLocations>()?.seats?.forEach { seatLoc ->
         seatLoc.block.blockySeat?.remove()
     }
 }
 
 val Block.blockySeat
     get(): Entity? {
-        val seatLoc = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION) ?: return null
         return this.world.getNearbyEntities(this.boundingBox.expand(1.0)).firstOrNull {
-            it.toGearyOrNull() != null && it.toGeary().has<BlockySeat>() && !it.toGeary().has<BlockyFurniture>() &&
-                    it.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION) == seatLoc
+            it.toGearyOrNull()?.let { g ->
+                g.has<BlockySeat>() && !g.has<BlockyFurniture>()
+            } ?: false
         }
     }
