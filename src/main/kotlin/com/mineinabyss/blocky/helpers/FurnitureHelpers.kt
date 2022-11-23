@@ -41,7 +41,7 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
     }
 }
 
-fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): List<Location> {
+fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
     val output: MutableList<Location> = ArrayList()
     for (modifier in relativeCoordinates) output.add(modifier.groundRotate(rotation).add(center))
     return output
@@ -167,7 +167,7 @@ fun GearyEntity.placeBlockyFurniture(
 
 private fun GearyEntity.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
     val furniture = get<BlockyFurniture>() ?: return
-    val locations = getLocations(yaw, loc, furniture.collisionHitbox).toMutableList()
+    val locations = getLocations(yaw, loc, furniture.collisionHitbox)
     locations.forEach { l ->
         val location = l.toBlockCenterLocation()
         location.yaw = yaw

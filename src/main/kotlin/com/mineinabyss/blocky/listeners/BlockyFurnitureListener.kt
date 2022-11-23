@@ -32,23 +32,19 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler
     fun HangingPlaceEvent.onPlacingItemFrame() {
-        val player = player ?: return
-        val item = itemStack?.toGearyOrNull(player) ?: return
-        if (item.get<BlockyFurniture>()?.furnitureType
-                .run { this == FurnitureType.ITEM_FRAME || this == FurnitureType.GLOW_ITEM_FRAME }
-        ) isCancelled = true
+        val item = player?.let { itemStack?.toGearyOrNull(it) } ?: return
+        item.get<BlockyFurniture>()?.furnitureType?.let {
+            if (it == FurnitureType.ITEM_FRAME || it == FurnitureType.GLOW_ITEM_FRAME)
+                isCancelled = true
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
-        val against = clickedBlock ?: return
-        val item = item ?: return
-        val hand = hand ?: return
-        val gearyItem = item.toGearyOrNull(player) ?: return
-        val targetBlock = getTargetBlock(against, blockFace) ?: return
+        val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
-        gearyItem.placeBlockyFurniture(player, targetBlock.location, blockFace, item)
+        item?.toGearyOrNull(player)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
@@ -102,7 +98,7 @@ class BlockyFurnitureListener : Listener {
     fun EntityDamageByEntityEvent.onBreakingFrame() {
         if (entity !is ItemFrame) return
         val gearyEntity = entity.toGearyOrNull() ?: return
-        if (!gearyEntity.has<BlockyFurniture>() || !gearyEntity.has<BlockyInfo>()) return
+        if (!gearyEntity.has<BlockyFurniture>()) return
         if (gearyEntity.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
         else entity.removeBlockyFurniture(damager as? Player)
     }
