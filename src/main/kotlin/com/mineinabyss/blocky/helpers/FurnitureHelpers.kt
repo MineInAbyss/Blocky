@@ -47,8 +47,10 @@ fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<Bl
     return output
 }
 
-fun getRotation(yaw: Float, restricted: Boolean): Rotation {
-    var id = ((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8
+fun BlockyFurniture.getRotation(yaw: Float): Rotation {
+    val restricted = this.hasStrictRotation || this.collisionHitbox.isNotEmpty()
+    val rotationDegree = if (this.hasStrictRotation && this.rotationType == BlockyFurniture.RotationType.STRICT) 8 else 16
+    var id = ((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % rotationDegree
     if (restricted && id % 2 != 0) id -= 1
     return Rotation.values()[id]
 }
@@ -77,12 +79,8 @@ fun GearyEntity.placeBlockyFurniture(
     val modelengine = get<BlockyModelEngine>()
     val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, item, player, true, EquipmentSlot.HAND)
 
-    val rotation =
-        getRotation(
-            player.location.yaw,
-            furniture?.collisionHitbox?.isNotEmpty() == true || furniture?.strictRotation == true
-        )
-    val yaw = if (furniture?.furnitureType != BlockyFurniture.FurnitureType.ARMOR_STAND || furniture.strictRotation)
+    val rotation = furniture?.getRotation(player.location.yaw) ?: Rotation.NONE
+    val yaw = if (furniture?.furnitureType != BlockyFurniture.FurnitureType.ARMOR_STAND || furniture.hasStrictRotation)
         getYaw(rotation) else player.location.yaw - 180
 
     when {
