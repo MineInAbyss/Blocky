@@ -11,6 +11,21 @@ data class BlockyBlock (
     val blockModel: String? = null,
 ) {
     enum class BlockType {
-        NOTEBLOCK, WIRE, LEAF, CAVEVINE
+        NOTEBLOCK, WIRE, LEAF, CAVEVINE, SLAB, STAIR
     }
+
+    @Serializable
+    @SerialName("blocky:slab")
+    data class Slab(
+        val topModel: String,
+        val bottomModel: String,
+        val doubleModel: String,
+    )
+
+    @Serializable
+    @SerialName("blocky:stair")
+    data class Stair(
+        val innerModel: String,
+        val outerModel: String,
+    )
 }

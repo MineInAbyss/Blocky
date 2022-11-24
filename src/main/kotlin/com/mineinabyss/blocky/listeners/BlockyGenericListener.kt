@@ -17,6 +17,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
@@ -43,7 +44,10 @@ class BlockyGenericListener : Listener {
     private fun Player.resetCustomBreak(block: Block) {
         when {
             block.gearyEntity?.has<BlockyBlock>() == true -> BlockyBlockDamageAbortEvent(block, this)
-            block.gearyEntity?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageAbortEvent(block.blockyFurniture ?: return, this)
+            block.gearyEntity?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageAbortEvent(
+                block.blockyFurniture ?: return, this
+            )
+
             else -> return
         }.run { call(); this }
 
@@ -72,7 +76,9 @@ class BlockyGenericListener : Listener {
 
         val damageEvent = when {
             block.gearyEntity?.has<BlockyBlock>() == true -> BlockyBlockDamageEvent(block, player)
-            block.blockyFurniture?.toGearyOrNull()?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageEvent(block.blockyFurniture ?: return, player)
+            block.blockyFurniture?.toGearyOrNull()
+                ?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageEvent(block.blockyFurniture ?: return, player)
+
             else -> return
         }.run { call(); this }
         if (damageEvent.isCancelled) return
@@ -201,17 +207,27 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
+        val materialSet = mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).apply {
+            this.addAll(BLOCKY_SLABS)
+            this.addAll(BLOCKY_STAIRS)
+        }
+
         when {
             itemInHand.isBlockyBlock(player) -> return
-            itemInHand.type !in (setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES)) -> return
-            blockPlaced.isBlockyBlock -> return
+            itemInHand.type !in materialSet -> return
+            blockPlaced.isBlockyBlock.broadcastVal() -> return
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
+            !blockyConfig.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
+            !blockyConfig.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
+
         val material = when (itemInHand.type) {
             Material.STRING -> Material.TRIPWIRE
+            in BLOCKY_SLABS -> COPPER_SLABS.elementAt(BLOCKY_SLABS.indexOf(itemInHand.type))
+            in BLOCKY_STAIRS -> COPPER_STAIRS.elementAt(BLOCKY_STAIRS.indexOf(itemInHand.type))
             else -> itemInHand.type
         }
         block.blockData = Bukkit.createBlockData(material)

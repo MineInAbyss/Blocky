@@ -18,17 +18,14 @@ class BlockLocation(
         return "$x,$y,$z"
     }
 
-    fun add(blockLocation: BlockLocation): BlockLocation {
-        val output = BlockLocation(x, y, z)
-        output.x += blockLocation.x
-        output.y += blockLocation.y
-        output.z += blockLocation.z
-        return output
-    }
+    fun add(blockLocation: BlockLocation) =
+        BlockLocation(x, y, z).apply {
+            x += blockLocation.x
+            y += blockLocation.y
+            z += blockLocation.z
+        }
 
-    fun add(location: Location): Location {
-        return location.clone().add(x.toDouble(), y.toDouble(), z.toDouble())
-    }
+    fun add(location: Location) = location.clone().add(x.toDouble(), y.toDouble(), z.toDouble())
 
     fun groundRotate(angle: Float): BlockLocation {
         val output = BlockLocation(x, y, z)
