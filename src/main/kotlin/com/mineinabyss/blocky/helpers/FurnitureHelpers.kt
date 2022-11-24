@@ -20,7 +20,6 @@ import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import com.ticxo.modelengine.api.ModelEngineAPI
 import io.th0rgal.protectionlib.ProtectionLib
-import net.kyori.adventure.text.Component
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -43,7 +42,7 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 
 fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
     return mutableListOf<Location>().apply {
-        relativeCoordinates.forEach {blockLoc ->
+        relativeCoordinates.forEach { blockLoc ->
             this.add(blockLoc.groundRotate(rotation).add(center))
         }
     }
@@ -92,10 +91,11 @@ fun GearyEntity.placeBlockyFurniture(
         loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> blockPlaceEvent.isCancelled = true
     }
     if (blockPlaceEvent.isCancelled) return
-
-    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) }?.editItemMeta {
-        displayName(Component.empty())
-        (this as? LeatherArmorMeta)?.setColor(color) ?: (this as? PotionMeta)?.setColor(color) ?: return@editItemMeta
+    val lootyItem = get<PrefabKey>()?.let {
+        LootyFactory.createFromPrefab(it)?.editItemMeta {
+            (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
+                ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color) ?: return@editItemMeta
+        }
     } ?: return
 
     val newFurniture = when {
@@ -177,7 +177,8 @@ private fun GearyEntity.placeBarrierHitbox(yaw: Float, loc: Location, player: Pl
 
 
         this.get<BlockyLight>()?.let { handleLight.createBlockLight(location, it.lightLevel) }
-        this.get<BlockySeat>()?.let { spawnFurnitureSeat(location.apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
+        this.get<BlockySeat>()
+            ?.let { spawnFurnitureSeat(location.apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
 
         location.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, loc)
     }
