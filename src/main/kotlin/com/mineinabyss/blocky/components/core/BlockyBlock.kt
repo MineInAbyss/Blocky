@@ -27,5 +27,6 @@ data class BlockyBlock (
     data class Stair(
         val innerModel: String,
         val outerModel: String,
+        val straightModel: String,
     )
 }

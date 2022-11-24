@@ -215,7 +215,7 @@ class BlockyGenericListener : Listener {
         when {
             itemInHand.isBlockyBlock(player) -> return
             itemInHand.type !in materialSet -> return
-            blockPlaced.isBlockyBlock.broadcastVal() -> return
+            blockPlaced.isBlockyBlock -> return
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return

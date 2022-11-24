@@ -1,7 +1,11 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
+import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.idofront.messaging.broadcast
+import com.mineinabyss.looty.tracking.toGearyOrNull
+import org.bukkit.Bukkit
 import org.bukkit.Effect
 import org.bukkit.Material
 import org.bukkit.event.EventHandler
@@ -15,6 +19,21 @@ import org.bukkit.inventory.EquipmentSlot
 class BlockyCopperListener {
 
     class BlockySlabListener : Listener {
+
+        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+        fun PlayerInteractEvent.onPlacingBlockySlab() {
+            if (action != Action.RIGHT_CLICK_BLOCK) return
+            if (hand != EquipmentSlot.HAND) return
+            broadcast("placing blocky slab")
+            val gearyItem = item?.toGearyOrNull(player) ?: return
+            val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+            val against = clickedBlock ?: return
+            broadcast("placing blocky slab")
+            if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
+            if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
+
+            placeBlockyBlock(player, hand!!, item!!, against, blockFace, Bukkit.createBlockData(Material.CUT_COPPER_SLAB))
+        }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
         fun PlayerInteractEvent.onWaxCopperSlab() {
