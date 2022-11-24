@@ -9,7 +9,6 @@ import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBurnable
-import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
@@ -116,15 +115,13 @@ class BlockyNoteBlockListener : Listener {
 
         val gearyItem = item?.toGearyOrNull(player) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val against = clickedBlock ?: return
 
-        if ((against.type.isInteractable && against.gearyEntity == null) && !player.isSneaking) return
-        if (!gearyItem.has<BlockyInfo>()) return
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
+        if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 
         val placed =
-            placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace))
+            placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
                 ?: return
     }
 

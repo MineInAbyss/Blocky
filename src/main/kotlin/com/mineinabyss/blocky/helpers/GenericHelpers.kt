@@ -126,7 +126,10 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
             else drop.item?.toItemStack()
         val amount =
             if (drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments)
-                drop.amount.randomOrMin() * Random.nextInt(1, hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
+                drop.amount.randomOrMin() * Random.nextInt(
+                    1,
+                    hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1
+                )
             else drop.amount.randomOrMin()
 
         if (player?.gameMode == GameMode.CREATIVE) return
@@ -137,35 +140,40 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
     }
 }
 
-val Block.prefabKey get(): PrefabKey? {
-    val type =
-        when {
-            type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get()
-            type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
-            type == Material.TRIPWIRE -> BlockType.WIRE
-            type == Material.CAVE_VINES -> BlockType.CAVEVINE
-            Tag.LEAVES.isTagged(type) -> BlockType.LEAF
-            else -> null
-        } ?: return null
+val Block.prefabKey
+    get(): PrefabKey? {
+        val type =
+            when {
+                type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get()
+                type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
+                type == Material.TRIPWIRE -> BlockType.WIRE
+                type == Material.CAVE_VINES -> BlockType.CAVEVINE
+                Tag.LEAVES.isTagged(type) -> BlockType.LEAF
+                else -> null
+            } ?: return null
 
-    return BlockyBlockQuery.firstOrNull {
-        val blockyBlock = it.entity.get<BlockyBlock>()
-        if (it.entity.has<Directional>()) {
-            val directional = it.entity.get<BlockyDirectional>()
-            ((directional?.yBlock?.toEntityOrNull() ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
-                    (directional?.xBlock?.toEntityOrNull() ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
-                    (directional?.zBlock?.toEntityOrNull() ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData]) &&
-                    blockyBlock?.blockType == type
-        } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
-    }?.prefabKey ?: return null
-}
+        return BlockyBlockQuery.firstOrNull {
+            val blockyBlock = it.entity.get<BlockyBlock>()
+            if (it.entity.has<Directional>()) {
+                val directional = it.entity.get<BlockyDirectional>()
+                ((directional?.yBlock?.toEntityOrNull()
+                    ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
+                        (directional?.xBlock?.toEntityOrNull()
+                            ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
+                        (directional?.zBlock?.toEntityOrNull()
+                            ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData]) &&
+                        blockyBlock?.blockType == type
+            } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
+        }?.prefabKey ?: return null
+    }
 
 val Block.gearyEntity get() = prefabKey?.toEntity()
 
 val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() ?: false
 
-val BlockFace.isCardinal get() =
-    this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
+val BlockFace.isCardinal
+    get() =
+        this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 
 val Block.persistentDataContainer
     get() : PersistentDataContainer {
@@ -211,8 +219,14 @@ fun placeBlockyBlock(
 
     when {
         blockPlaceEvent.isCancelled -> blockyEvent.isCancelled = true
-        targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockyEvent.isCancelled = true
-        !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() -> blockyEvent.isCancelled = true
+        targetBlock.gearyEntity?.get<BlockyPlacableOn>()
+            ?.isPlacableOn(targetBlock, face) == true -> blockyEvent.isCancelled = true
+
+        !ProtectionLib.canBuild(
+            player,
+            targetBlock.location
+        ) || !blockPlaceEvent.canBuild() -> blockyEvent.isCancelled = true
+
         !targetBlock.correctAllBlockStates(player, face, item) -> blockyEvent.isCancelled = true
     }
 
@@ -233,8 +247,11 @@ fun placeBlockyBlock(
         else item.amount = item.amount - 1
     }
 
-    targetBlock.gearyEntity?.let {entity ->
-        if (entity.has<BlockyLight>()) handleLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
+    targetBlock.gearyEntity?.let { entity ->
+        if (entity.has<BlockyLight>()) handleLight.createBlockLight(
+            against.getRelative(face).location,
+            entity.get<BlockyLight>()!!.lightLevel
+        )
     }
 
     targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
@@ -478,14 +495,42 @@ private fun Block.handleDirectionalBlocks(face: BlockFace) {
     setBlockData(data, false)
 }
 
-fun GearyEntity.getDirectionalId(face: BlockFace): Int {
-    val directional = get<BlockyDirectional>()
-    return when (face) {
-        BlockFace.UP, BlockFace.DOWN -> directional?.yBlock?.toEntityOrNull() ?: this
-        BlockFace.NORTH, BlockFace.SOUTH -> directional?.xBlock?.toEntityOrNull() ?: this
-        BlockFace.WEST, BlockFace.EAST -> directional?.zBlock?.toEntityOrNull() ?: this
-        else -> this
-    }.get<BlockyBlock>()?.blockId ?: 0
+fun GearyEntity.getDirectionalId(face: BlockFace, player: Player?): Int {
+    return this.get<BlockyDirectional>()?.let { directional ->
+        if (directional.isLogType) {
+            return when (face) {
+                BlockFace.UP, BlockFace.DOWN -> directional.yBlock?.toEntityOrNull() ?: this
+                BlockFace.NORTH, BlockFace.SOUTH -> directional.xBlock?.toEntityOrNull() ?: this
+                BlockFace.WEST, BlockFace.EAST -> directional.zBlock?.toEntityOrNull() ?: this
+                else -> this
+            }.get<BlockyBlock>()?.blockId ?: 0
+        } else {
+            return when ((player?.getDirectionalRelative(directional) ?: face)) {
+                BlockFace.NORTH -> directional.northBlock?.toEntityOrNull() ?: this
+                BlockFace.SOUTH -> directional.southBlock?.toEntityOrNull() ?: this
+                BlockFace.WEST -> directional.westBlock?.toEntityOrNull() ?: this
+                BlockFace.EAST -> directional.eastBlock?.toEntityOrNull() ?: this
+                BlockFace.UP -> directional.upBlock?.toEntityOrNull() ?: this
+                BlockFace.DOWN -> directional.downBlock?.toEntityOrNull() ?: this
+                else -> this
+            }.get<BlockyBlock>()?.blockId ?: 0
+        }
+    } ?: 0
+}
+
+private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
+    val yaw = location.yaw.toInt()
+    val pitch = location.pitch.toInt()
+
+    return when {
+        directional.isLogType -> null
+        directional.isDropperType && pitch >= 45 -> BlockFace.UP
+        directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
+        yaw in 45..135 || yaw in -315..-225 -> BlockFace.EAST
+        yaw in 135..225 || yaw in -225..-135 -> BlockFace.SOUTH
+        yaw in 225..315 || yaw in -135..-45 -> BlockFace.WEST
+        else -> BlockFace.NORTH
+    }
 }
 
 fun Block.getLeftBlock(player: Player): Block {
