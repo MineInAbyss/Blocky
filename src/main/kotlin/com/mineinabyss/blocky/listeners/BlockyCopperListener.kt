@@ -5,11 +5,9 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Bukkit
-import org.bukkit.Effect
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
@@ -114,15 +112,8 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type in BLOCKY_SLABS || item?.type != Material.HONEYCOMB) return
 
-            if (!block.isFakeWaxedCopper) {
+            if (!block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = true
-                //item?.subtract()
-            }
-        }
-
-        @EventHandler(priority = EventPriority.HIGHEST)
-        fun PlayerInteractEvent.on() {
-            broadcast(clickedBlock?.isFakeWaxedCopper)
         }
 
 
@@ -132,14 +123,8 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type !in COPPER_SLABS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
 
-            if (block.isFakeWaxedCopper) {
+            if (block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = false
-                //block.world.playEffect(block.location, Effect.COPPER_WAX_OFF, 10)
-//                if (block.type != COPPER_SLABS.first())
-//                    block.type = COPPER_SLABS.elementAt(COPPER_SLABS.indexOf(block.type) - 1)
-//                item?.damage(1, player)
-                //player.swingMainHand()
-            }
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
@@ -151,10 +136,7 @@ class BlockyCopperListener {
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
         fun BlockFormEvent.onOxidizedCopper() {
             if (newState.type in BLOCKY_SLABS || block.isFakeWaxedCopper)
-            {
-                broadcast(block.location)
                 isCancelled = true
-            }
         }
 
     }
@@ -162,35 +144,31 @@ class BlockyCopperListener {
 
     class BlockyStairListener : Listener {
 
-        @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-        fun PlayerInteractEvent.onWaxCopperStair() {
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        fun PlayerInteractEvent.onWaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type in BLOCKY_STAIRS || item?.type != Material.HONEYCOMB) return
 
-            isCancelled = true
             if (!block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = true
         }
 
-        @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-        fun PlayerInteractEvent.onUnwaxCopperStair() {
+
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        fun PlayerInteractEvent.onUnwaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type !in COPPER_STAIRS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
 
-            isCancelled = true
-            if (block.isFakeWaxedCopper) {
+            if (block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = false
-                block.world.playEffect(block.location, Effect.COPPER_WAX_OFF, 0)
-                player.swingMainHand()
-            }
         }
 
-        @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-        fun PlayerInteractEvent.onUnwaxBlockyStair() {
-            if (clickedBlock?.type !in BLOCKY_STAIRS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
-            isCancelled = true
+        @EventHandler(priority = EventPriority.LOWEST)
+        fun PlayerInteractEvent.onUnwaxBlockySlab() {
+            if (clickedBlock?.type in BLOCKY_STAIRS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
+                isCancelled = true
         }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
