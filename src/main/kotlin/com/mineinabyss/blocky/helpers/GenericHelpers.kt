@@ -222,10 +222,8 @@ fun placeBlockyBlock(
         targetBlock.gearyEntity?.get<BlockyPlacableOn>()
             ?.isPlacableOn(targetBlock, face) == true -> blockyEvent.isCancelled = true
 
-        !ProtectionLib.canBuild(
-            player,
-            targetBlock.location
-        ) || !blockPlaceEvent.canBuild() -> blockyEvent.isCancelled = true
+        !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() ->
+            blockyEvent.isCancelled = true
 
         !targetBlock.correctAllBlockStates(player, face, item) -> blockyEvent.isCancelled = true
     }
@@ -248,10 +246,8 @@ fun placeBlockyBlock(
     }
 
     targetBlock.gearyEntity?.let { entity ->
-        if (entity.has<BlockyLight>()) handleLight.createBlockLight(
-            against.getRelative(face).location,
-            entity.get<BlockyLight>()!!.lightLevel
-        )
+        if (entity.has<BlockyLight>())
+            handleLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
     }
 
     targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)

@@ -69,9 +69,9 @@ class BlockyPlugin : JavaPlugin() {
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
             if (tripWires.isEnabled) listeners(BlockyWireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
+            if (slabBlocks.isEnabled) listeners(BlockyCopperListener.BlockySlabListener())
+            if (stairBlocks.isEnabled) listeners(BlockyCopperListener.BlockyStairListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
-            if (slabBlocks.isEnabled) BlockyCopperListener.BlockySlabListener()
-            if (stairBlocks.isEnabled) BlockyCopperListener.BlockyStairListener()
         }
 
         gearyAddon {
