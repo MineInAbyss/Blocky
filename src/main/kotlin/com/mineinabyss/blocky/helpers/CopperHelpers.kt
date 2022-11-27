@@ -6,6 +6,7 @@ import org.bukkit.Material
 import org.bukkit.block.Block
 
 val WAXED_COPPER_KEY = "blocky:waxed_copper".toMCKey()
+val BLOCKY_COPPER_BLOCK = "blocky:copper_block".toMCKey()
 var Block.isFakeWaxedCopper
     get() = (type in COPPER_SLABS || type in COPPER_STAIRS) && persistentDataContainer.has(WAXED_COPPER_KEY)
     set(value) = when {

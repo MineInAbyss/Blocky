@@ -1,13 +1,20 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
+import com.github.shynixn.mccoroutine.bukkit.asyncDispatcher
+import com.github.shynixn.mccoroutine.bukkit.launch
+import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
+import com.mineinabyss.blocky.blockMap
+import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Bukkit
+import org.bukkit.Chunk
+import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
@@ -20,10 +27,44 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockFormEvent
 import org.bukkit.event.player.PlayerInteractEvent
+import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.inventory.EquipmentSlot
 
 class BlockyCopperListener {
     class BlockySlabListener : Listener {
+        private val checkedChunks = mutableSetOf<Chunk>()
+
+        @EventHandler(priority = EventPriority.HIGHEST)
+        fun ChunkLoadEvent.onChunkLoad() {
+            val snapshot = chunk.chunkSnapshot
+            val convertBlockList = mutableListOf<Location>()
+
+            if (chunk in checkedChunks) return
+            blockyPlugin.launch(blockyPlugin.asyncDispatcher) {
+                val filteredMap = blockMap.filter { it.key is Slab && snapshot.contains(it.key) }
+                val world = Bukkit.getWorld(snapshot.worldName) ?: return@launch
+                if (filteredMap.isEmpty()) return@launch
+
+                for (x in 0..15) {
+                    for (z in 0..15) {
+                        for (y in world.minHeight..world.maxHeight) {
+                            val block = snapshot.getBlockType(x, y, z)
+                            if (block !in BLOCKY_SLABS) return@launch
+                            convertBlockList += Location(world, x.toDouble(), y.toDouble(), z.toDouble())
+                        }
+                    }
+                }
+            }
+
+            convertBlockList.map { it.block }.forEach { block ->
+                if (block.persistentDataContainer.has(BLOCKY_COPPER_BLOCK)) return@forEach
+                block.blockData = COPPER_SLABS.elementAt(BLOCKY_SLABS.indexOf(block.type)).createBlockData().apply {
+                    (this as Slab).type = (block.blockData as Slab).type
+                }
+                block.persistentDataContainer.set(WAXED_COPPER_KEY, DataType.BOOLEAN, true)
+            }
+            checkedChunks += chunk
+        }
 
         // If the GearyItem isn't using a blockyslab as its main material, replicate functionality
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -32,8 +73,7 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item?.type in BLOCKY_SLABS) return
 
-            val gearyItem = item?.toGearyOrNull(player) ?: return
-            val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+            val blockyBlock = item?.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
             val against = clickedBlock ?: return
 
             if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
@@ -82,6 +122,8 @@ class BlockyCopperListener {
                 return
             }
 
+            // Set PDC Key so that the converter knows it should skip this blocky block
+            loc.block.persistentDataContainer.set(BLOCKY_COPPER_BLOCK, DataType.BOOLEAN, true)
             player.swingMainHand()
         }
 
