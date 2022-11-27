@@ -16,7 +16,6 @@ import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.items.editItemMeta
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import com.ticxo.modelengine.api.ModelEngineAPI
@@ -44,7 +43,7 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
     return mutableListOf<Location>().apply {
         relativeCoordinates.forEach { blockLoc ->
-            this.add(blockLoc.groundRotate(rotation).add(center))
+            this += blockLoc.groundRotate(rotation).add(center)
         }
     }
 }
@@ -52,16 +51,13 @@ fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<Bl
 fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
     val furniture = nullFurniture ?: BlockyFurniture(BlockyFurniture.FurnitureType.ARMOR_STAND)
     val rotationDegree = if (furniture.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
-    broadcast(rotationDegree)
     val id = (((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8).apply {
         if (furniture.hasStrictRotation && this % 2 != 0) this - rotationDegree
     }
     return Rotation.values()[id]
 }
 
-fun getYaw(rotation: Rotation): Float {
-    return listOf(*Rotation.values()).indexOf(rotation) * 360f / 8f
-}
+fun getYaw(rotation: Rotation) = listOf(*Rotation.values()).indexOf(rotation) * 360f / 8f
 
 fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     return if (collisionHitbox.isEmpty()) true
