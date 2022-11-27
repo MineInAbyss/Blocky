@@ -522,9 +522,15 @@ private fun Player.getDirectionalRelative(directional: BlockyDirectional): Block
         directional.isLogType -> null
         directional.isDropperType && pitch >= 45 -> BlockFace.UP
         directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
-        yaw in 45..135 || yaw in -315..-225 -> BlockFace.EAST
-        yaw in 135..225 || yaw in -225..-135 -> BlockFace.SOUTH
-        yaw in 225..315 || yaw in -135..-45 -> BlockFace.WEST
+        else -> getRelativeBlockFace(yaw)
+    }
+}
+
+fun getRelativeBlockFace(yaw: Int): BlockFace {
+    return when (yaw) {
+        in 45..135, in -315..-225 -> BlockFace.EAST
+        in 135..225, in -225..-135 -> BlockFace.SOUTH
+        in 225..315, in -135..-45 -> BlockFace.WEST
         else -> BlockFace.NORTH
     }
 }

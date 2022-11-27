@@ -9,11 +9,15 @@ import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Bukkit
+import org.bukkit.Location
 import org.bukkit.Material
+import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.Bisected
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Slab
 import org.bukkit.block.data.type.Slab.Type
+import org.bukkit.block.data.type.Stairs
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -136,7 +140,7 @@ class BlockyCopperListener {
         }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-        fun BlockFormEvent.onOxidizedCopper() {
+        fun BlockFormEvent.onOxidizedCopperSlab() {
             if (newState.type in BLOCKY_SLABS || block.isFakeWaxedCopper)
                 isCancelled = true
         }
@@ -146,8 +150,79 @@ class BlockyCopperListener {
 
     class BlockyStairListener : Listener {
 
+        @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+        fun PlayerInteractEvent.onPlacingBlockyStair() {
+            if (action != Action.RIGHT_CLICK_BLOCK) return
+            if (hand != EquipmentSlot.HAND) return
+            if (item?.type in BLOCKY_STAIRS) return
+
+            val blockyBlock = item?.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
+            val against = clickedBlock ?: return
+
+            if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
+            if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
+
+            val blockyData = Bukkit.createBlockData(BLOCKY_STAIRS.elementAt(blockyBlock.blockId)) as Stairs
+            val relative = against.getRelative(blockFace)
+            val oldData: BlockData
+
+            //TODO Handle shape
+            when {
+                // When the relative block is same stair, make it a double stair
+                against.type == blockyData.material && (against.blockData as Stairs).half == Bisected.Half.BOTTOM -> {
+                    blockyData.half = Bisected.Half.TOP
+                    blockyData.facing = player.facing.oppositeFace
+                    blockyData.shape = against.location.getStairShape(player)
+                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    oldData = against.blockData
+                    against.blockData = blockyData
+                }
+
+                against.isReplaceable -> {
+                    blockyData.half = blockFace.getStairHalf(player)
+                    blockyData.facing = player.facing.oppositeFace
+                    blockyData.shape = against.location.getStairShape(player)
+                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    oldData = against.blockData
+                    against.blockData = blockyData
+                }
+
+                relative.type.isAir -> {
+                    blockyData.half = blockFace.getStairHalf(player)
+                    blockyData.facing = player.facing.oppositeFace
+                    blockyData.shape = relative.location.getStairShape(player)
+                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    oldData = relative.blockData
+                    relative.blockData = blockyData
+                }
+
+                relative.type == blockyData.material -> {
+                    blockyData.half = Bisected.Half.TOP
+                    blockyData.facing = player.facing.oppositeFace
+                    blockyData.shape = relative.location.getStairShape(player)
+                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    oldData = relative.blockData
+                    relative.blockData = blockyData
+                }
+
+                else -> return
+            }
+
+            val loc = if (relative.blockData == blockyData) relative.location else against.location
+            val blockyEvent = BlockyBlockPlaceEvent(loc.block, player).run { call(); this }
+            if (!ProtectionLib.canBuild(player, loc)) blockyEvent.isCancelled = true
+            if (blockyEvent.isCancelled) {
+                loc.block.blockData = oldData
+                return
+            }
+
+            // Set PDC Key so that the converter knows it should skip this blocky block
+            loc.block.persistentDataContainer.set(BLOCKY_COPPER_BLOCK, DataType.BOOLEAN, true)
+            player.swingMainHand()
+        }
+
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-        fun PlayerInteractEvent.onWaxCopperSlab() {
+        fun PlayerInteractEvent.onWaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type in BLOCKY_STAIRS || item?.type != Material.HONEYCOMB) return
@@ -158,7 +233,7 @@ class BlockyCopperListener {
 
 
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-        fun PlayerInteractEvent.onUnwaxCopperSlab() {
+        fun PlayerInteractEvent.onUnwaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type !in COPPER_STAIRS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
@@ -168,16 +243,58 @@ class BlockyCopperListener {
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
-        fun PlayerInteractEvent.onUnwaxBlockySlab() {
+        fun PlayerInteractEvent.onUnwaxBlockyStair() {
             if (clickedBlock?.type in BLOCKY_STAIRS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
                 isCancelled = true
         }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-        fun BlockFormEvent.onOxidizedCopper() {
+        fun BlockFormEvent.onOxidizedCopperStair() {
             if (newState.type in BLOCKY_STAIRS || block.isFakeWaxedCopper)
                 isCancelled = true
         }
+
+        private val BlockFace.isVertical: Boolean
+            get() = this == BlockFace.UP || this == BlockFace.DOWN
+
+        private val BlockFace.getStairHalf
+            get() =
+                when (this) {
+                    BlockFace.UP -> Bisected.Half.BOTTOM
+                    BlockFace.DOWN -> Bisected.Half.TOP
+                    else -> Bisected.Half.BOTTOM
+                }
+
+        private fun BlockFace.getStairHalf(player: Player): Bisected.Half {
+            val trace = player.rayTraceBlocks(5.0) ?: return Bisected.Half.BOTTOM
+            val block = trace.hitBlock ?: return Bisected.Half.BOTTOM
+            return when (this) {
+                BlockFace.UP -> Bisected.Half.BOTTOM
+                BlockFace.DOWN -> Bisected.Half.TOP
+                else -> if (trace.hitPosition.y < block.y + 0.5) Bisected.Half.BOTTOM else Bisected.Half.TOP
+            }
+        }
+
+        private fun Location.getStairShape(player: Player): Stairs.Shape {
+            val leftBlock = block.getLeftBlock(player)
+            val rightBlock = block.getRightBlock(player)
+            val aheadBlock = block.getRelative(player.facing)
+            val behindBlock = block.getRelative(player.facing.oppositeFace)
+
+            return when {
+                leftBlock.isStair && rightBlock.isStair -> Stairs.Shape.STRAIGHT
+                leftBlock.isStair && aheadBlock.isStair -> Stairs.Shape.INNER_LEFT
+                rightBlock.isStair && aheadBlock.isStair -> Stairs.Shape.INNER_RIGHT
+                leftBlock.isStair && behindBlock.isStair -> Stairs.Shape.OUTER_LEFT
+                rightBlock.isStair && behindBlock.isStair -> Stairs.Shape.OUTER_RIGHT
+                else -> Stairs.Shape.STRAIGHT
+            }
+        }
+
+        private val Block.isStair get() = blockData is Stairs
+        private val Block.stairShape get() = (blockData as Stairs).shape
+        private val Block.isOuterShape get() = stairShape == Stairs.Shape.OUTER_LEFT || stairShape == Stairs.Shape.OUTER_RIGHT
+        private val Block.isInnerShape get() = stairShape == Stairs.Shape.INNER_LEFT || stairShape == Stairs.Shape.INNER_RIGHT
 
     }
 }
