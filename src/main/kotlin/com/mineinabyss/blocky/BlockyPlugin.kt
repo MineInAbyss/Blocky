@@ -3,6 +3,8 @@ package com.mineinabyss.blocky
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.compatibility.WorldEditListener
 import com.mineinabyss.blocky.compatibility.WorldEditSupport
+import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
+import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addon.GearyLoadPhase
 import com.mineinabyss.geary.addon.autoscan
@@ -26,9 +28,7 @@ import org.bukkit.Material
 import org.bukkit.Note
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.CaveVines
-import org.bukkit.block.data.type.NoteBlock
-import org.bukkit.block.data.type.Tripwire
+import org.bukkit.block.data.type.*
 import org.bukkit.plugin.java.JavaPlugin
 
 val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::class.java) }
@@ -69,6 +69,8 @@ class BlockyPlugin : JavaPlugin() {
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
             if (tripWires.isEnabled) listeners(BlockyWireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
+            if (slabBlocks.isEnabled) listeners(BlockyCopperListener.BlockySlabListener())
+            if (stairBlocks.isEnabled) listeners(BlockyCopperListener.BlockyStairListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
@@ -93,11 +95,10 @@ class BlockyPlugin : JavaPlugin() {
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
         val map = Registry.BLOCK.tags.map { pair ->
             pair.first.location to IntArrayList(pair.second.size()).apply {
-                // If the tag is MINEABLE_WITH_AXE, don't add noteblock and chorus plant
+                // If the tag is MINEABLE_WITH_AXE, don't add noteblock
                 if (pair.first.location == BlockTags.MINEABLE_WITH_AXE.location) {
                     pair.second.filter {
-                        val itemName = Item.BY_BLOCK[it.value()].toString()
-                        itemName != "note_block" && itemName != "chorus_plant"
+                        Item.BY_BLOCK[it.value()].toString() != "note_block"
                     }.forEach { add(Registry.BLOCK.getId(it.value())) }
                 } else pair.second.forEach { add(Registry.BLOCK.getId(it.value())) }
             }
@@ -126,7 +127,7 @@ class BlockyPlugin : JavaPlugin() {
         // Calculates noteblock states
         // We do 25-825 to skip PIANO at first
         if (blockyConfig.noteBlocks.isEnabled) {
-            for (j in 51..799) {
+            for (j in 50..799) {
                 //val id = if (blockyConfig.noteBlocks.restoreNormalFunctionality && j <= 50) j + 799 else j
                 val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
                 noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
@@ -134,10 +135,10 @@ class BlockyPlugin : JavaPlugin() {
                 noteBlockData.note = Note((j % 25))
                 noteBlockData.isPowered = j / 25 % 2 == 1
 
-                blockMap.putIfAbsent(noteBlockData, j - 50)
+                blockMap.putIfAbsent(noteBlockData, j - 49)
             }
             if (!blockyConfig.noteBlocks.restoreFunctionality) {
-                for (j in 1..50) {
+                for (j in 1..49) {
                     val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
                     noteBlockData.instrument = Instrument.PIANO
                     noteBlockData.note = Note((j % 25))
@@ -169,6 +170,12 @@ class BlockyPlugin : JavaPlugin() {
                 vineData.age = if (m > 25) m - 25 else m
                 blockMap.putIfAbsent(vineData, m)
             }
+        }
+
+        //Calculates slab states & stair states
+        for (n in 1..4) {
+            blockMap.putIfAbsent(Bukkit.createBlockData(BLOCKY_SLABS.elementAt(n - 1)) as Slab, n)
+            blockMap.putIfAbsent(Bukkit.createBlockData(BLOCKY_STAIRS.elementAt(n - 1)) as Stairs, n)
         }
         return blockMap
     }

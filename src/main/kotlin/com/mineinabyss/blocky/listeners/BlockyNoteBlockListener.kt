@@ -120,9 +120,7 @@ class BlockyNoteBlockListener : Listener {
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
         if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 
-        val placed =
-            placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
-                ?: return
+        placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
     }
 
     @EventHandler(ignoreCancelled = true)

@@ -9,6 +9,8 @@ data class BlockyConfig(
     val tripWires: BlockyTripwireConfig,
     val leafBlocks: BlockyLeafConfig,
     val caveVineBlocks: BlockyCaveVineConfig,
+    val slabBlocks: BlockySlabConfig,
+    val stairBlocks: BlockyStairConfig,
     val disableCustomSounds: Boolean = false,
 ) {
     @Serializable
@@ -32,6 +34,16 @@ data class BlockyConfig(
 
     @Serializable
     data class BlockyCaveVineConfig(
+        val isEnabled: Boolean = false,
+    )
+
+    @Serializable
+    data class BlockySlabConfig(
+        val isEnabled: Boolean = false,
+    )
+
+    @Serializable
+    data class BlockyStairConfig(
         val isEnabled: Boolean = false,
     )
 }

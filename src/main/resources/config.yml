@@ -11,6 +11,12 @@ noteBlocks:
 tripWires:
   isEnabled: true
 
+slabBlocks:
+  isEnabled: true
+
+stairBlocks:
+  isEnabled: true
+
 # This is experimental and should not be used
 # A rework is planned to allow for a much better functionality
 leafBlocks:

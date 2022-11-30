@@ -1,12 +1,15 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture.FurnitureType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.entity.ArmorStand
@@ -77,9 +80,26 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun ProjectileHitEvent.onProjectileHit() {
-        (hitBlock != null && hitBlock?.type == Material.BARRIER &&
-                hitEntity != null && hitEntity is ItemFrame && hitEntity?.toGearyOrNull()
-            ?.has<BlockyFurniture>() == true) || return
+        (hitBlock?.type != Material.BARRIER || hitEntity?.isBlockyFurniture != true) || return
+
+        (entity.shooter as? Player).let { player ->
+            (hitBlock?.location ?: hitEntity?.location)?.let { loc ->
+                when {
+                    player?.let { ProtectionLib.canBuild(it, loc) } == true ->
+                        isCancelled = true
+                    entity is Explosive -> {
+                        isCancelled = true
+                        loc.block.attemptBreakBlockyBlock(player)
+                    }
+                    hitEntity?.isBlockyFurniture == true -> {
+                        isCancelled = true
+                        if (entity.toGeary().get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true)
+                            loc.block.attemptBreakBlockyBlock(player)
+                    }
+                }
+            }
+        }
+
 
         //TODO Consider making shooter handle for drops
         if (entity is Explosive) {
@@ -89,17 +109,15 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun BlockExplodeEvent.onBlockExplode() {
-        val blockyBlocks = blockList().filter { it.type == Material.BARRIER && it.blockyFurniture != null }
-        blockyBlocks.map { it.blockyFurniture }.toSet()
+        blockList().filter { it.type == Material.BARRIER && it.blockyFurniture != null }
+            .map { it.blockyFurniture }.toSet()
             .forEach { it?.removeBlockyFurniture(null) }
     }
 
     @EventHandler(ignoreCancelled = true)
     fun EntityDamageByEntityEvent.onBreakingFrame() {
-        if (entity !is ItemFrame) return
-        val gearyEntity = entity.toGearyOrNull() ?: return
-        if (!gearyEntity.has<BlockyFurniture>()) return
-        if (gearyEntity.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
+        if (!entity.isBlockyFurniture) return
+        else if (entity.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
         else entity.removeBlockyFurniture(damager as? Player)
     }
 

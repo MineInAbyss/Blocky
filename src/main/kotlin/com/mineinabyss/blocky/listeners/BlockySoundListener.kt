@@ -64,13 +64,7 @@ class BlockySoundListener : Listener {
         player.toGeary().getOrSet { PlayerIsMining() }
         blockyPlugin.launch {
             do {
-                entity.world.playSound(
-                    entity.location,
-                    sound,
-                    SoundCategory.BLOCKS,
-                    DEFAULT_HIT_VOLUME,
-                    DEFAULT_HIT_PITCH
-                )
+                entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
                 delay(3.ticks) // Add small delay to mimic vanilla
             } while (player.toGeary().has<PlayerIsMining>())
         }

@@ -19,19 +19,19 @@ import org.bukkit.inventory.ItemStack
 fun BlockyUIScope.BlockyMenu() {
     Item(ItemStack(Material.NOTE_BLOCK).editItemMeta {
         displayName("<#4b3123><b>Blocks".miniMsg())
-    }, Modifier.at(1,2).clickable {
+    }, Modifier.at(2,2).clickable {
         nav.open(BlockyScreen.NoteBlock)
     })
 
     Item(ItemStack(Material.TRIPWIRE_HOOK).editItemMeta {
         displayName("<#7fa256><b>Plants".miniMsg())
-    }, Modifier.at(3,2).clickable {
+    }, Modifier.at(4,2).clickable {
         nav.open(BlockyScreen.Wire)
     })
 
     Item(ItemStack(Material.ARMOR_STAND).editItemMeta {
         displayName("<#e91e63><b>Furniture".miniMsg())
-    }, Modifier.at(5,2).clickable {
+    }, Modifier.at(6,2).clickable {
         nav.open(BlockyScreen.Furniture)
     })
 

@@ -43,23 +43,22 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 
 fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
     return mutableListOf<Location>().apply {
-        relativeCoordinates.forEach {blockLoc ->
-            this.add(blockLoc.groundRotate(rotation).add(center))
+        relativeCoordinates.forEach { blockLoc ->
+            this += blockLoc.groundRotate(rotation).add(center)
         }
     }
 }
 
-fun BlockyFurniture.getRotation(yaw: Float): Rotation {
-    val rotationDegree = if (this.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
+fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
+    val furniture = nullFurniture ?: BlockyFurniture(BlockyFurniture.FurnitureType.ARMOR_STAND)
+    val rotationDegree = if (furniture.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
     val id = (((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8).apply {
-        if (this@getRotation.hasStrictRotation && this % 2 != 0) this - rotationDegree
+        if (furniture.hasStrictRotation && this % 2 != 0) this - rotationDegree
     }
     return Rotation.values()[id]
 }
 
-fun getYaw(rotation: Rotation): Float {
-    return listOf(*Rotation.values()).indexOf(rotation) * 360f / 8f
-}
+fun getYaw(rotation: Rotation) = listOf(*Rotation.values()).indexOf(rotation) * 360f / 8f
 
 fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     return if (collisionHitbox.isEmpty()) true
@@ -80,8 +79,7 @@ fun GearyEntity.placeBlockyFurniture(
     val sounds = get<BlockySound>()
     val modelengine = get<BlockyModelEngine>()
     val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, item, player, true, EquipmentSlot.HAND)
-
-    val rotation = furniture?.getRotation(player.location.yaw) ?: Rotation.NONE
+    val rotation = getRotation(player.location.yaw, furniture)
     val yaw = if (furniture?.furnitureType != BlockyFurniture.FurnitureType.ARMOR_STAND || furniture.hasStrictRotation)
         getYaw(rotation) else player.location.yaw - 180
 
@@ -92,16 +90,30 @@ fun GearyEntity.placeBlockyFurniture(
         loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> blockPlaceEvent.isCancelled = true
     }
     if (blockPlaceEvent.isCancelled) return
-
-    val lootyItem = get<PrefabKey>()?.let { LootyFactory.createFromPrefab(it) }?.editItemMeta {
-        displayName(Component.empty())
-        (this as? LeatherArmorMeta)?.setColor(color) ?: (this as? PotionMeta)?.setColor(color) ?: return@editItemMeta
+    val lootyItem = get<PrefabKey>()?.let {
+        LootyFactory.createFromPrefab(it)?.editItemMeta {
+            displayName(Component.empty())
+            (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
+                ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color) ?: return@editItemMeta
+        }
     } ?: return
 
     val newFurniture = when {
-        furniture?.furnitureType == BlockyFurniture.FurnitureType.ITEM_FRAME || furniture?.furnitureType == BlockyFurniture.FurnitureType.GLOW_ITEM_FRAME -> {
-            loc.toBlockCenterLocation().spawn(EntityType.valueOf(furniture.furnitureType.name)) {
-                this as ItemFrame
+        furniture?.furnitureType == BlockyFurniture.FurnitureType.ITEM_FRAME -> {
+            loc.toBlockCenterLocation().spawn<ItemFrame> {
+                isVisible = false
+                isFixed = false
+                isPersistent = true
+                itemDropChance = 0F
+                isCustomNameVisible = false
+                setFacingDirection(blockFace)
+                this.rotation = rotation
+                setItem(lootyItem, false)
+            }
+        }
+
+        furniture?.furnitureType == BlockyFurniture.FurnitureType.GLOW_ITEM_FRAME -> {
+            loc.toBlockCenterLocation().spawn<GlowItemFrame> {
                 isVisible = false
                 isFixed = false
                 isPersistent = true
@@ -114,8 +126,7 @@ fun GearyEntity.placeBlockyFurniture(
         }
 
         this.has<BlockyModelEngine>() || furniture?.furnitureType == BlockyFurniture.FurnitureType.ARMOR_STAND -> {
-            loc.toBlockCenterLocation().spawn(EntityType.ARMOR_STAND) {
-                this as ArmorStand
+            loc.toBlockCenterLocation().spawn<ArmorStand> {
                 isVisible = false
                 isPersistent = true
                 isCustomNameVisible = false
@@ -144,13 +155,12 @@ fun GearyEntity.placeBlockyFurniture(
         val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let
         ModelEngineAPI.getOrCreateModeledEntity(newFurniture).apply {
             addModel(activeModel, false)
-            isBaseEntityVisible = true
+            isBaseEntityVisible = false
             isModelRotationLock = true
         }
     }
 
-    val furniturePlaceEvent = BlockyFurniturePlaceEvent(newFurniture, player)
-    furniturePlaceEvent.call()
+    val furniturePlaceEvent = BlockyFurniturePlaceEvent(newFurniture, player).run { call(); this }
     if (furniturePlaceEvent.isCancelled) {
         newFurniture.remove()
         return
@@ -167,19 +177,15 @@ fun GearyEntity.placeBlockyFurniture(
     if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
 }
 
-private fun GearyEntity.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
-    val furniture = get<BlockyFurniture>() ?: return
-    val locations = getLocations(yaw, loc, furniture.collisionHitbox)
-    locations.forEach { l ->
-        val location = l.toBlockCenterLocation()
-        location.yaw = yaw
-        location.block.setType(Material.BARRIER, false)
+private fun GearyEntity.placeBarrierHitbox(yaw: Float, originLocation: Location, player: Player) {
+    val locations = get<BlockyFurniture>()?.collisionHitbox?.let { getLocations(yaw, originLocation, it) } ?: return
+    locations.forEach { loc ->
+        loc.block.setType(Material.BARRIER, false)
+        this.get<BlockyLight>()?.let { handleLight.createBlockLight(loc, it.lightLevel) }
+        this.get<BlockySeat>()
+            ?.let { spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
 
-
-        this.get<BlockyLight>()?.let { handleLight.createBlockLight(location, it.lightLevel) }
-        this.get<BlockySeat>()?.let { spawnFurnitureSeat(location.apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
-
-        location.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, loc)
+        loc.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, originLocation)
     }
 
     if (locations.isNotEmpty()) {
@@ -226,13 +232,14 @@ val Block.blockyFurniture
 
 //TODO Fix seat breaking below 0.0 offset and remove max() check here
 fun spawnFurnitureSeat(location: Location, yaw: Float) {
-    location.yaw = yaw
-    location.spawn<ArmorStand>()?.apply {
+    location.spawn<ArmorStand> {
         isVisible = false
         isMarker = true
         isSilent = true
         isSmall = true
         setGravity(false)
+        setRotation(yaw, 0F)
+    }?.apply {
         toGeary().setPersisting(BlockySeat(location.y - location.toBlockCenterLocation().y))
         persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, location)
     } ?: return
@@ -252,7 +259,7 @@ fun Entity.removeAssosiatedSeats() {
 
 val Block.blockySeat
     get(): Entity? {
-        return this.world.getNearbyEntities(this.boundingBox.expand(1.0)).firstOrNull {
+        return this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
             it.toGearyOrNull()?.let { g ->
                 g.has<BlockySeat>() && !g.has<BlockyFurniture>()
             } ?: false

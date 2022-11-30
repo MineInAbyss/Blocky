@@ -40,7 +40,6 @@ object BlockyBlockQuery : GearyQuery() {
 
 object BlockyFurnitureQuery : GearyQuery() {
     val TargetScope.key by get<PrefabKey>()
-    val TargetScope.type by get<BlockyModelEngine>()
     val TargetScope.modelEngine by family {
         has<Prefab>()
         or {

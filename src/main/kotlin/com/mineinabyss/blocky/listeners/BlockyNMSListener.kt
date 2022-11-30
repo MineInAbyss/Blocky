@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.registryTagMap
 import it.unimi.dsi.fastutil.ints.IntList
 import net.minecraft.core.Registry
@@ -16,9 +17,9 @@ class BlockyNMSListener : Listener {
 
     @EventHandler(priority = EventPriority.MONITOR)
     fun PlayerJoinEvent.removeDefaultTools() {
-        val craftPlayer = player as CraftPlayer
+        if (!blockyConfig.noteBlocks.isEnabled) return
         val packet = ClientboundUpdateTagsPacket(mapOf(Registry.BLOCK_REGISTRY to createPayload(registryTagMap)))
-        craftPlayer.handle.connection.send(packet)
+        (player as CraftPlayer).handle.connection.send(packet)
     }
 
     private fun createPayload(map: Map<ResourceLocation, IntList>): TagNetworkSerialization.NetworkPayload {
