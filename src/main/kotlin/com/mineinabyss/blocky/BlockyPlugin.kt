@@ -127,7 +127,7 @@ class BlockyPlugin : JavaPlugin() {
         // Calculates noteblock states
         // We do 25-825 to skip PIANO at first
         if (blockyConfig.noteBlocks.isEnabled) {
-            for (j in 51..799) {
+            for (j in 50..799) {
                 //val id = if (blockyConfig.noteBlocks.restoreNormalFunctionality && j <= 50) j + 799 else j
                 val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
                 noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
@@ -135,10 +135,10 @@ class BlockyPlugin : JavaPlugin() {
                 noteBlockData.note = Note((j % 25))
                 noteBlockData.isPowered = j / 25 % 2 == 1
 
-                blockMap.putIfAbsent(noteBlockData, j - 50)
+                blockMap.putIfAbsent(noteBlockData, j - 49)
             }
             if (!blockyConfig.noteBlocks.restoreFunctionality) {
-                for (j in 1..50) {
+                for (j in 1..49) {
                     val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
                     noteBlockData.instrument = Instrument.PIANO
                     noteBlockData.note = Note((j % 25))

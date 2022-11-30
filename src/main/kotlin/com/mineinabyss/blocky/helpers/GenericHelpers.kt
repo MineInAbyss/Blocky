@@ -154,7 +154,7 @@ val Block.prefabKey
                 else -> null
             } ?: return null
 
-        return BlockyBlockQuery.firstOrNull { scope ->
+        return BlockyBlockQuery.filter { it.entity.get<BlockyBlock>()?.blockType == type }.firstOrNull { scope ->
             val blockyBlock = scope.entity.get<BlockyBlock>() ?: return@firstOrNull false
             if (scope.entity.has<Directional>()) {
                 val directional = scope.entity.get<BlockyDirectional>()
@@ -170,7 +170,7 @@ val Block.prefabKey
             } else if (blockyBlock.blockType == BlockType.STAIR) {
                 BLOCKY_STAIRS.elementAt(blockyBlock.blockId - 1) == blockData.material
             } else blockyBlock.blockId == blockMap[blockData] && blockyBlock.blockType == type
-        }?.prefabKey ?: return null
+        }?.prefabKey
     }
 
 val Block.gearyEntity get() = prefabKey?.toEntity()
@@ -505,7 +505,7 @@ fun GearyEntity.getDirectionalId(face: BlockFace, player: Player?): Int {
                 else -> this
             }.get<BlockyBlock>()?.blockId ?: 0
         }
-    } ?: 0
+    } ?: this.get<BlockyBlock>()?.blockId ?: 0
 }
 
 private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
