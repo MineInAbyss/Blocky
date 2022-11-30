@@ -20,6 +20,7 @@ import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.looty.LootyFactory
 import com.ticxo.modelengine.api.ModelEngineAPI
 import io.th0rgal.protectionlib.ProtectionLib
+import net.kyori.adventure.text.Component
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -91,6 +92,7 @@ fun GearyEntity.placeBlockyFurniture(
     if (blockPlaceEvent.isCancelled) return
     val lootyItem = get<PrefabKey>()?.let {
         LootyFactory.createFromPrefab(it)?.editItemMeta {
+            displayName(Component.empty())
             (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
                 ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color) ?: return@editItemMeta
         }
