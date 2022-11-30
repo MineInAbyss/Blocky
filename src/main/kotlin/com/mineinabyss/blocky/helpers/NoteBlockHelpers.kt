@@ -17,7 +17,7 @@ import org.bukkit.event.block.NotePlayEvent
 val NOTE_KEY = NamespacedKey(blockyPlugin, "note")
 val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "vanilla_note_block")
 
-fun GearyEntity.getBlockyNoteBlock(face: BlockFace, player: Player?): BlockData {
+fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.value == this.getDirectionalId(face, player) }.keys.firstOrNull() ?: return Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
 }
 

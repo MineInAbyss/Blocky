@@ -90,6 +90,7 @@ class BlockyPlugin : JavaPlugin() {
         blockMap = createBlockMap()
         registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
+        MoreCreativeTabsGeneration().generateModAssets()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {

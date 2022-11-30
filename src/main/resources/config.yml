@@ -2,6 +2,12 @@
 # Keep in mind it disables all custom sounds from place/break/hit etc
 disableCustomSounds: false
 
+# This is for generating the Json files needed for MoreCreativeTabs.
+# A mod that lets you customize the creative tabs in Minecraft.
+# This will generate a resource-pack that will include tabs for all Blocky Blocks and Furniture
+MoreCreativeTabsMod:
+  generateJsonForMod: false
+
 # [restoreFunctionality]: Restores redstone and vanilla note functionality for noteblocks
 # NOTE: This reduces the total amount of custom block slots from 799 to 750
 noteBlocks:
