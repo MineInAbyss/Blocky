@@ -1,9 +1,13 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
+import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
+import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
 import com.mineinabyss.blocky.helpers.prefabKey
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.looty.LootyFactory
 import com.mineinabyss.looty.tracking.toGearyOrNull
+import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
@@ -18,8 +22,11 @@ class BlockyMiddleClickListener : Listener {
         if (click != ClickType.CREATIVE) return
         val player = inventory.holder as? Player ?: return
         when {
-            (cursor.type in setOf(Material.NOTE_BLOCK, Material.STRING)) -> {
-                val lookingAtPrefab = player.rayTraceBlocks(6.0)?.hitBlock?.prefabKey ?: return
+            (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.ITEM_FRAME).apply { addAll(
+                BLOCKY_SLABS).apply { addAll(BLOCKY_STAIRS) } }) -> {
+                val lookingAtPrefab =
+                    player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
+                    player.getTargetEntity(5)?.prefabKey ?: return
                 val existingSlot = (0..8).firstOrNull {
                     player.inventory.getItem(it)?.toGearyOrNull(player)?.get<PrefabKey>() == lookingAtPrefab
                 }
@@ -28,7 +35,6 @@ class BlockyMiddleClickListener : Listener {
                     isCancelled = true
                     return
                 }
-                player.inventory.heldItemSlot
                 cursor = LootyFactory.createFromPrefab(lookingAtPrefab) ?: return
             }
         }

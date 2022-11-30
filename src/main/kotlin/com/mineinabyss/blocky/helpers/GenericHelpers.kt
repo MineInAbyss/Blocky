@@ -141,7 +141,7 @@ val Block.prefabKey
     get(): PrefabKey? {
         val type =
             when {
-                type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get()
+                type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get<PrefabKey>()
                 type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE
