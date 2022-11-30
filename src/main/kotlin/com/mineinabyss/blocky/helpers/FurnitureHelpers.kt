@@ -264,7 +264,7 @@ fun Entity.removeAssosiatedSeats() {
 
 val Block.blockySeat
     get(): Entity? {
-        return this.world.getNearbyEntities(this.boundingBox.expand(1.0)).firstOrNull {
+        return this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
             it.toGearyOrNull()?.let { g ->
                 g.has<BlockySeat>() && !g.has<BlockyFurniture>()
             } ?: false

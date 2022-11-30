@@ -29,4 +29,7 @@ object BlockyFurnitures {
 
     val Entity.isModelEngineFurniture: Boolean get() = this.toGearyOrNull()?.isModelEngineFurniture ?: false
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
+
+    val Entity.isBlockyFurniture: Boolean get() = furnitureType != null || this.isModelEngineFurniture
+    val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
 }

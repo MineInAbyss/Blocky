@@ -40,12 +40,10 @@ import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.player.PlayerItemDamageEvent
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
-import org.bukkit.inventory.meta.Damageable
 import org.bukkit.inventory.meta.SkullMeta
 import org.bukkit.persistence.PersistentDataContainer
 import kotlin.random.Random
@@ -73,19 +71,18 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
-fun Block.attemptBreakBlockyBlock(player: Player) {
+fun Block.attemptBreakBlockyBlock(player: Player?) {
     val prefab = this.gearyEntity ?: return
-    val itemInHand = player.inventory.itemInMainHand
-    val blockBreakEvent = BlockBreakEvent(this, player)
+    val blockBreakEvent = player?.let { BlockBreakEvent(this, it) }
     val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
 
     if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
-    if (blockBreakEvent.isCancelled || blockyBreakEvent.isCancelled) return
+    if (blockBreakEvent?.isCancelled == true || blockyBreakEvent.isCancelled) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
-    if (player.gameMode != GameMode.CREATIVE && itemInHand.hasItemMeta() && itemInHand is Damageable)
-        PlayerItemDamageEvent(player, itemInHand, 1, itemInHand.damage).call()
+    if (player != null && player.gameMode != GameMode.CREATIVE)
+        player.inventory.itemInMainHand.damage(1, player)
 
     this.customBlockData.clear()
     this.setType(Material.AIR, false)
