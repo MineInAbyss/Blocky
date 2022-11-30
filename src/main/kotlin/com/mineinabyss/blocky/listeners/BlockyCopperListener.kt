@@ -111,18 +111,19 @@ class BlockyCopperListener {
             }
         }
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onWaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type in BLOCKY_SLABS || item?.type != Material.HONEYCOMB) return
+            if (block.type !in COPPER_SLABS || item?.type != Material.HONEYCOMB) return
 
+            isCancelled = true
             if (!block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = true
         }
 
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
@@ -205,18 +206,19 @@ class BlockyCopperListener {
             player.swingMainHand()
         }
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onWaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type in BLOCKY_STAIRS || item?.type != Material.HONEYCOMB) return
+            if (block.type !in COPPER_STAIRS || item?.type != Material.HONEYCOMB) return
 
+            isCancelled = true
             if (!block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = true
         }
 
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
