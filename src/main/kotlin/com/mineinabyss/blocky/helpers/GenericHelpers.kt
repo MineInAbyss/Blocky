@@ -171,7 +171,7 @@ val Block.prefabKey
     }
 
 val Block.gearyEntity get() = prefabKey?.toEntity()
-val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() ?: false
+val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blockyPlugin)

@@ -79,9 +79,9 @@ fun GearyEntity.placeBlockyFurniture(
     val sounds = get<BlockySound>()
     val modelengine = get<BlockyModelEngine>()
     val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, item, player, true, EquipmentSlot.HAND)
-
+    val rotation = getRotation(player.location.yaw, furniture)
     val yaw = if (furniture?.furnitureType != BlockyFurniture.FurnitureType.ARMOR_STAND || furniture.hasStrictRotation)
-        getYaw(getRotation(player.location.yaw, furniture)) else player.location.yaw - 180
+        getYaw(rotation) else player.location.yaw - 180
 
     when {
         furniture?.hasEnoughSpace(loc, yaw) == false -> blockPlaceEvent.isCancelled = true
@@ -177,20 +177,15 @@ fun GearyEntity.placeBlockyFurniture(
     if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
 }
 
-private fun GearyEntity.placeBarrierHitbox(yaw: Float, loc: Location, player: Player) {
-    val furniture = get<BlockyFurniture>() ?: return
-    val locations = getLocations(yaw, loc, furniture.collisionHitbox)
-    locations.forEach { l ->
-        val location = l.toBlockCenterLocation()
-        location.yaw = yaw
-        location.block.setType(Material.BARRIER, false)
-
-
-        this.get<BlockyLight>()?.let { handleLight.createBlockLight(location, it.lightLevel) }
+private fun GearyEntity.placeBarrierHitbox(yaw: Float, originLocation: Location, player: Player) {
+    val locations = get<BlockyFurniture>()?.collisionHitbox?.let { getLocations(yaw, originLocation, it) } ?: return
+    locations.forEach { loc ->
+        loc.block.setType(Material.BARRIER, false)
+        this.get<BlockyLight>()?.let { handleLight.createBlockLight(loc, it.lightLevel) }
         this.get<BlockySeat>()
-            ?.let { spawnFurnitureSeat(location.apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
+            ?.let { spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
 
-        location.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, loc)
+        loc.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, originLocation)
     }
 
     if (locations.isNotEmpty()) {
@@ -237,7 +232,7 @@ val Block.blockyFurniture
 
 //TODO Fix seat breaking below 0.0 offset and remove max() check here
 fun spawnFurnitureSeat(location: Location, yaw: Float) {
-    location.spawn<ArmorStand>() {
+    location.spawn<ArmorStand> {
         isVisible = false
         isMarker = true
         isSilent = true

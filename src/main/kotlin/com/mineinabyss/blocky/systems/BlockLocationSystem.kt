@@ -16,10 +16,9 @@ data class BlockLocation(val x: Int, val y: Int, val z: Int) {
         val fixedAngle = 360 - angle
         val radians = Math.toRadians(fixedAngle.toDouble())
 
-        val outX = (cos(radians) * x - sin(radians) * z).roundToInt()
-        val outZ = (sin(radians) * x - cos(radians) * z).roundToInt().apply {
-            if (fixedAngle % 180 > 1) this * -1
-        }
-        return BlockLocation(x + outX, y, z + outZ)
+        return BlockLocation((cos(radians) * x - sin(radians) * z).roundToInt(), y,
+            (sin(radians) * x - cos(radians) * z).roundToInt().apply {
+                if (fixedAngle % 180 > 1) this * -1
+            })
     }
 }
