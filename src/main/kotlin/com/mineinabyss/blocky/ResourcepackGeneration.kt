@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.features.BlockyDirectional
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
+import com.mineinabyss.blocky.helpers.isCardinal
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
@@ -16,6 +17,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
+import org.bukkit.block.data.Bisected
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.*
 import java.io.File
@@ -158,10 +160,15 @@ class ResourcepackGeneration {
             val blockModel = JsonObject()
             val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.STAIR }.map { it.type }
             blockMap.filter { it.key is Stairs }.forEach block@{ block ->
-                Stairs.Shape.values().forEach {
-                    val modelID = blockyQuery.firstOrNull { b -> b.blockId == block.value }?.blockModel ?: return@block
-                    blockModel.add("shape=$it", modelID.getModelJson())
-                }
+                for (facing in BlockFace.values().filter { it.isCardinal })
+                    for (half in Bisected.Half.values())
+                        for (shape in Stairs.Shape.values())
+                            blockyQuery.firstOrNull { b -> b.blockId == block.value }?.blockModel?.let { m ->
+                                blockModel.add(
+                                    "facing=${facing.name.lowercase()},half=${half.name.lowercase()},shape=${shape.name.lowercase()}",
+                                    m.getStairModelJson(facing, half, shape)
+                                )
+                            } ?: return@block
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
@@ -230,6 +237,115 @@ class ResourcepackGeneration {
     private fun String.getModelJson(): JsonObject {
         return JsonObject().apply {
             addProperty("model", this@getModelJson)
+        }
+    }
+
+    private fun String.getStairModelJson(facing: BlockFace, half: Bisected.Half, shape: Stairs.Shape): JsonObject {
+        return JsonObject().apply {
+            addProperty("model", this@getStairModelJson)
+            addProperty("uvlock", true)
+            when (shape) {
+                in setOf(Stairs.Shape.INNER_LEFT, Stairs.Shape.OUTER_LEFT) -> {
+                    when (facing) {
+                        BlockFace.EAST -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("y", 270)
+                            else addProperty("y", 180)
+                        }
+
+                        BlockFace.NORTH -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("y", 180)
+                            else {
+                                addProperty("x", 180)
+                                addProperty("y", 270)
+                            }
+                        }
+
+                        BlockFace.SOUTH -> {
+                            if (half == Bisected.Half.TOP) {
+                                addProperty("x", 180)
+                                addProperty("y", 90)
+                            } else remove("uvlock")
+                        }
+
+                        BlockFace.WEST -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("y", 90)
+                            else {
+                                addProperty("x", 180)
+                                addProperty("y", 180)
+                            }
+                        }
+
+                        else -> remove("uvlock")
+                    }
+                }
+
+                in setOf(Stairs.Shape.INNER_RIGHT, Stairs.Shape.OUTER_RIGHT) -> {
+                    when (facing) {
+                        BlockFace.EAST -> {
+                            if (half == Bisected.Half.TOP) {
+                                addProperty("x", 180)
+                                addProperty("y", 90)
+                            } else remove("uvlock")
+                        }
+
+                        BlockFace.NORTH -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("x", 270)
+                            else addProperty("x", 180)
+                        }
+
+                        BlockFace.SOUTH -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("y", 90)
+                            else {
+                                addProperty("x", 180)
+                                addProperty("y", 180)
+                            }
+                        }
+
+                        BlockFace.WEST -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("y", 180)
+                            else {
+                                addProperty("x", 180)
+                                addProperty("y", 270)
+                            }
+                        }
+
+                        else -> remove("uvlock")
+                    }
+                }
+
+                Stairs.Shape.STRAIGHT -> {
+                    when (facing) {
+                        BlockFace.EAST ->
+                            if (half == Bisected.Half.TOP) addProperty("x", 180)
+                            else remove("uvlock")
+
+                        BlockFace.NORTH -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("x", 270)
+                            else {
+                                addProperty("x", 180)
+                                addProperty("y", 270)
+                            }
+                        }
+
+                        BlockFace.SOUTH -> {
+                            if (half == Bisected.Half.BOTTOM) addProperty("y", 90)
+                            else {
+                                addProperty("x", 180)
+                                addProperty("y", 90)
+                            }
+                        }
+
+                        BlockFace.WEST -> {
+                            addProperty("y", 180)
+                            if (half == Bisected.Half.TOP) addProperty("x", 180)
+                        }
+
+                        else -> remove("uvlock")
+                    }
+                }
+
+                else -> remove("uvlock")
+            }
         }
     }
 

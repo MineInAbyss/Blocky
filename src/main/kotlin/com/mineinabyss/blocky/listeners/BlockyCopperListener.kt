@@ -9,7 +9,6 @@ import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Bukkit
-import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -158,7 +157,6 @@ class BlockyCopperListener {
 
             val blockyBlock = item?.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
             val against = clickedBlock ?: return
-
             if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
             if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 
@@ -166,41 +164,27 @@ class BlockyCopperListener {
             val relative = against.getRelative(blockFace)
             val oldData: BlockData
 
-            //TODO Handle shape
             when {
-                // When the relative block is same stair, make it a double stair
-                against.type == blockyData.material && (against.blockData as Stairs).half == Bisected.Half.BOTTOM -> {
-                    blockyData.half = Bisected.Half.TOP
-                    blockyData.facing = player.facing.oppositeFace
-                    blockyData.shape = against.location.getStairShape(player)
-                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
-                    oldData = against.blockData
-                    against.blockData = blockyData
-                }
-
                 against.isReplaceable -> {
                     blockyData.half = blockFace.getStairHalf(player)
-                    blockyData.facing = player.facing.oppositeFace
-                    blockyData.shape = against.location.getStairShape(player)
-                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    blockyData.facing = player.facing
+                    blockyData.shape = against.getStairShape(player)
                     oldData = against.blockData
                     against.blockData = blockyData
                 }
 
                 relative.type.isAir -> {
                     blockyData.half = blockFace.getStairHalf(player)
-                    blockyData.facing = player.facing.oppositeFace
-                    blockyData.shape = relative.location.getStairShape(player)
-                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    blockyData.facing = player.facing
+                    blockyData.shape = relative.getStairShape(player)
                     oldData = relative.blockData
                     relative.blockData = blockyData
                 }
 
                 relative.type == blockyData.material -> {
                     blockyData.half = Bisected.Half.TOP
-                    blockyData.facing = player.facing.oppositeFace
-                    blockyData.shape = relative.location.getStairShape(player)
-                    //blockyData.facing = getRelativeBlockFace(player.location.yaw.toInt() - 180)
+                    blockyData.facing = player.facing
+                    blockyData.shape = relative.getStairShape(player)
                     oldData = relative.blockData
                     relative.blockData = blockyData
                 }
@@ -254,17 +238,6 @@ class BlockyCopperListener {
                 isCancelled = true
         }
 
-        private val BlockFace.isVertical: Boolean
-            get() = this == BlockFace.UP || this == BlockFace.DOWN
-
-        private val BlockFace.getStairHalf
-            get() =
-                when (this) {
-                    BlockFace.UP -> Bisected.Half.BOTTOM
-                    BlockFace.DOWN -> Bisected.Half.TOP
-                    else -> Bisected.Half.BOTTOM
-                }
-
         private fun BlockFace.getStairHalf(player: Player): Bisected.Half {
             val trace = player.rayTraceBlocks(5.0) ?: return Bisected.Half.BOTTOM
             val block = trace.hitBlock ?: return Bisected.Half.BOTTOM
@@ -275,11 +248,11 @@ class BlockyCopperListener {
             }
         }
 
-        private fun Location.getStairShape(player: Player): Stairs.Shape {
-            val leftBlock = block.getLeftBlock(player)
-            val rightBlock = block.getRightBlock(player)
-            val aheadBlock = block.getRelative(player.facing)
-            val behindBlock = block.getRelative(player.facing.oppositeFace)
+        private fun Block.getStairShape(player: Player): Stairs.Shape {
+            val leftBlock = getLeftBlock(player)
+            val rightBlock = getRightBlock(player)
+            val aheadBlock = getRelative(player.facing)
+            val behindBlock = getRelative(player.facing.oppositeFace)
 
             return when {
                 leftBlock.isStair && rightBlock.isStair -> Stairs.Shape.STRAIGHT
@@ -292,9 +265,6 @@ class BlockyCopperListener {
         }
 
         private val Block.isStair get() = blockData is Stairs
-        private val Block.stairShape get() = (blockData as Stairs).shape
-        private val Block.isOuterShape get() = stairShape == Stairs.Shape.OUTER_LEFT || stairShape == Stairs.Shape.OUTER_RIGHT
-        private val Block.isInnerShape get() = stairShape == Stairs.Shape.INNER_LEFT || stairShape == Stairs.Shape.INNER_RIGHT
 
     }
 }

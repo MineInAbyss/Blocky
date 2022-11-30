@@ -149,41 +149,35 @@ val Block.prefabKey
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE
                 Tag.LEAVES.isTagged(type) -> BlockType.LEAF
+                type in BLOCKY_SLABS -> BlockType.SLAB
+                type in BLOCKY_STAIRS -> BlockType.STAIR
                 else -> null
             } ?: return null
 
-        return BlockyBlockQuery.firstOrNull {
-            val blockyBlock = it.entity.get<BlockyBlock>()
-            if (it.entity.has<Directional>()) {
-                val directional = it.entity.get<BlockyDirectional>()
+        return BlockyBlockQuery.firstOrNull { scope ->
+            val blockyBlock = scope.entity.get<BlockyBlock>() ?: return@firstOrNull false
+            if (scope.entity.has<Directional>()) {
+                val directional = scope.entity.get<BlockyDirectional>()
                 ((directional?.yBlock?.toEntityOrNull()
-                    ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
+                    ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
                         (directional?.xBlock?.toEntityOrNull()
-                            ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
+                            ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
                         (directional?.zBlock?.toEntityOrNull()
-                            ?: it.entity).get<BlockyBlock>()?.blockId == blockMap[blockData]) &&
-                        blockyBlock?.blockType == type
-            } else blockyBlock?.blockId == blockMap[blockData] && blockyBlock?.blockType == type
+                            ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData]) &&
+                        blockyBlock.blockType == type
+            } else if (blockyBlock.blockType == BlockType.SLAB) {
+                BLOCKY_SLABS.elementAt(blockyBlock.blockId - 1) == blockData.material
+            } else if (blockyBlock.blockType == BlockType.STAIR) {
+                BLOCKY_STAIRS.elementAt(blockyBlock.blockId - 1) == blockData.material
+            } else blockyBlock.blockId == blockMap[blockData] && blockyBlock.blockType == type
         }?.prefabKey ?: return null
     }
 
 val Block.gearyEntity get() = prefabKey?.toEntity()
-
 val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() ?: false
-
-val BlockFace.isCardinal
-    get() =
-        this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
-
-val Block.persistentDataContainer
-    get() : PersistentDataContainer {
-        return CustomBlockData(this, blockyPlugin)
-    }
-
-val Block.customBlockData
-    get(): CustomBlockData {
-        return CustomBlockData(this, blockyPlugin)
-    }
+val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
+val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
+val Block.customBlockData get() = CustomBlockData(this, blockyPlugin)
 
 fun placeBlockyBlock(
     player: Player,
