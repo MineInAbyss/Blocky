@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockyConfig
@@ -12,13 +13,13 @@ import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.looty.tracking.toGearyOrNull
-import kotlinx.coroutines.yield
-import org.bukkit.Bukkit
+import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.NoteBlock
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -63,25 +64,14 @@ class BlockyNoteBlockListener : Listener {
         if (block.type != Material.NOTE_BLOCK) return
         if (blockyConfig.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
 
-        if (rightClicked) isCancelled = true
+        if (rightClicked) setUseInteractedBlock(Event.Result.DENY)
         if (block.isVanillaNoteBlock) {
             if (rightClicked) block.updateBlockyNote()
             block.playBlockyNoteBlock()
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun PlayerInteractEvent.onInteractBlockyNoteBlock() {
-        val block = clickedBlock ?: return
-        val item = item ?: return
-        val type = item.clone().type
-
-        if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
-        if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, Bukkit.createBlockData(type))
-    }
-
-    // Handle playing the sound. If BlockData isnt in map, it means this should be handled by vanilla
+    // Handle playing the sound. If BlockData isn't in map, it means this should be handled by vanilla
     // AKA restoreFunctionality enabled and normal block
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
@@ -103,12 +93,23 @@ class BlockyNoteBlockListener : Listener {
         if (event != GameEvent.NOTE_BLOCK_PLAY) return
         isCancelled = true
         blockyPlugin.launch {
-            yield()
+            delay(1.ticks)
             block.setBlockData(data, false)
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun PlayerInteractEvent.onInteractBlockyNoteBlock() {
+        val block = clickedBlock ?: return
+        val item = item ?: return
+        val type = item.clone().type
+
+        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock || hand != EquipmentSlot.HAND) return
+        setUseInteractedBlock(Event.Result.DENY)
+        if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, type.createBlockData())
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
@@ -160,12 +161,16 @@ class BlockyNoteBlockListener : Listener {
                     // assume it to be a vanilla and convert it to custom
                     if (block.customBlockData.isEmpty) {
                         block.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
-                        block.blockData = Bukkit.createBlockData(Material.NOTE_BLOCK)
+                        block.blockData = Material.NOTE_BLOCK.createBlockData()
                     }
                     // If block has NOTE_KEY, aka it was a custom vanilla block, convert to full vanilla
                     else if (block.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN)) {
-                        block.customBlockData.set(NOTE_KEY, DataType.INTEGER, (block.blockData as NoteBlock).note.id.toInt())
-                        block.blockData = Bukkit.createBlockData(Material.NOTE_BLOCK)
+                        block.customBlockData.set(
+                            NOTE_KEY,
+                            DataType.INTEGER,
+                            (block.blockData as NoteBlock).note.id.toInt()
+                        )
+                        block.blockData = Material.NOTE_BLOCK.createBlockData()
                         block.customBlockData.remove(VANILLA_NOTEBLOCK_KEY)
                     }
                 } else {

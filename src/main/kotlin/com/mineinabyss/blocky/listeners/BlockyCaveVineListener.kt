@@ -7,7 +7,6 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.papermc.paper.event.block.BlockBreakBlockEvent
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.CaveVines
@@ -31,7 +30,7 @@ class BlockyCaveVineListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onGlowBerryPlace() {
         if (itemInHand.type == Material.GLOW_BERRIES)
-            blockPlaced.setBlockData(Bukkit.createBlockData(Material.CAVE_VINES), false)
+            blockPlaced.setBlockData(Material.CAVE_VINES.createBlockData(), false)
 
         // If the block above is cave vine with age 0, replicate vanilla behaviour
         if (block.isBlockyCaveVine()) isCancelled = true

@@ -59,12 +59,10 @@ fun breakWireBlock(block: Block, player: Player?) {
         breakWireBlock(aboveBlock, null)
 }
 
-fun isStandingInside(player: Player, block: Block): Boolean {
-    val playerLocation = player.location
-    val blockLocation = block.location
-    return (playerLocation.blockX == blockLocation.blockX && (playerLocation.blockY == blockLocation.blockY
-            || playerLocation.blockY + 1 == blockLocation.blockY)
-            && playerLocation.blockZ == blockLocation.blockZ)
+fun Player.isInBlock(block: Block): Boolean {
+    return block.location.let { l ->
+        (location.blockX == l.blockX && (location.blockY == l.blockY || location.blockY + 1 == l.blockY) && location.blockZ == l.blockZ)
+    }
 }
 
 fun handleTallWire(block: Block) {

@@ -17,11 +17,13 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
-import org.bukkit.*
+import org.bukkit.GameMode
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
@@ -138,7 +140,7 @@ class BlockyGenericListener : Listener {
         if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
-            val data = Bukkit.createBlockData(type)
+            val data = type.createBlockData()
             if (Tag.ANVIL.isTagged(type))
                 (data as Directional).facing = getAnvilFacing(blockFace)
             block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
@@ -213,9 +215,9 @@ class BlockyGenericListener : Listener {
         }
 
         when {
-            itemInHand.isBlockyBlock(player) -> return
             itemInHand.type !in materialSet -> return
-            blockPlaced.isBlockyBlock -> return
+            itemInHand.isBlockyBlock(player) && blockPlaced.isBlockyBlock -> return
+            // TODO Are these even needed?
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
@@ -230,7 +232,8 @@ class BlockyGenericListener : Listener {
             in BLOCKY_STAIRS -> COPPER_STAIRS.elementAt(BLOCKY_STAIRS.indexOf(itemInHand.type))
             else -> itemInHand.type
         }
-        block.blockData = Bukkit.createBlockData(material)
+
+        block.blockData = material.createBlockData()
         player.swingMainHand()
     }
 }
