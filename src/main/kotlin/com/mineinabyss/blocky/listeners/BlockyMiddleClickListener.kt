@@ -24,6 +24,7 @@ class BlockyMiddleClickListener : Listener {
         when {
             (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.ITEM_FRAME).apply { addAll(
                 BLOCKY_SLABS).apply { addAll(BLOCKY_STAIRS) } }) -> {
+                //TODO For some reason BARRIER returns null here over entity, when everywhere else it doesnt? no clue
                 val lookingAtPrefab =
                     player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
                     player.getTargetEntity(5)?.prefabKey ?: return

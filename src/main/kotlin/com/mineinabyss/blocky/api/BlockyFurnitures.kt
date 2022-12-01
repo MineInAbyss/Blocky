@@ -2,10 +2,12 @@ package com.mineinabyss.blocky.api
 
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
+import com.mineinabyss.blocky.helpers.gearyEntity
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.looty.tracking.toGearyFromUUIDOrNull
+import org.bukkit.block.Block
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Entity
 import org.bukkit.entity.ItemFrame
@@ -33,6 +35,7 @@ object BlockyFurnitures {
     val Entity.isModelEngineFurniture: Boolean get() = this.toGearyOrNull()?.isModelEngineFurniture ?: false
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
+    val Block.isBlockyFurniture: Boolean get() = this.gearyEntity?.isBlockyFurniture ?: false
     val Entity.isBlockyFurniture: Boolean get() = furnitureType != null || this.isModelEngineFurniture
     val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
 }
