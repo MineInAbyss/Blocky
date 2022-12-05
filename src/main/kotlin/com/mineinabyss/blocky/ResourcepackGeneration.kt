@@ -13,7 +13,6 @@ import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.prefabs.PrefabKey
 import okio.Path.Companion.toPath
-import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -56,7 +55,7 @@ class ResourcepackGeneration {
             val blockModel = JsonObject()
             val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.NOTEBLOCK }
             blockModel.add(
-                Bukkit.createBlockData(Material.NOTE_BLOCK).getNoteBlockData(),
+                Material.NOTE_BLOCK.createBlockData().getNoteBlockData(),
                 "minecraft:block/note_block".getModelJson()
             )
             blockMap.filter { it.key is NoteBlock }.forEach { block ->
@@ -82,7 +81,7 @@ class ResourcepackGeneration {
             val blockModel = JsonObject()
             val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.WIRE }.map { it.type }
             blockModel.add(
-                Bukkit.createBlockData(Material.TRIPWIRE).getTripwireData(),
+                Material.TRIPWIRE.createBlockData().getTripwireData(),
                 "minecraft:block/barrier".getModelJson()
             )
             blockMap.filter { it.key is Tripwire }.forEach { block ->
@@ -129,7 +128,7 @@ class ResourcepackGeneration {
             val blockModel = JsonObject()
             val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.CAVEVINE }.map { it.type }
             blockModel.add(
-                Bukkit.createBlockData(Material.CAVE_VINES).getCaveVineBlockStates(),
+                Material.CAVE_VINES.createBlockData().getCaveVineBlockStates(),
                 "minecraft:block/cave_vines".getModelJson()
             )
             blockMap.filter { it.key is CaveVines }.forEach { block ->

@@ -184,22 +184,15 @@ fun placeBlockyBlock(
     face: BlockFace,
     newData: BlockData
 ): Block? {
-    val targetBlock: Block
-    if (against.isReplaceable) targetBlock = against
-    else {
-        targetBlock = against.getRelative(face)
-        if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
-    }
+    val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
 
-    if (against.gearyEntity?.has<BlockyBlock>() != true && item.toGearyOrNull(player)
-            ?.has<BlockyBlock>() != true
-    ) return null
-    if (isStandingInside(player, targetBlock)) return null
+    if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
+    if (!against.isBlockyBlock && !item.isBlockyBlock(player)) return null
+    if (player.isInBlock(targetBlock)) return null
     if (against.isVanillaNoteBlock) return null
-    targetBlock.isVanillaNoteBlock
+
     if (!blockyConfig.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
         targetBlock.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
-    targetBlock.updateBlockyNote()
 
     val currentData = targetBlock.blockData
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
@@ -357,7 +350,7 @@ private fun Block.handleWallAttachable(player: Player, face: BlockFace) {
             Material.valueOf(type.toString().replace("_SKULL", "_WALL_SKULL"))
         else Material.valueOf(type.toString().replace("_HEAD", "_WALL_HEAD"))
 
-    val data = Bukkit.createBlockData(type) as Directional
+    val data = type.createBlockData() as Directional
     data.facing = face
     setBlockData(data, false)
 }
@@ -412,7 +405,7 @@ private fun Block.handleDoubleBlocks(player: Player): Boolean {
         }
 
         else -> {
-            setBlockData(Bukkit.createBlockData(Material.AIR), false)
+            setBlockData(Material.AIR.createBlockData(), false)
             return false
         }
     }

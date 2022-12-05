@@ -12,7 +12,13 @@ data class BlockyConfig(
     val slabBlocks: BlockySlabConfig,
     val stairBlocks: BlockyStairConfig,
     val disableCustomSounds: Boolean = false,
+    val MoreCreativeTabsMod: MoreCreativeTabsModConfig,
 ) {
+    @Serializable
+    data class MoreCreativeTabsModConfig(
+        val generateJsonForMod: Boolean = false,
+    )
+
     @Serializable
     data class BlockyNoteBlockConfig(
         val isEnabled: Boolean = true,

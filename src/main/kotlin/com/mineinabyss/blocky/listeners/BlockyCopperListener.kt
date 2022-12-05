@@ -8,7 +8,6 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -42,7 +41,7 @@ class BlockyCopperListener {
             if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
             if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 
-            val blockyData = Bukkit.createBlockData(BLOCKY_SLABS.elementAt(blockyBlock.blockId)) as Slab
+            val blockyData = BLOCKY_SLABS.elementAt(blockyBlock.blockId).createBlockData() as Slab
             val relative = against.getRelative(blockFace)
             val oldData: BlockData
 
@@ -111,18 +110,19 @@ class BlockyCopperListener {
             }
         }
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onWaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type in BLOCKY_SLABS || item?.type != Material.HONEYCOMB) return
+            if (block.type !in COPPER_SLABS || item?.type != Material.HONEYCOMB) return
 
+            isCancelled = true
             if (!block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = true
         }
 
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
@@ -160,7 +160,7 @@ class BlockyCopperListener {
             if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
             if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 
-            val blockyData = Bukkit.createBlockData(BLOCKY_STAIRS.elementAt(blockyBlock.blockId)) as Stairs
+            val blockyData = BLOCKY_STAIRS.elementAt(blockyBlock.blockId).createBlockData() as Stairs
             val relative = against.getRelative(blockFace)
             val oldData: BlockData
 
@@ -205,18 +205,19 @@ class BlockyCopperListener {
             player.swingMainHand()
         }
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onWaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type in BLOCKY_STAIRS || item?.type != Material.HONEYCOMB) return
+            if (block.type !in COPPER_STAIRS || item?.type != Material.HONEYCOMB) return
 
+            isCancelled = true
             if (!block.isFakeWaxedCopper)
                 block.isFakeWaxedCopper = true
         }
 
 
-        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return

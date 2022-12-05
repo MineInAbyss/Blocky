@@ -2,26 +2,27 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
-import org.bukkit.*
+import kotlinx.coroutines.job
+import org.bukkit.GameMode
+import org.bukkit.Material
+import org.bukkit.Sound
+import org.bukkit.Tag
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
@@ -43,59 +44,66 @@ class BlockyGenericListener : Listener {
 
     private fun Player.resetCustomBreak(block: Block) {
         when {
-            block.gearyEntity?.has<BlockyBlock>() == true -> BlockyBlockDamageAbortEvent(block, this)
-            block.gearyEntity?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageAbortEvent(
-                block.blockyFurniture ?: return, this
-            )
+            block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
+            block.isBlockyFurniture ->
+                BlockyFurnitureDamageAbortEvent(block.blockyFurniture ?: return, this)
 
             else -> return
         }.run { call(); this }
+        this.stopMiningJob()
 
-        toGeary {
-            get<PlayerIsMining>()?.miningTask?.cancel() ?: return
-            get<PlayerIsMining>()?.miningTask = null
-            remove<PlayerIsMining>()
-        }
         removePotionEffect(SLOW_DIGGING)
         block.location.getNearbyPlayers(16.0).forEach {
             it.sendBlockChange(block.location, block.blockData)
         }
     }
 
+    private fun Player.stopMiningJob() {
+        toGeary {
+            get<PlayerIsMining>()?.miningTask?.cancel() ?: return
+            get<PlayerIsMining>()?.miningTask = null
+            remove<PlayerIsMining>()
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
-        val mining = player.toGeary().getOrSetPersisting { PlayerIsMining() }
+        val mining = player.toGeary().getOrSet { PlayerIsMining() }
         val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /
                 (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
 
         if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
-        if (mining.miningTask != null) return
+        if (mining.miningTask?.isActive == true) return
         isCancelled = true
 
         val damageEvent = when {
-            block.gearyEntity?.has<BlockyBlock>() == true -> BlockyBlockDamageEvent(block, player)
-            block.blockyFurniture?.toGearyOrNull()
-                ?.has<BlockyFurniture>() == true -> BlockyFurnitureDamageEvent(block.blockyFurniture ?: return, player)
+            block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
+            block.blockyFurniture?.isBlockyFurniture == true ->
+                BlockyFurnitureDamageEvent(block.blockyFurniture ?: return, player)
 
             else -> return
         }.run { call(); this }
         if (damageEvent.isCancelled) return
 
-        mining.miningTask = blockyPlugin.launch {
-            val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
+        blockyPlugin.launch {
+            mining.miningTask = this.coroutineContext.job
             var stage = 0
-
+            val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
             player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, false))
+
             do { //TODO Fix visual glitch for blockbreaker
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
                 }
                 delay(breakTime / 10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
+        }
 
-            block.attemptBreakBlockyBlock(player)
+        mining.miningTask?.invokeOnCompletion {
+            if (player.toGeary().has(mining::class))
+                block.attemptBreakBlockyBlock(player)
         }
     }
 
@@ -138,7 +146,7 @@ class BlockyGenericListener : Listener {
         if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
-            val data = Bukkit.createBlockData(type)
+            val data = type.createBlockData()
             if (Tag.ANVIL.isTagged(type))
                 (data as Directional).facing = getAnvilFacing(blockFace)
             block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
@@ -213,9 +221,9 @@ class BlockyGenericListener : Listener {
         }
 
         when {
-            itemInHand.isBlockyBlock(player) -> return
             itemInHand.type !in materialSet -> return
-            blockPlaced.isBlockyBlock -> return
+            itemInHand.isBlockyBlock(player) && blockPlaced.isBlockyBlock -> return
+            // TODO Are these even needed?
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
@@ -230,7 +238,8 @@ class BlockyGenericListener : Listener {
             in BLOCKY_STAIRS -> COPPER_STAIRS.elementAt(BLOCKY_STAIRS.indexOf(itemInHand.type))
             else -> itemInHand.type
         }
-        block.blockData = Bukkit.createBlockData(material)
+
+        block.blockData = material.createBlockData()
         player.swingMainHand()
     }
 }

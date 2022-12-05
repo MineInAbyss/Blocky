@@ -4,7 +4,9 @@ import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
+import com.mineinabyss.blocky.components.features.BlockyDirectional
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.family.family
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
@@ -38,6 +40,17 @@ object BlockyBlockQuery : GearyQuery() {
     }
 }
 
+val blockyBlockQuery get() =
+    BlockyBlockQuery.filter {
+        it.type.blockType !in setOf(BlockyBlock.BlockType.WIRE, BlockyBlock.BlockType.CAVEVINE) &&
+                it.entity.get<BlockyDirectional>()?.isParentBlock != false
+    }.sortedBy { it.prefabKey.key }
+
+val blockyPlantQuery get() =
+    BlockyBlockQuery.filter {
+        it.type.blockType in setOf(BlockyBlock.BlockType.WIRE, BlockyBlock.BlockType.CAVEVINE)
+    }.sortedBy { it.prefabKey.key }
+
 object BlockyFurnitureQuery : GearyQuery() {
     val TargetScope.key by get<PrefabKey>()
     val TargetScope.modelEngine by family {
@@ -51,6 +64,8 @@ object BlockyFurnitureQuery : GearyQuery() {
         }
     }
 }
+
+val blockyFurnitureQuery get() = BlockyFurnitureQuery.sortedBy { it.prefabKey.key }
 
 val blockyModelEngineQuery =
     BlockyFurnitureQuery.filter { it.entity.isModelEngineFurniture }.map { it.prefabKey.toString() }

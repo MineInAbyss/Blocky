@@ -22,7 +22,6 @@ import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.Item
-import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.Note
@@ -90,6 +89,7 @@ class BlockyPlugin : JavaPlugin() {
         blockMap = createBlockMap()
         registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
+        MoreCreativeTabsGeneration().generateModAssets()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
@@ -112,7 +112,7 @@ class BlockyPlugin : JavaPlugin() {
 
         // Calculates tripwire states
         if (blockyConfig.tripWires.isEnabled) for (i in 0..127) {
-            val tripWireData = Bukkit.createBlockData(Material.TRIPWIRE) as Tripwire
+            val tripWireData = Material.TRIPWIRE.createBlockData() as Tripwire
             if (i and 1 == 1) tripWireData.setFace(BlockFace.NORTH, true)
             if (i shr 1 and 1 == 1) tripWireData.setFace(BlockFace.EAST, true)
             if (i shr 2 and 1 == 1) tripWireData.setFace(BlockFace.SOUTH, true)
@@ -129,7 +129,7 @@ class BlockyPlugin : JavaPlugin() {
         if (blockyConfig.noteBlocks.isEnabled) {
             for (j in 50..799) {
                 //val id = if (blockyConfig.noteBlocks.restoreNormalFunctionality && j <= 50) j + 799 else j
-                val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+                val noteBlockData = Material.NOTE_BLOCK.createBlockData() as NoteBlock
                 noteBlockData.instrument = Instrument.getByType((j / 50 % 400).toByte()) ?: continue
 
                 noteBlockData.note = Note((j % 25))
@@ -139,7 +139,7 @@ class BlockyPlugin : JavaPlugin() {
             }
             if (!blockyConfig.noteBlocks.restoreFunctionality) {
                 for (j in 1..49) {
-                    val noteBlockData = Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+                    val noteBlockData = Material.NOTE_BLOCK.createBlockData() as NoteBlock
                     noteBlockData.instrument = Instrument.PIANO
                     noteBlockData.note = Note((j % 25))
                     noteBlockData.isPowered = j / 25 % 2 == 1
@@ -165,7 +165,7 @@ class BlockyPlugin : JavaPlugin() {
         // Calculates cave-vine states
         if (blockyConfig.caveVineBlocks.isEnabled) {
             for (m in 1..50) {
-                val vineData = Bukkit.createBlockData(Material.CAVE_VINES) as CaveVines
+                val vineData = Material.CAVE_VINES.createBlockData() as CaveVines
                 vineData.isBerries = m > 25
                 vineData.age = if (m > 25) m - 25 else m
                 blockMap.putIfAbsent(vineData, m)
@@ -174,8 +174,8 @@ class BlockyPlugin : JavaPlugin() {
 
         //Calculates slab states & stair states
         for (n in 1..4) {
-            blockMap.putIfAbsent(Bukkit.createBlockData(BLOCKY_SLABS.elementAt(n - 1)) as Slab, n)
-            blockMap.putIfAbsent(Bukkit.createBlockData(BLOCKY_STAIRS.elementAt(n - 1)) as Stairs, n)
+            blockMap.putIfAbsent(BLOCKY_SLABS.elementAt(n - 1).createBlockData() as Slab, n)
+            blockMap.putIfAbsent(BLOCKY_STAIRS.elementAt(n - 1).createBlockData() as Stairs, n)
         }
         return blockMap
     }

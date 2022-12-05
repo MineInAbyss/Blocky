@@ -1,12 +1,13 @@
 package com.mineinabyss.blocky.helpers
 
-import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.geary.datatypes.GearyEntity
-import kotlinx.coroutines.yield
-import org.bukkit.*
+import org.bukkit.Instrument
+import org.bukkit.Material
+import org.bukkit.NamespacedKey
+import org.bukkit.Note
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
@@ -17,21 +18,15 @@ import org.bukkit.event.block.NotePlayEvent
 val NOTE_KEY = NamespacedKey(blockyPlugin, "note")
 val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "vanilla_note_block")
 
-fun GearyEntity.getBlockyNoteBlock(face: BlockFace, player: Player?): BlockData {
-    return blockMap.filter { it.key is NoteBlock && it.value == this.getDirectionalId(face, player) }.keys.firstOrNull() ?: return Bukkit.createBlockData(Material.NOTE_BLOCK) as NoteBlock
+fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
+    return blockMap.filter { it.key is NoteBlock && it.value == this.getDirectionalId(face, player) }.keys.firstOrNull() ?: return Material.NOTE_BLOCK.createBlockData() as NoteBlock
 }
 
 fun Block.updateNoteBlockAbove() {
-    val above = getRelative(BlockFace.UP)
-    val data = above.blockData.clone()
-    above.state.update(true, false)
-    blockyPlugin.launch {
-        yield()
-        above.setBlockData(data, false)
-    }
-
-    if (above.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
-        above.updateNoteBlockAbove()
+    if (getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
+        getRelative(BlockFace.UP).state.update(true, true)
+    if (getRelative(BlockFace.UP, 2).type == Material.NOTE_BLOCK)
+        getRelative(BlockFace.UP, 2).state.update(true, true)
 }
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block

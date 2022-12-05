@@ -14,7 +14,6 @@ import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -67,7 +66,7 @@ class BlockyWireListener : Listener {
             blockAgainst.state.update(true, false)
 
             if (itemInHand.toGearyOrNull(player)?.has<BlockyBlock>() != true)
-                block.setBlockData(Bukkit.createBlockData(Material.TRIPWIRE), false)
+                block.setBlockData(Material.TRIPWIRE.createBlockData(), false)
             block.fixClientsideUpdate()
         }
     }
@@ -122,7 +121,7 @@ class BlockyWireListener : Listener {
         if (item?.type?.isBlock == true && item?.toGearyOrNull(player)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
                 if (clickedBlock.getRelative(it).gearyEntity == null) return@forEach
-                placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, Bukkit.createBlockData(item!!.type))
+                placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, item!!.type.createBlockData())
                 clickedBlock.fixClientsideUpdate()
             }
         }
