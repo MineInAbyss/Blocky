@@ -71,7 +71,7 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
-fun Block.attemptBreakBlockyBlock(player: Player?) {
+internal fun Block.attemptBreakBlockyBlock(player: Player?) {
     val prefab = this.gearyEntity ?: return
     val blockBreakEvent = player?.let { BlockBreakEvent(this, it) }
     val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }

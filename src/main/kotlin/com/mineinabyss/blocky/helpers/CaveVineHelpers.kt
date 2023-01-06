@@ -17,9 +17,8 @@ fun BlockyBlock.getBlockyCaveVine() : BlockData {
     return blockMap.filter { it.key is CaveVines && it.key.material == Material.CAVE_VINES && it.value == blockId }.keys.first() as CaveVines
 }
 
-fun Block.isBlockyCaveVine() : Boolean {
-    return blockMap.contains(blockData) && type == Material.CAVE_VINES
-}
+val Block.isBlockyCaveVine: Boolean get() =
+    type == Material.CAVE_VINES && blockData in blockMap
 
 fun breakCaveVineBlock(block: Block, player: Player?) {
     val gearyBlock = block.gearyEntity ?: return

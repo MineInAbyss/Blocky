@@ -16,6 +16,7 @@ var Block.isFakeWaxedCopper
 
         else -> {}
     }
+val Block.isBlockyCopper: Boolean get() = type in blockyCopperMaterial
 
 private val blockyCopperMaterial = setOf(
     Material.WAXED_CUT_COPPER_SLAB, Material.WAXED_CUT_COPPER_STAIRS,

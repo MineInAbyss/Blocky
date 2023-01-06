@@ -7,7 +7,7 @@ import org.bukkit.event.HandlerList
 
 class BlockyBlockPlaceEvent(
     block: Block,
-    val player: Player,
+    val player: Player?,
 ) : BlockyBlockEvent(block), Cancellable {
     private var cancelled = false
 
