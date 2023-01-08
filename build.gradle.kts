@@ -6,14 +6,8 @@ plugins {
     alias(libs.plugins.mia.copyjar)
     alias(libs.plugins.mia.publication)
     alias(libs.plugins.mia.autoversion)
-    //id("com.mineinabyss.conventions.kotlin")
-    //id("com.mineinabyss.conventions.papermc")
-    //id("com.mineinabyss.conventions.nms")
-    //id("com.mineinabyss.conventions.copyjar")
-    //id("com.mineinabyss.conventions.publication")
-    //id("com.mineinabyss.conventions.autoversion")
-    id("org.jetbrains.compose")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.compose)
 }
 
 repositories {
@@ -45,8 +39,9 @@ dependencies {
     compileOnly(libs.minecraft.plugin.modelengine)
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
-    //compileOnly(libs.minecraft.headlib)
+    compileOnly(libs.minecraft.headlib.api)
     compileOnly(libs.minecraft.anvilgui)
+    compileOnly(libs.idofront.commands)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
