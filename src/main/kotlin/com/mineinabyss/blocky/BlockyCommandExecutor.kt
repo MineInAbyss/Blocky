@@ -9,9 +9,9 @@ import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.inventory.guiy
-import com.mineinabyss.idofront.commands.CommandHolder
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
+import com.mineinabyss.idofront.commands.entrypoint.CommandDSLEntrypoint
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.config.config
@@ -31,7 +31,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.PotionMeta
 
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
-    override val commands: CommandHolder = commands(blockyPlugin) {
+    override val commands: CommandDSLEntrypoint = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
                 "config" {

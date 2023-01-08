@@ -11,9 +11,10 @@ import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.height
 import com.mineinabyss.idofront.font.Space
 import com.mineinabyss.idofront.textcomponents.miniMsg
-import de.erethon.headlib.HeadLib
 import net.kyori.adventure.text.Component
+import org.bukkit.Material
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 
 sealed class BlockyScreen(val title: Component, val height: Int) {
     object Default : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 5)
@@ -53,6 +54,6 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
 @Composable
 fun BlockyUIScope.BackButton(modifier: Modifier = Modifier) {
     Button(onClick = { nav.back() }, modifier = modifier) {
-        Item(HeadLib.STONE_ARROW_LEFT.toItemStack("Back"))
+        Item(ItemStack(Material.STONE))
     }
 }

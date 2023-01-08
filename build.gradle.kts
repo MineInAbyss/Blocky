@@ -1,10 +1,17 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.mineinabyss.conventions.kotlin")
-    id("com.mineinabyss.conventions.copyjar")
-    id("com.mineinabyss.conventions.publication")
-    id("com.mineinabyss.conventions.papermc")
-    id ("com.mineinabyss.conventions.nms")
-    id("com.mineinabyss.conventions.autoversion")
+    alias(libs.plugins.mia.kotlin)
+    alias(libs.plugins.mia.papermc)
+    alias(libs.plugins.mia.nms)
+    alias(libs.plugins.mia.copyjar)
+    alias(libs.plugins.mia.publication)
+    alias(libs.plugins.mia.autoversion)
+    //id("com.mineinabyss.conventions.kotlin")
+    //id("com.mineinabyss.conventions.papermc")
+    //id("com.mineinabyss.conventions.nms")
+    //id("com.mineinabyss.conventions.copyjar")
+    //id("com.mineinabyss.conventions.publication")
+    //id("com.mineinabyss.conventions.autoversion")
     id("org.jetbrains.compose")
     kotlin("plugin.serialization")
 }
@@ -38,7 +45,7 @@ dependencies {
     compileOnly(libs.minecraft.plugin.modelengine)
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
-    compileOnly(libs.minecraft.headlib)
+    //compileOnly(libs.minecraft.headlib)
     compileOnly(libs.minecraft.anvilgui)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
 

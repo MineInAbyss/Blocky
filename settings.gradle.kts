@@ -15,25 +15,29 @@ pluginManagement {
         id("org.jetbrains.compose") version composeVersion
     }
 
-    val idofrontVersion: String by settings
+    val idofrontConventions: String by settings
     resolutionStrategy {
         eachPlugin {
             if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(idofrontVersion)
+                useVersion(idofrontConventions)
         }
     }
 }
 
 dependencyResolutionManagement {
-    val idofrontVersion: String by settings
+    val idofrontConventions: String by settings
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
     }
 
     versionCatalogs {
-        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
-        create("blockyLibs").from(files("gradle/blockyLibs.versions.toml"))
+        create("libs"){
+            from("com.mineinabyss:catalog:$idofrontConventions")
+        }
+        create("blockyLibs"){
+            from(files("gradle/blockyLibs.versions.toml"))
+        }
     }
 }
 
