@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
+import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture.FurnitureType
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -11,7 +12,6 @@ import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
-import org.bukkit.Material
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Explosive
 import org.bukkit.entity.ItemFrame
@@ -57,8 +57,8 @@ class BlockyFurnitureListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingBarrier() {
-        if (block.type != Material.BARRIER || player.gameMode != GameMode.CREATIVE) return
+    fun BlockBreakEvent.onBreakingHitbox() {
+        if (!block.isFurnitureHitbox || player.gameMode != GameMode.CREATIVE) return
         block.blockyFurniture?.removeBlockyFurniture(player)
     }
 
@@ -72,7 +72,7 @@ class BlockyFurnitureListener : Listener {
     fun PlayerInteractEvent.onSitting() {
         val block = clickedBlock ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type != Material.BARRIER || player.isSneaking) return
+        if (!block.isFurnitureHitbox || player.isSneaking) return
 
         player.sitOnBlockySeat(block)
         if (!player.inventory.itemInMainHand.type.isAir) isCancelled = true
@@ -80,7 +80,7 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun ProjectileHitEvent.onProjectileHit() {
-        (hitBlock?.type != Material.BARRIER || hitEntity?.isBlockyFurniture != true) || return
+        if ((hitBlock?.isFurnitureHitbox != true || hitEntity?.isBlockyFurniture != true)) return
 
         (entity.shooter as? Player).let { player ->
             (hitBlock?.location ?: hitEntity?.location)?.let { loc ->
@@ -109,7 +109,7 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun BlockExplodeEvent.onBlockExplode() {
-        blockList().filter { it.type == Material.BARRIER && it.blockyFurniture != null }
+        blockList().filter { it.isFurnitureHitbox && it.blockyFurniture != null }
             .map { it.blockyFurniture }.toSet()
             .forEach { it?.removeBlockyFurniture(null) }
     }

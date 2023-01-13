@@ -168,7 +168,7 @@ fun GearyEntity.placeBlockyFurniture(
 
     newFurniture.toGeary {
         if (this.get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
-            this.placeBarrierHitbox(yaw, loc, player)
+            this.placeFurnitureHitbox(yaw, loc, player)
         } else if (has<BlockyLight>())
             handleLight.createBlockLight(loc, this.get<BlockyLight>()!!.lightLevel)
     }
@@ -177,20 +177,25 @@ fun GearyEntity.placeBlockyFurniture(
     if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
 }
 
-private fun GearyEntity.placeBarrierHitbox(yaw: Float, originLocation: Location, player: Player) {
-    val locations = get<BlockyFurniture>()?.collisionHitbox?.let { getLocations(yaw, originLocation, it) } ?: return
+private fun GearyEntity.placeFurnitureHitbox(yaw: Float, originLocation: Location, player: Player) {
+    val furniture = get<BlockyFurniture>() ?: return
+    val locations = getLocations(yaw, originLocation, furniture.collisionHitbox)
+    val light = this.get<BlockyLight>()?.lightLevel
+    val seat = this.get<BlockySeat>()
+
     locations.forEach { loc ->
-        loc.block.setType(Material.BARRIER, false)
-        this.get<BlockyLight>()?.let { handleLight.createBlockLight(loc, it.lightLevel) }
-        this.get<BlockySeat>()
-            ?.let { spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180) }
+        loc.block.setType(furniture.hitboxMaterial, false)
+        light?.let { handleLight.createBlockLight(loc, light) }
+        seat?.let {
+            spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, seat.heightOffset) }, player.location.yaw - 180)
+        }
 
         loc.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, originLocation)
     }
 
     if (locations.isNotEmpty()) {
         setPersisting(BlockySeatLocations(locations))
-        setPersisting(BlockyBarrierHitbox(locations))
+        setPersisting(BlockyFurnitureHitbox(locations))
     }
 }
 
@@ -202,18 +207,18 @@ fun Entity.removeBlockyFurniture(player: Player?) {
     furnitureBreakEvent.call()
 
     this.removeAssosiatedSeats()
-    this.clearAssosiatedBarrierChunkEntries()
+    this.clearAssosiatedHitboxChunkEntries()
     handleFurnitureDrops(player)
     handleLight.removeBlockLight(this.location)
     this.toGearyOrNull()?.clear()
     this.remove()
 }
 
-private fun Entity.clearAssosiatedBarrierChunkEntries() {
-    toGearyOrNull()?.get<BlockyBarrierHitbox>()?.barriers?.forEach barrier@{ barrierLoc ->
-        barrierLoc.block.customBlockData.clear()
-        barrierLoc.block.type = Material.AIR
-        handleLight.removeBlockLight(barrierLoc)
+private fun Entity.clearAssosiatedHitboxChunkEntries() {
+    toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.hitbox?.forEach { hitboxLoc ->
+        hitboxLoc.block.customBlockData.clear()
+        hitboxLoc.block.type = Material.AIR
+        handleLight.removeBlockLight(hitboxLoc)
     }
 }
 
