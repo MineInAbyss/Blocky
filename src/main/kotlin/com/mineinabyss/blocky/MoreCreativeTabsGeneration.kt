@@ -13,7 +13,6 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import com.mineinabyss.looty.LootyFactory
 import okio.Path.Companion.toPath
-import org.bukkit.Instrument
 import org.bukkit.inventory.ItemStack
 import java.io.File
 import java.nio.charset.Charset
@@ -75,25 +74,4 @@ class MoreCreativeTabsGeneration {
     private val PrefabKey.lootyItem get() = LootyFactory.createFromPrefab(this)
     private val ItemStack.customModelData get() = if (this.itemMeta.hasCustomModelData()) this.itemMeta.customModelData else 0
 
-    private fun getInstrument(id: Instrument): String {
-        when (id) {
-            Instrument.BASS_DRUM -> return "basedrum"
-            Instrument.STICKS -> return "hat"
-            Instrument.SNARE_DRUM -> return "snare"
-            Instrument.PIANO -> return "harp"
-            Instrument.BASS_GUITAR -> return "bass"
-            Instrument.FLUTE -> return "flute"
-            Instrument.BELL -> return "bell"
-            Instrument.GUITAR -> return "guitar"
-            Instrument.CHIME -> return "chime"
-            Instrument.XYLOPHONE -> return "xylophone"
-            Instrument.IRON_XYLOPHONE -> return "iron_xylophone"
-            Instrument.COW_BELL -> return "cow_bell"
-            Instrument.DIDGERIDOO -> return "didgeridoo"
-            Instrument.BIT -> return "bit"
-            Instrument.BANJO -> return "banjo"
-            Instrument.PLING -> return "pling"
-            else -> return "hat"
-        }
-    }
 }

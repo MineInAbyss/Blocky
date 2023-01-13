@@ -37,6 +37,7 @@ dependencies {
 
     // Other plugins
     compileOnly(libs.minecraft.plugin.modelengine)
+    compileOnly(libs.minecraft.plugin.protocollib)
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(libs.minecraft.headlib.api)
