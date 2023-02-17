@@ -3,6 +3,8 @@ package com.mineinabyss.blocky.helpers
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
+import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
@@ -171,8 +173,8 @@ val Block.prefabKey
         }?.prefabKey
     }
 
-val Block.gearyEntity get() = prefabKey?.toEntity()
-val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
+
+//val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blockyPlugin)

@@ -14,7 +14,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 object BlockyBlocks {
-
+    val Block.gearyEntity get() = prefabKey?.toEntity()
     //TODO This might not work due to the way PlayerInstancedItems work? test it
     val ItemStack.isBlockyBlock get() = this.toGearyFromUUIDOrNull()?.has<BlockyBlock>() == true
     val PrefabKey.isBlockyBlock get() = this.toEntityOrNull()?.has<BlockyBlock>() == true

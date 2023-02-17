@@ -1,9 +1,9 @@
 package com.mineinabyss.blocky.api
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.FURNITURE_ORIGIN
-import com.mineinabyss.blocky.helpers.gearyEntity
 import com.mineinabyss.blocky.helpers.persistentDataContainer
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull

@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.BlockyBlock

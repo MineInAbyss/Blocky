@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.api.events.block
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.helpers.gearyEntity
 import org.bukkit.block.Block
 import org.bukkit.event.HandlerList
 import org.bukkit.event.block.BlockEvent
