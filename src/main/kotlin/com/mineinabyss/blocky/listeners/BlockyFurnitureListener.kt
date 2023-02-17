@@ -1,17 +1,24 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurniture
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
+import com.mineinabyss.blocky.api.BlockyFurnitures.removeBlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture.FurnitureType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
-import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
+import com.mineinabyss.blocky.helpers.getTargetBlock
+import com.mineinabyss.blocky.helpers.placeBlockyFurniture
 import com.mineinabyss.geary.papermc.access.toGeary
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
+import org.bukkit.block.Block
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Explosive
 import org.bukkit.entity.ItemFrame
@@ -59,7 +66,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingHitbox() {
         if (!block.isFurnitureHitbox || player.gameMode != GameMode.CREATIVE) return
-        block.blockyFurniture?.removeBlockyFurniture(player)
+        block.blockyFurnitureEntity?.removeBlockyFurniture(player)
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -101,7 +108,6 @@ class BlockyFurnitureListener : Listener {
         }
 
 
-        //TODO Consider making shooter handle for drops
         if (entity is Explosive) {
             (hitEntity as ItemFrame).removeBlockyFurniture(null)
         } else isCancelled = true
@@ -110,7 +116,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockExplodeEvent.onBlockExplode() {
         blockList().filter { it.isFurnitureHitbox && it.blockyFurniture != null }
-            .map { it.blockyFurniture }.toSet()
+            .map { it.blockyFurnitureEntity }.toSet()
             .forEach { it?.removeBlockyFurniture(null) }
     }
 
@@ -126,5 +132,11 @@ class BlockyFurnitureListener : Listener {
         val seat = player.vehicle as? ArmorStand ?: return
         seat.toGearyOrNull()?.has<BlockySeat>() ?: return || return
         player.leaveVehicle()
+    }
+
+    private fun Player.sitOnBlockySeat(block: Block) {
+        block.blockySeat?.let {
+            if (this.passengers.isEmpty()) it.addPassenger(this)
+        }
     }
 }

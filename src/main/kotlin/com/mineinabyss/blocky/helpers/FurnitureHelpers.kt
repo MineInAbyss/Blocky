@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.*
@@ -199,22 +199,7 @@ private fun GearyEntity.placeFurnitureHitbox(yaw: Float, originLocation: Locatio
     }
 }
 
-fun Entity.removeBlockyFurniture(player: Player?) {
-    this.toGearyOrNull()?.get<BlockyFurniture>() ?: return
-    val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player)
-    if (!ProtectionLib.canBreak(player, location)) furnitureBreakEvent.isCancelled = true
-    if (furnitureBreakEvent.isCancelled) return
-    furnitureBreakEvent.call()
-
-    this.removeAssosiatedSeats()
-    this.clearAssosiatedHitboxChunkEntries()
-    handleFurnitureDrops(player)
-    handleLight.removeBlockLight(this.location)
-    this.toGearyOrNull()?.clear()
-    this.remove()
-}
-
-private fun Entity.clearAssosiatedHitboxChunkEntries() {
+internal fun Entity.clearAssosiatedHitboxChunkEntries() {
     toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.hitbox?.forEach { hitboxLoc ->
         hitboxLoc.block.customBlockData.clear()
         hitboxLoc.block.type = Material.AIR
@@ -222,18 +207,9 @@ private fun Entity.clearAssosiatedHitboxChunkEntries() {
     }
 }
 
-private fun Entity.handleFurnitureDrops(player: Player?) {
+internal fun Entity.handleFurnitureDrops(player: Player?) {
     this.toGearyOrNull()?.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, this.location) ?: return
 }
-
-val Block.blockyFurniture
-    get(): Entity? {
-        return this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
-            origin.world?.getNearbyEntities(origin.block.boundingBox)?.firstOrNull { entity ->
-                entity.toGearyOrNull()?.has<BlockyFurniture>() == true
-            }
-        }
-    }
 
 //TODO Fix seat breaking below 0.0 offset and remove max() check here
 fun spawnFurnitureSeat(location: Location, yaw: Float) {
@@ -250,23 +226,8 @@ fun spawnFurnitureSeat(location: Location, yaw: Float) {
     } ?: return
 }
 
-fun Player.sitOnBlockySeat(block: Block) {
-    block.blockySeat?.let {
-        if (this.passengers.isEmpty()) it.addPassenger(this)
-    }
-}
-
 fun Entity.removeAssosiatedSeats() {
     this.toGearyOrNull()?.get<BlockySeatLocations>()?.seats?.forEach { seatLoc ->
         seatLoc.block.blockySeat?.remove()
     }
 }
-
-val Block.blockySeat
-    get(): Entity? {
-        return this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
-            it.toGearyOrNull()?.let { g ->
-                g.has<BlockySeat>() && !g.has<BlockyFurniture>()
-            } ?: false
-        }
-    }

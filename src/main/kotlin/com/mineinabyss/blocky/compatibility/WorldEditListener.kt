@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.compatibility
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.features.BlockyLight
@@ -43,7 +44,7 @@ class WorldEditListener : Listener {
                 if (oldEntity.has<BlockyLight>())
                     handleLight.removeBlockLight(loc)
                 if (oldEntity.has<BlockySeat>()) //TODO Consider if this should even be handled?
-                    loc.block.blockyFurniture?.removeAssosiatedSeats()
+                    loc.block.blockyFurnitureEntity?.removeAssosiatedSeats()
 
                 // Get the BlockyType of the new block
                 val type = when {

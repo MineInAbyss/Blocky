@@ -1,13 +1,15 @@
 package com.mineinabyss.blocky.api
 
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.idofront.events.call
 import com.mineinabyss.looty.tracking.toGearyFromUUIDOrNull
+import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.entity.Player
@@ -46,10 +48,6 @@ object BlockyBlocks {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return false
         val blockyBlock = gearyEntity.get<BlockyBlock>() ?: return false
 
-        val blockyEvent = BlockyBlockPlaceEvent(block, null)
-        if (blockyEvent.isCancelled) return false
-        blockyEvent.call()
-
         block.blockData =
                 when {
                     block.isBlockyBlock -> return false
@@ -69,5 +67,13 @@ object BlockyBlocks {
         blockyBlock ?: return false
         this.block.attemptBreakBlockyBlock(player)
         return true
+    }
+
+    private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
+        val gearyBlock = block.gearyEntity ?: return false
+        val info = gearyBlock.get<BlockyInfo>() ?: return false
+        val allowedToolTypes = toGearyOrNull(player)?.get<BlockyMining>()?.toolTypes ?: return false
+
+        return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
     }
 }

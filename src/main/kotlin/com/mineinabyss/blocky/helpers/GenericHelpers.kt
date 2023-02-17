@@ -5,6 +5,7 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
@@ -144,7 +145,7 @@ val Block.prefabKey
     get(): PrefabKey? {
         val type =
             when {
-                this.isFurnitureHitbox -> return this.blockyFurniture?.toGearyOrNull()?.get()
+                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.toGearyOrNull()?.get()
                 type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE
