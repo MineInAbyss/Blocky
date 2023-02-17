@@ -24,17 +24,17 @@ fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Pl
 
 fun Block.updateNoteBlockAbove() {
     if (getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
-        getRelative(BlockFace.UP).state.update(true, true)
+        getRelative(BlockFace.UP).state.update(true, false)
     if (getRelative(BlockFace.UP, 2).type == Material.NOTE_BLOCK)
-        getRelative(BlockFace.UP, 2).state.update(true, true)
+        getRelative(BlockFace.UP, 2).state.update(true, false)
 }
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block
 val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in blockMap
 val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in blockMap
 
-val Block.isBlockyNoteBlock get() = blockData in blockMap && blockData is NoteBlock
-val BlockData.isBlockyNoteBlock get() = this in blockMap && this is NoteBlock
+val Block.isBlockyNoteBlock get() = blockData is NoteBlock && blockData in blockMap
+val BlockData.isBlockyNoteBlock get() = this is NoteBlock && this in blockMap
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {

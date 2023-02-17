@@ -78,9 +78,8 @@ class BlockyNoteBlockListener : Listener {
         if (!block.isBlockyNoteBlock) return
 
         isCancelled = true
-        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!)) {
+        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!))
             block.playBlockyNoteBlock()
-        }
         if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
             block.updateNoteBlockAbove()
     }
