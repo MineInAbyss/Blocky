@@ -34,21 +34,34 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands: CommandHolder = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
+                fun reloadConfig() {
+                    blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
+                    blockyPlugin.runStartupFunctions()
+                    sender.success("Blocky configs has been reloaded!")
+                }
+                fun reloadItems() {
+                    blockyPlugin.launch {
+                        BlockyQuery.forEach {
+                            prefabManager.reread(it.entity)
+                        }
+                        sender.success("Blocky items have been reloaded!")
+                    }
+                }
+                "all" {
+                    actions {
+                        reloadItems()
+                        reloadConfig()
+                    }
+                }
+
                 "config" {
                     actions {
-                        blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
-                        blockyPlugin.runStartupFunctions()
-                        sender.success("Blocky configs has been reloaded!")
+                        reloadConfig()
                     }
                 }
                 "items" {
                     actions {
-                        blockyPlugin.launch {
-                            BlockyQuery.forEach {
-                                prefabManager.reread(it.entity)
-                            }
-                            sender.success("Blocky items have been reloaded!")
-                        }
+                        reloadItems()
                     }
                 }
             }
@@ -110,7 +123,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 1 -> listOf("reload", "give", "dye", "menu").filter { it.startsWith(args[0]) }
                 2 -> {
                     when (args[0]) {
-                        "reload" -> listOf("config", "items").filter { it.startsWith(args[1]) }
+                        "reload" -> listOf("all", "config", "items").filter { it.startsWith(args[1]) }
                         "give" ->
                             BlockyQuery.filter {
                                 val arg = args[1].lowercase()
