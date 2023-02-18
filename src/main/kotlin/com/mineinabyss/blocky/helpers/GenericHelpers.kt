@@ -3,6 +3,10 @@ package com.mineinabyss.blocky.helpers
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
+import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
+import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
@@ -19,6 +23,7 @@ import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.access.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -71,7 +76,7 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
-fun Block.attemptBreakBlockyBlock(player: Player?) {
+internal fun Block.attemptBreakBlockyBlock(player: Player?) {
     val prefab = this.gearyEntity ?: return
     val blockBreakEvent = player?.let { BlockBreakEvent(this, it) }
     val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
@@ -141,7 +146,7 @@ val Block.prefabKey
     get(): PrefabKey? {
         val type =
             when {
-                type == Material.BARRIER -> return this.blockyFurniture?.toGearyOrNull()?.get<PrefabKey>()
+                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.toGearyOrNull()?.get()
                 type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE
@@ -151,9 +156,9 @@ val Block.prefabKey
                 else -> null
             } ?: return null
 
-        return BlockyBlockQuery.filter { it.entity.get<BlockyBlock>()?.blockType == type }.firstOrNull { scope ->
-            val blockyBlock = scope.entity.get<BlockyBlock>() ?: return@firstOrNull false
-            if (scope.entity.has<Directional>()) {
+        return BlockyBlockQuery.filter { it.type.blockType == type }.firstOrNull { scope ->
+            val blockyBlock = scope.type
+            if (scope.entity.has<BlockyDirectional>()) {
                 val directional = scope.entity.get<BlockyDirectional>()
                 ((directional?.yBlock?.toEntityOrNull()
                     ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
@@ -170,8 +175,41 @@ val Block.prefabKey
         }?.prefabKey
     }
 
-val Block.gearyEntity get() = prefabKey?.toEntity()
-val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
+val BlockData.prefabKey get(): PrefabKey? {
+    val type =
+        when {
+            //TODO This might also need sapling for future
+            material == Material.BARRIER -> return null
+            material == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
+            material == Material.TRIPWIRE -> BlockType.WIRE
+            material == Material.CAVE_VINES -> BlockType.CAVEVINE
+            Tag.LEAVES.isTagged(material) -> BlockType.LEAF
+            material in BLOCKY_SLABS -> BlockType.SLAB
+            material in BLOCKY_STAIRS -> BlockType.STAIR
+            else -> null
+        } ?: return null
+
+    return BlockyBlockQuery.filter { it.type.blockType == type }.firstOrNull { scope ->
+        val blockyBlock = scope.type
+        if (scope.entity.has<BlockyDirectional>()) {
+            val directional = scope.entity.get<BlockyDirectional>()
+            ((directional?.yBlock?.toEntityOrNull()
+                ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[this] ||
+                    (directional?.xBlock?.toEntityOrNull()
+                        ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[this] ||
+                    (directional?.zBlock?.toEntityOrNull()
+                        ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[this]) &&
+                    blockyBlock.blockType == type
+        } else if (blockyBlock.blockType == BlockType.SLAB) {
+            BLOCKY_SLABS.elementAt(blockyBlock.blockId - 1) == this.material
+        } else if (blockyBlock.blockType == BlockType.STAIR) {
+            BLOCKY_STAIRS.elementAt(blockyBlock.blockId - 1) == this.material
+        } else blockyBlock.blockId == blockMap[this] && blockyBlock.blockType == type
+    }?.prefabKey
+}
+
+
+//val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blockyPlugin)

@@ -4,6 +4,8 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
+import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
@@ -78,9 +80,8 @@ class BlockyNoteBlockListener : Listener {
         if (!block.isBlockyNoteBlock) return
 
         isCancelled = true
-        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!)) {
+        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!))
             block.playBlockyNoteBlock()
-        }
         if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
             block.updateNoteBlockAbove()
     }

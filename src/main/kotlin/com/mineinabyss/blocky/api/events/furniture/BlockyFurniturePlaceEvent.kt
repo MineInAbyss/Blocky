@@ -9,7 +9,7 @@ import org.bukkit.event.HandlerList
 
 class BlockyFurniturePlaceEvent(
     entity: Entity,
-    val player: Player
+    val player: Player?
 ) : BlockyFurnitureEvent(entity), Cancellable {
 
     private var cancelled = false

@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*

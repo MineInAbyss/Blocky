@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.BlockyBlock
@@ -17,9 +18,8 @@ fun BlockyBlock.getBlockyCaveVine() : BlockData {
     return blockMap.filter { it.key is CaveVines && it.key.material == Material.CAVE_VINES && it.value == blockId }.keys.first() as CaveVines
 }
 
-fun Block.isBlockyCaveVine() : Boolean {
-    return blockMap.contains(blockData) && type == Material.CAVE_VINES
-}
+val Block.isBlockyCaveVine: Boolean get() =
+    type == Material.CAVE_VINES && blockData in blockMap
 
 fun breakCaveVineBlock(block: Block, player: Player?) {
     val gearyBlock = block.gearyEntity ?: return

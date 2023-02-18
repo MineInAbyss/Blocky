@@ -18,7 +18,7 @@ class BlockyNMSListener : Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     fun PlayerJoinEvent.removeDefaultTools() {
         if (!blockyConfig.noteBlocks.isEnabled) return
-        val packet = ClientboundUpdateTagsPacket(mapOf(Registry.BLOCK_REGISTRY to createPayload(registryTagMap)))
+        val packet = ClientboundUpdateTagsPacket(mapOf(Registry.BLOCK.key() to createPayload(registryTagMap)))
         (player as CraftPlayer).handle.connection.send(packet)
     }
 

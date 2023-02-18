@@ -58,9 +58,10 @@ class ResourcepackGeneration {
                 Material.NOTE_BLOCK.createBlockData().getNoteBlockData(),
                 "minecraft:block/note_block".getModelJson()
             )
+
             blockMap.filter { it.key is NoteBlock }.forEach { block ->
                 val query = blockyQuery.firstOrNull { it.type.blockId == block.value } ?: return@forEach
-                blockModel.add(block.key.getNoteBlockData(), query.prefabKey.getJsonProperties() ?: return@forEach)
+                query.prefabKey.getJsonProperties()?.let { blockModel.add(block.key.getNoteBlockData(), it) }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }

@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType

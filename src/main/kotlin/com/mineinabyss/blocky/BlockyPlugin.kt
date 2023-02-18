@@ -12,16 +12,15 @@ import com.mineinabyss.geary.papermc.dsl.gearyAddon
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
-import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.Services
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
-import com.sk89q.worldedit.bukkit.WorldEditPlugin
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.Item
+import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.Note
@@ -50,7 +49,7 @@ class BlockyPlugin : JavaPlugin() {
         BlockyCommandExecutor()
         CustomBlockData.registerListener(blockyPlugin)
 
-        if (Plugins.isEnabled<WorldEditPlugin>()) {
+        if (Bukkit.getPluginManager().isPluginEnabled("WorldEdit")) {
             WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
             listeners(WorldEditListener())
         }
@@ -58,6 +57,7 @@ class BlockyPlugin : JavaPlugin() {
         listeners(
             BlockyGenericListener(),
             BlockyFurnitureListener(),
+            BlockySaplingListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
         )
@@ -87,7 +87,7 @@ class BlockyPlugin : JavaPlugin() {
 
     fun runStartupFunctions() {
         blockMap = createBlockMap()
-        registryTagMap = createTagRegistryMap()
+        //registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
         MoreCreativeTabsGeneration().generateModAssets()
     }

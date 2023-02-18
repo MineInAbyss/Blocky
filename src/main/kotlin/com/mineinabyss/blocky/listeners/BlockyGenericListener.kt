@@ -1,7 +1,12 @@
 package com.mineinabyss.blocky.listeners
 
+import com.comphenix.protocol.PacketType
+import com.comphenix.protocol.ProtocolLibrary
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
+import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
+import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
@@ -41,12 +46,13 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
 
 class BlockyGenericListener : Listener {
+    val protocolManager = ProtocolLibrary.getProtocolManager()
 
     private fun Player.resetCustomBreak(block: Block) {
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
             block.isBlockyFurniture ->
-                BlockyFurnitureDamageAbortEvent(block.blockyFurniture ?: return, this)
+                BlockyFurnitureDamageAbortEvent(block.blockyFurnitureEntity ?: return, this)
 
             else -> return
         }.run { call(); this }
@@ -80,8 +86,7 @@ class BlockyGenericListener : Listener {
 
         val damageEvent = when {
             block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
-            block.blockyFurniture?.isBlockyFurniture == true ->
-                BlockyFurnitureDamageEvent(block.blockyFurniture ?: return, player)
+            block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.blockyFurnitureEntity ?: return, player)
 
             else -> return
         }.run { call(); this }
@@ -97,6 +102,9 @@ class BlockyGenericListener : Listener {
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
                 }
+                //TODO Let client acknowledge block change?
+                val packet = protocolManager.createPacket(PacketType.Play.Server.BLOCK_CHANGED_ACK)
+                protocolManager.sendServerPacket(player, packet)
                 delay(breakTime / 10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
         }

@@ -2,6 +2,8 @@ package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
+import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.BlockyBlock
