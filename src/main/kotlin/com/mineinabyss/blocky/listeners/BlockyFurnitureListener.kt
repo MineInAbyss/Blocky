@@ -79,6 +79,7 @@ class BlockyFurnitureListener : Listener {
     fun PlayerInteractEvent.onSitting() {
         val block = clickedBlock ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
+        if (!ProtectionLib.canInteract(player, block.location)) return
         if (!block.isFurnitureHitbox || player.isSneaking) return
 
         player.sitOnBlockySeat(block)
