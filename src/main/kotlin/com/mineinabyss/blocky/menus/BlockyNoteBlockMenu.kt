@@ -17,5 +17,5 @@ fun BlockyUIScope.BlockyNoteBlockMenu() {
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }
 
-    BackButton(Modifier.at(0, 5))
+    BackButton(Modifier.at(4, 5))
 }

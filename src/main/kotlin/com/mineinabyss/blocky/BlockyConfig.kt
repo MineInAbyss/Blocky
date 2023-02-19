@@ -18,14 +18,14 @@ data class BlockyConfig(
 
     @Serializable
     data class BlockyMenus(
-        val defaultMenu: BlockyMenu,
-        val blockMenu: BlockyMenu,
-        val wireMenu: BlockyMenu,
-        val furnitureMenu: BlockyMenu,
+        val defaultMenu: BlockyMenu = BlockyMenu(height = 5),
+        val blockMenu: BlockyMenu = BlockyMenu(),
+        val wireMenu: BlockyMenu = BlockyMenu(),
+        val furnitureMenu: BlockyMenu = BlockyMenu(),
     )
 
     @Serializable
-    data class BlockyMenu(val title: String, val height: Int)
+    data class BlockyMenu(val title: String = "", val height: Int = 6)
 
     @Serializable
     data class MoreCreativeTabsModConfig(

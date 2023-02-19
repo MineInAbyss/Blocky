@@ -18,5 +18,5 @@ fun BlockyUIScope.BlockyWireMenu() {
             BlockyBlockQuery.filter { it.type.blockType in setOf(BlockType.WIRE, BlockType.CAVEVINE) }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }
-    BackButton(Modifier.at(0, 5))
+    BackButton(Modifier.at(4, 5))
 }

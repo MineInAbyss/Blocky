@@ -15,10 +15,10 @@ menus:
   blockMenu:
     title: ":something:"
     height: 6
-  wireMenuTitle:
+  wireMenu:
     title: ":something:"
     height: 6
-  furnitureMenuTitle:
+  furnitureMenu:
     title: ":something:"
     height: 6
 
