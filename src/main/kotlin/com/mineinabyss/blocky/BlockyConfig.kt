@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 val blockyConfig get() = blockyPlugin.config.data
 @Serializable
 data class BlockyConfig(
+    val menus: BlockyMenus,
     val noteBlocks: BlockyNoteBlockConfig,
     val tripWires: BlockyTripwireConfig,
     val leafBlocks: BlockyLeafConfig,
@@ -14,6 +15,18 @@ data class BlockyConfig(
     val disableCustomSounds: Boolean = false,
     val MoreCreativeTabsMod: MoreCreativeTabsModConfig,
 ) {
+
+    @Serializable
+    data class BlockyMenus(
+        val defaultMenu: BlockyMenu,
+        val blockMenu: BlockyMenu,
+        val wireMenu: BlockyMenu,
+        val furnitureMenu: BlockyMenu,
+    )
+
+    @Serializable
+    data class BlockyMenu(val title: String, val height: Int)
+
     @Serializable
     data class MoreCreativeTabsModConfig(
         val generateJsonForMod: Boolean = false,

@@ -8,6 +8,20 @@ disableCustomSounds: false
 MoreCreativeTabsMod:
   generateJsonForMod: false
 
+menus:
+  defaultMenu:
+    title: ":something:"
+    height: 5
+  blockMenu:
+    title: ":something:"
+    height: 6
+  wireMenuTitle:
+    title: ":something:"
+    height: 6
+  furnitureMenuTitle:
+    title: ":something:"
+    height: 6
+
 # [restoreFunctionality]: Restores redstone and vanilla note functionality for noteblocks
 # NOTE: This reduces the total amount of custom block slots from 799 to 750
 noteBlocks:

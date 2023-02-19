@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.helpers.ui.Navigator
 import com.mineinabyss.blocky.helpers.ui.composables.Button
 import com.mineinabyss.guiy.components.Item
@@ -17,10 +18,10 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 sealed class BlockyScreen(val title: Component, val height: Int) {
-    object Default : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 5)
-    object NoteBlock : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
-    object Wire : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
-    object Furniture : BlockyScreen("${Space.of(-12)}:something:".miniMsg(), 6)
+    object Default : BlockyScreen("${Space.of(-12)}${blockyConfig.menus.defaultMenu.title}".miniMsg(), blockyConfig.menus.defaultMenu.height)
+    object NoteBlock : BlockyScreen("${Space.of(-12)}${blockyConfig.menus.blockMenu.title}".miniMsg(), blockyConfig.menus.blockMenu.height)
+    object Wire : BlockyScreen("${Space.of(-12)}${blockyConfig.menus.wireMenu.title}".miniMsg(), blockyConfig.menus.wireMenu.height)
+    object Furniture : BlockyScreen("${Space.of(-12)}${blockyConfig.menus.furnitureMenu.title}".miniMsg(), blockyConfig.menus.furnitureMenu.height)
 
 }
 
