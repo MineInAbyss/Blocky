@@ -6,9 +6,10 @@ import com.mineinabyss.blocky.compatibility.WorldEditSupport
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
 import com.mineinabyss.blocky.listeners.*
-import com.mineinabyss.geary.addon.GearyLoadPhase
-import com.mineinabyss.geary.addon.autoscan
-import com.mineinabyss.geary.papermc.dsl.gearyAddon
+import com.mineinabyss.geary.addons.GearyPhase
+import com.mineinabyss.geary.autoscan.autoscan
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
@@ -16,10 +17,7 @@ import com.mineinabyss.idofront.plugin.Services
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
 import it.unimi.dsi.fastutil.ints.IntArrayList
-import net.minecraft.core.Registry
 import net.minecraft.resources.ResourceLocation
-import net.minecraft.tags.BlockTags
-import net.minecraft.world.item.Item
 import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -73,14 +71,12 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
-        gearyAddon {
-            autoscan("com.mineinabyss") {
+        geary {
+            autoscan(classLoader, "com.mineinabyss") {
                 all()
             }
-            startup {
-                GearyLoadPhase.ENABLE {
-                    runStartupFunctions()
-                }
+            on(GearyPhase.ENABLE) {
+                runStartupFunctions()
             }
         }
     }
@@ -92,7 +88,7 @@ class BlockyPlugin : JavaPlugin() {
         MoreCreativeTabsGeneration().generateModAssets()
     }
 
-    private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
+    /*private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
         val map = Registry.BLOCK.tags.map { pair ->
             pair.first.location to IntArrayList(pair.second.size()).apply {
                 // If the tag is MINEABLE_WITH_AXE, don't add noteblock
@@ -105,7 +101,7 @@ class BlockyPlugin : JavaPlugin() {
         }.toList().toMap()
 
         return map
-    }
+    }*/
 
     private fun createBlockMap(): Map<BlockData, Int> {
         val blockMap = mutableMapOf<BlockData, Int>()

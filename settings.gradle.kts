@@ -1,16 +1,17 @@
+import org.gradle.internal.impldep.junit.runner.Version.id
+
 rootProject.name = "blocky"
 
 pluginManagement {
     repositories {
         gradlePluginPortal()
+
         maven("https://repo.mineinabyss.com/releases")
         maven("https://repo.papermc.io/repository/maven-public/") //Paper
     }
+
+    val composeVersion: String by settings
     plugins {
-        val kotlinVersion: String by settings
-        val composeVersion: String by settings
-        kotlin("jvm") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
         id("org.jetbrains.compose") version composeVersion
     }
 
@@ -25,6 +26,7 @@ pluginManagement {
 
 dependencyResolutionManagement {
     val idofrontVersion: String by settings
+    val gearyVersion: String by settings
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
@@ -32,6 +34,7 @@ dependencyResolutionManagement {
 
     versionCatalogs {
         create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("gearyLibs").from("com.mineinabyss:geary-catalog:$gearyVersion")
         create("blockyLibs").from(files("gradle/blockyLibs.versions.toml"))
     }
 }

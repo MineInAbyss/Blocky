@@ -1,13 +1,11 @@
 [versions]
-geary = "0.21.2"
-gearyaddons = "0.9.0.50"
-looty = "0.9.1"
+gearyPaper = "0.23.6"
+looty = "0.9.3"
 guiy="0.8.0"
 deeperworld="0.7.0"
 
 [libraries]
-geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
-geary-commons-papermc = { module = "com.mineinabyss:geary-commons-papermc", version.ref = "gearyaddons" }
+geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "gearyPaper" }
 looty = { module = "com.mineinabyss:looty", version.ref = "looty" }
 deeperworld = { module = "com.mineinabyss:deeperworld", version.ref = "deeperworld" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }

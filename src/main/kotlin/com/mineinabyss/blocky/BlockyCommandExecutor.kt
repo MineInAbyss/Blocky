@@ -7,9 +7,11 @@ import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
+import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.guiy.inventory.guiy
-import com.mineinabyss.idofront.commands.CommandHolder
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
@@ -20,7 +22,6 @@ import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.idofront.plugin.actions
 import com.mineinabyss.looty.LootyFactory
-import com.mineinabyss.looty.LootySerializablePrefabItemService.prefabManager
 import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.Color
 import org.bukkit.command.Command
@@ -31,7 +32,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.PotionMeta
 
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
-    override val commands: CommandHolder = commands(blockyPlugin) {
+    override val commands = commands(blockyPlugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
                 fun reloadConfig() {
@@ -42,7 +43,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 fun reloadItems() {
                     blockyPlugin.launch {
                         BlockyQuery.forEach {
-                            prefabManager.reread(it.entity)
+                            prefabs.loader.reread(it.entity)
                         }
                         sender.success("Blocky items have been reloaded!")
                     }

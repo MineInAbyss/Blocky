@@ -1,12 +1,13 @@
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("com.mineinabyss.conventions.kotlin")
-    id("com.mineinabyss.conventions.copyjar")
-    id("com.mineinabyss.conventions.publication")
-    id("com.mineinabyss.conventions.papermc")
-    id ("com.mineinabyss.conventions.nms")
-    id("com.mineinabyss.conventions.autoversion")
-    id("org.jetbrains.compose")
-    kotlin("plugin.serialization")
+    alias(libs.plugins.mia.kotlin.jvm)
+    alias(libs.plugins.kotlinx.serialization)
+    alias(libs.plugins.mia.papermc)
+    alias(libs.plugins.mia.nms)
+    alias(libs.plugins.mia.copyjar)
+    alias(libs.plugins.mia.publication)
+    alias(libs.plugins.mia.autoversion)
+    alias(libs.plugins.compose)
 }
 
 repositories {
@@ -22,14 +23,14 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
-    compileOnly(libs.kotlin.stdlib)
     compileOnly(libs.kotlinx.serialization.json)
     compileOnly(libs.kotlinx.serialization.kaml)
     compileOnly(libs.kotlinx.coroutines)
     compileOnly(libs.minecraft.mccoroutine)
 
     // Geary platform
-    compileOnly(blockyLibs.geary.papermc.core)
+    compileOnly(blockyLibs.geary.papermc)
+    compileOnly(gearyLibs.autoscan)
     compileOnly(blockyLibs.looty)
     compileOnly(blockyLibs.deeperworld)
     compileOnly(blockyLibs.guiy)
@@ -49,9 +50,6 @@ dependencies {
 
     implementation(libs.bundles.idofront.core)
     implementation(libs.idofront.nms)
-    implementation(libs.idofront.autoscan) {
-        exclude("org.reflections")
-    }
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

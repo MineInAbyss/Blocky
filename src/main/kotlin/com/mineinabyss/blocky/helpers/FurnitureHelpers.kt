@@ -11,8 +11,8 @@ import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.components.features.BlockySeatLocations
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.access.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.items.editItemMeta
@@ -166,7 +166,7 @@ fun GearyEntity.placeBlockyFurniture(
         return
     }
 
-    newFurniture.toGeary {
+    newFurniture.toGeary().apply {
         if (this.get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
             this.placeFurnitureHitbox(yaw, loc, player)
         } else if (has<BlockyLight>())

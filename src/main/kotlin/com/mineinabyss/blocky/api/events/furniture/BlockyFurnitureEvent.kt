@@ -2,8 +2,8 @@ package com.mineinabyss.blocky.api.events.furniture
 
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
-import com.mineinabyss.geary.papermc.access.toGeary
-import com.mineinabyss.geary.papermc.access.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import org.bukkit.entity.Entity
 import org.bukkit.event.HandlerList
 import org.bukkit.event.entity.EntityEvent

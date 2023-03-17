@@ -18,7 +18,7 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
 import com.mineinabyss.looty.tracking.toGearyOrNull
@@ -65,7 +65,7 @@ class BlockyGenericListener : Listener {
     }
 
     private fun Player.stopMiningJob() {
-        toGeary {
+        toGeary().apply {
             get<PlayerIsMining>()?.miningTask?.cancel() ?: return
             get<PlayerIsMining>()?.miningTask = null
             remove<PlayerIsMining>()
