@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky
 
+//import net.minecraft.resources.ResourceLocation
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.compatibility.WorldEditListener
 import com.mineinabyss.blocky.compatibility.WorldEditSupport
@@ -9,15 +10,12 @@ import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.Services
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
-import it.unimi.dsi.fastutil.ints.IntArrayList
-import net.minecraft.resources.ResourceLocation
 import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -29,7 +27,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::class.java) }
 var blockMap = mapOf<BlockData, Int>()
-var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
+//var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 
 interface BlockyContext {
     companion object : BlockyContext by Services.get()
@@ -57,7 +55,7 @@ class BlockyPlugin : JavaPlugin() {
             BlockyFurnitureListener(),
             BlockySaplingListener(),
             BlockyMiddleClickListener(),
-            BlockyNMSListener(),
+            //BlockyNMSListener(),
         )
 
         blockyConfig.run {

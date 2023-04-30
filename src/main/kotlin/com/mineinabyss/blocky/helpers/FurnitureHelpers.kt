@@ -2,6 +2,8 @@ package com.mineinabyss.blocky.helpers
 
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
+import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.*
@@ -30,6 +32,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.PotionMeta
+import org.joml.Vector3f
 import kotlin.math.max
 
 val FURNITURE_ORIGIN = NamespacedKey(blockyPlugin, "furniture_origin")
@@ -50,7 +53,7 @@ fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<Bl
 }
 
 fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
-    val furniture = nullFurniture ?: BlockyFurniture(BlockyFurniture.FurnitureType.ARMOR_STAND)
+    val furniture = nullFurniture ?: BlockyFurniture()
     val rotationDegree = if (furniture.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
     val id = (((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8).apply {
         if (furniture.hasStrictRotation && this % 2 != 0) this - rotationDegree
@@ -65,13 +68,18 @@ fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     else collisionHitbox.let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
 }
 
+val ItemDisplay.interactionEntity: Interaction?
+    get() = this.passengers.filterIsInstance<Interaction>().firstOrNull { it.isFurnitureHitbox }
+val Interaction.baseFurniture: ItemDisplay?
+    get() = this.vehicle?.let { if (it is ItemDisplay && it.isBlockyFurniture) it else null }
+
 fun GearyEntity.placeBlockyFurniture(
     player: Player,
     loc: Location,
     blockFace: BlockFace,
     item: ItemStack = player.inventory.itemInMainHand,
 ) {
-    val furniture = get<BlockyFurniture>()
+    val furniture = get<BlockyFurniture>() ?: return
     val info = get<BlockyInfo>()
     val placableOn = get<BlockyPlacableOn>()
     val light = get<BlockyLight>()
@@ -80,11 +88,10 @@ fun GearyEntity.placeBlockyFurniture(
     val modelengine = get<BlockyModelEngine>()
     val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, item, player, true, EquipmentSlot.HAND)
     val rotation = getRotation(player.location.yaw, furniture)
-    val yaw = if (furniture?.furnitureType != BlockyFurniture.FurnitureType.ARMOR_STAND || furniture.hasStrictRotation)
-        getYaw(rotation) else player.location.yaw - 180
+    val yaw = if (furniture.hasStrictRotation) getYaw(rotation) else player.location.yaw - 180
 
     when {
-        furniture?.hasEnoughSpace(loc, yaw) == false -> blockPlaceEvent.isCancelled = true
+        !furniture.hasEnoughSpace(loc, yaw) -> blockPlaceEvent.isCancelled = true
         !ProtectionLib.canBuild(player, loc) || !blockPlaceEvent.canBuild() -> blockPlaceEvent.isCancelled = true
         placableOn?.isPlacableOn(loc.block, blockFace) == false -> blockPlaceEvent.isCancelled = true
         loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> blockPlaceEvent.isCancelled = true
@@ -98,7 +105,7 @@ fun GearyEntity.placeBlockyFurniture(
         }
     } ?: return
 
-    val newFurniture = when {
+    /*val newFurniture = when {
         furniture?.furnitureType == BlockyFurniture.FurnitureType.ITEM_FRAME -> {
             loc.toBlockCenterLocation().spawn<ItemFrame> {
                 isVisible = false
@@ -138,10 +145,37 @@ fun GearyEntity.placeBlockyFurniture(
         }
 
         else -> return
+    } ?: return*/
+    val newFurniture = loc.toBlockCenterLocation().spawn<ItemDisplay> {
+        isPersistent = true
+        setRotation(yaw, 0F)
+        setGravity(false)
+
+        furniture.properties.let { p ->
+            itemDisplayTransform = p.displayTransform
+            p.brightness?.let { brightness = it }
+            p.trackingRotation?.let { billboard = it }
+            p.viewRange?.let { viewRange = it }
+            p.shadowRadius?.let { shadowRadius = it }
+            p.shadowStrength?.let { shadowStrength = it }
+
+
+            val isFixed: Boolean = itemDisplayTransform == ItemDisplay.ItemDisplayTransform.FIXED
+            transformation = transformation.apply {
+                if (isFixed) scale.set(Vector3f(0.5f, 0.5f, 0.5f))
+                else scale.set(p.scale)
+            }
+
+            setRotation(getYaw(rotation.rotateClockwise().rotateClockwise().rotateClockwise().rotateClockwise()), if (isFixed) 90f else 0f)
+            if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE)
+                teleport(location.toCenterLocation())
+
+        }
+        this.itemStack = lootyItem
     } ?: return
 
     newFurniture.toGeary().apply {
-        furniture?.let { setPersisting(it) }
+        setPersisting(furniture)
         info?.let { this.setPersisting(it) }
         light?.let { this.setPersisting(it) }
         seat?.let { this.setPersisting(it) }
@@ -149,6 +183,18 @@ fun GearyEntity.placeBlockyFurniture(
         sounds?.let { this.setPersisting(it) }
         modelengine?.let { this.setPersisting(it) }
     }
+
+    // Spawn Interaction Entity and remove both entities if it fails
+    val interaction = newFurniture.location.toBlockCenterLocation().spawn<Interaction> {
+        interactionHeight = newFurniture.displayHeight
+        interactionWidth = newFurniture.displayWidth
+    } ?: run {
+        newFurniture.remove()
+        return
+    }
+
+    //TODO Not sure if this is helpful or if interaction should mount base entity or reverse
+    newFurniture.passengers += interaction
 
     modelengine?.let { meg ->
         if (!blockyPlugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let

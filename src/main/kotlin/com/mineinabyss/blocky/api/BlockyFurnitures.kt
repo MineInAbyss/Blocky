@@ -15,20 +15,17 @@ import com.mineinabyss.looty.tracking.toGearyFromUUIDOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
 import org.bukkit.block.Block
-import org.bukkit.entity.ArmorStand
-import org.bukkit.entity.Entity
-import org.bukkit.entity.ItemFrame
-import org.bukkit.entity.Player
+import org.bukkit.entity.*
 import org.bukkit.inventory.ItemStack
 
 
 object BlockyFurnitures {
 
-    val ItemStack.furnitureType: BlockyFurniture.FurnitureType?
-        get() = toGearyFromUUIDOrNull()?.get<BlockyFurniture>()?.furnitureType
+    /*val ItemStack.furnitureType: BlockyFurniture.FurnitureType?
+        get() = toGearyFromUUIDOrNull()?.get<BlockyFurniture>()?.furnitureType*/
 
-    val Entity.furnitureType: BlockyFurniture.FurnitureType?
-        get() = toGearyOrNull()?.get<BlockyFurniture>()?.furnitureType
+    /*val Entity.furnitureType: BlockyFurniture.FurnitureType?
+        get() = toGearyOrNull()?.get<BlockyFurniture>()?.furnitureType*/
 
     val Entity.furnitureItem: ItemStack? get() {
         return when (this) {
@@ -44,8 +41,9 @@ object BlockyFurnitures {
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
     val Block.isFurnitureHitbox: Boolean get() = this.persistentDataContainer.has(FURNITURE_ORIGIN)
+    val Entity.isFurnitureHitbox: Boolean get() = this.vehicle?.isBlockyFurniture == true
     val Block.isBlockyFurniture: Boolean get() = this.gearyEntity?.isBlockyFurniture ?: false
-    val Entity.isBlockyFurniture: Boolean get() = furnitureType != null || this.isModelEngineFurniture
+    val Entity.isBlockyFurniture: Boolean get() = this.toGearyOrNull()?.isBlockyFurniture == true || this.isModelEngineFurniture
     val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
 
     val ItemStack.blockyFurniture get() = this.toGearyFromUUIDOrNull()?.get<BlockyFurniture>()
@@ -56,7 +54,7 @@ object BlockyFurnitures {
     val Location.blockyFurnitureEntity get() = this.block.blockyFurnitureEntity
     val Block.blockyFurnitureEntity get() = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
         origin.world?.getNearbyEntities(origin.block.boundingBox)?.firstOrNull { entity ->
-            entity.toGearyOrNull()?.has<BlockyFurniture>() == true
+            entity is ItemDisplay && entity.toGearyOrNull()?.has<BlockyFurniture>() == true
         }
     }
 
@@ -74,6 +72,7 @@ object BlockyFurnitures {
         if (furnitureBreakEvent.isCancelled) return
         furnitureBreakEvent.call()
 
+        this.passengers.filterIsInstance<Interaction>().forEach(Interaction::remove)
         this.removeAssosiatedSeats()
         this.clearAssosiatedHitboxChunkEntries()
         handleFurnitureDrops(player)

@@ -7,7 +7,6 @@ import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.BlockyFurnitures.removeBlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.blocky.components.core.BlockyFurniture.FurnitureType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
@@ -31,23 +30,20 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.ProjectileHitEvent
-import org.bukkit.event.hanging.HangingBreakEvent
-import org.bukkit.event.hanging.HangingPlaceEvent
-import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
 
 class BlockyFurnitureListener : Listener {
 
-    @EventHandler
+    /*@EventHandler
     fun HangingPlaceEvent.onPlacingItemFrame() {
         val item = player?.let { itemStack?.toGearyOrNull(it) } ?: return
         item.get<BlockyFurniture>()?.furnitureType?.let {
             if (it == FurnitureType.ITEM_FRAME || it == FurnitureType.GLOW_ITEM_FRAME)
                 isCancelled = true
         }
-    }
+    }*/
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
@@ -57,22 +53,16 @@ class BlockyFurnitureListener : Listener {
         item?.toGearyOrNull(player)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
+    /*@EventHandler(priority = EventPriority.HIGHEST)
     fun HangingBreakEvent.onBreakHanging() {
         if (cause == HangingBreakEvent.RemoveCause.ENTITY) return
         if (entity.toGearyOrNull() != null) isCancelled = true
-    }
+    }*/
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingHitbox() {
         if (!block.isFurnitureHitbox || player.gameMode != GameMode.CREATIVE) return
         block.blockyFurnitureEntity?.removeBlockyFurniture(player)
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun PlayerInteractEntityEvent.onRotatingFrame() {
-        if (rightClicked is ItemFrame && rightClicked.toGearyOrNull()?.has<BlockyFurniture>() == true)
-            isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

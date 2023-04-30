@@ -1,5 +1,3 @@
-import org.gradle.internal.impldep.junit.runner.Version.id
-
 rootProject.name = "blocky"
 
 pluginManagement {
@@ -14,14 +12,6 @@ pluginManagement {
     plugins {
         id("org.jetbrains.compose") version composeVersion
     }
-
-    val idofrontVersion: String by settings
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(idofrontVersion)
-        }
-    }
 }
 
 dependencyResolutionManagement {
@@ -33,7 +23,10 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("libs") {
+            from("com.mineinabyss:catalog:$idofrontVersion")
+            version("minecraft", "1.19.4-R0.1-SNAPSHOT")
+        }
         create("gearyLibs").from("com.mineinabyss:geary-catalog:$gearyVersion")
         create("blockyLibs").from(files("gradle/blockyLibs.versions.toml"))
     }

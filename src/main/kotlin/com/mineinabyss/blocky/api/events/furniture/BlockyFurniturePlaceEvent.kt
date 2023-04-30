@@ -2,13 +2,13 @@ package com.mineinabyss.blocky.api.events.furniture
 
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import org.bukkit.entity.Entity
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.HandlerList
 
 class BlockyFurniturePlaceEvent(
-    entity: Entity,
+    entity: ItemDisplay,
     val player: Player?
 ) : BlockyFurnitureEvent(entity), Cancellable {
 
