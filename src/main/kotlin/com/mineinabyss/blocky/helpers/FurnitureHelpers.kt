@@ -186,6 +186,7 @@ fun GearyEntity.placeBlockyFurniture(
 
     // Spawn Interaction Entity and remove both entities if it fails
     val interaction = newFurniture.location.toBlockCenterLocation().spawn<Interaction> {
+        isPersistent = true
         interactionHeight = newFurniture.displayHeight
         interactionWidth = newFurniture.displayWidth
     } ?: run {
