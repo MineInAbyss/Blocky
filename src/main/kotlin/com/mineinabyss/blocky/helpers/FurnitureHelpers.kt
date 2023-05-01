@@ -2,8 +2,6 @@ package com.mineinabyss.blocky.helpers
 
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
-import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.blockyPlugin
 import com.mineinabyss.blocky.components.core.*
@@ -69,9 +67,9 @@ fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
 }
 
 val ItemDisplay.interactionEntity: Interaction?
-    get() = this.passengers.filterIsInstance<Interaction>().firstOrNull { it.isFurnitureHitbox }
+    get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.interactionHitbox?.let { Bukkit.getEntity(it) as? Interaction }
 val Interaction.baseFurniture: ItemDisplay?
-    get() = this.vehicle?.let { if (it is ItemDisplay && it.isBlockyFurniture) it else null }
+    get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity?.let { Bukkit.getEntity(it) as? ItemDisplay }
 
 fun GearyEntity.placeBlockyFurniture(
     player: Player,
@@ -174,16 +172,6 @@ fun GearyEntity.placeBlockyFurniture(
         this.itemStack = lootyItem
     } ?: return
 
-    newFurniture.toGeary().apply {
-        setPersisting(furniture)
-        info?.let { this.setPersisting(it) }
-        light?.let { this.setPersisting(it) }
-        seat?.let { this.setPersisting(it) }
-        placableOn?.let { this.setPersisting(it) }
-        sounds?.let { this.setPersisting(it) }
-        modelengine?.let { this.setPersisting(it) }
-    }
-
     // Spawn Interaction Entity and remove both entities if it fails
     val interaction = newFurniture.location.toBlockCenterLocation().spawn<Interaction> {
         isPersistent = true
@@ -194,8 +182,18 @@ fun GearyEntity.placeBlockyFurniture(
         return
     }
 
-    //TODO Not sure if this is helpful or if interaction should mount base entity or reverse
-    newFurniture.passengers += interaction
+    newFurniture.toGeary().let { gearyEntity ->
+        gearyEntity.setPersisting(furniture)
+        gearyEntity.setPersisting(BlockyFurnitureHitbox(interactionHitbox = interaction.uniqueId))
+        info?.let { gearyEntity.setPersisting(it) }
+        light?.let { gearyEntity.setPersisting(it) }
+        seat?.let { gearyEntity.setPersisting(it) }
+        placableOn?.let { gearyEntity.setPersisting(it) }
+        sounds?.let { gearyEntity.setPersisting(it) }
+        modelengine?.let { gearyEntity.setPersisting(it) }
+    }
+
+    interaction.toGeary().setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
 
     modelengine?.let { meg ->
         if (!blockyPlugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let
@@ -276,5 +274,11 @@ fun spawnFurnitureSeat(location: Location, yaw: Float) {
 fun Entity.removeAssosiatedSeats() {
     this.toGearyOrNull()?.get<BlockySeatLocations>()?.seats?.forEach { seatLoc ->
         seatLoc.block.blockySeat?.remove()
+    }
+}
+
+fun Entity.removeInteractionHitbox() {
+    this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.interactionHitbox?.let {
+        Bukkit.getEntity(it)?.remove()
     }
 }

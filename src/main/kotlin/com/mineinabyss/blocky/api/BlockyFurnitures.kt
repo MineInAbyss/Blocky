@@ -4,6 +4,7 @@ import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
 import com.mineinabyss.blocky.components.core.BlockyFurniture
+import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
@@ -41,7 +42,7 @@ object BlockyFurnitures {
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
     val Block.isFurnitureHitbox: Boolean get() = this.persistentDataContainer.has(FURNITURE_ORIGIN)
-    val Entity.isFurnitureHitbox: Boolean get() = this.vehicle?.isBlockyFurniture == true
+    val Entity.isFurnitureHitbox: Boolean get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
     val Block.isBlockyFurniture: Boolean get() = this.gearyEntity?.isBlockyFurniture ?: false
     val Entity.isBlockyFurniture: Boolean get() = this.toGearyOrNull()?.isBlockyFurniture == true || this.isModelEngineFurniture
     val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
@@ -65,6 +66,7 @@ object BlockyFurnitures {
     }
 
 
+    //TODO Change to force being ItemDisplay for safety
     fun Entity.removeBlockyFurniture(player: Player?) {
         this.toGearyOrNull()?.get<BlockyFurniture>() ?: return
         val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player)
@@ -72,7 +74,7 @@ object BlockyFurnitures {
         if (furnitureBreakEvent.isCancelled) return
         furnitureBreakEvent.call()
 
-        this.passengers.filterIsInstance<Interaction>().forEach(Interaction::remove)
+        (this as ItemDisplay).interactionEntity?.remove()
         this.removeAssosiatedSeats()
         this.clearAssosiatedHitboxChunkEntries()
         handleFurnitureDrops(player)
