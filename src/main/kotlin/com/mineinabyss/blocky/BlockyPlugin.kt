@@ -53,7 +53,6 @@ class BlockyPlugin : JavaPlugin() {
         listeners(
             BlockyGenericListener(),
             BlockyFurnitureListener(),
-            BlockySaplingListener(),
             BlockyMiddleClickListener(),
             //BlockyNMSListener(),
         )

@@ -229,7 +229,7 @@ private fun GearyEntity.placeFurnitureHitbox(yaw: Float, originLocation: Locatio
     val seat = this.get<BlockySeat>()
 
     locations.forEach { loc ->
-        loc.block.setType(furniture.hitboxMaterial, false)
+        loc.block.setType(Material.BARRIER, false)
         light?.let { handleLight.createBlockLight(loc, light) }
         seat?.let {
             spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, seat.heightOffset) }, player.location.yaw - 180)

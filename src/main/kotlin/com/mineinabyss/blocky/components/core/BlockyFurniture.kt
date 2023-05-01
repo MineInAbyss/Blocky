@@ -5,7 +5,6 @@ import com.mineinabyss.blocky.serializers.Vector3fSerializer
 import com.mineinabyss.blocky.systems.BlockLocation
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bukkit.Material
 import org.bukkit.entity.Display.Billboard
 import org.bukkit.entity.Display.Brightness
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform
@@ -18,9 +17,13 @@ data class BlockyFurniture(
     val properties: FurnitureProperties = FurnitureProperties(),
     val rotationType: RotationType = RotationType.VERY_STRICT,
     val collisionHitbox: List<BlockLocation> = emptyList(),
-    val solidHitbox: Boolean = true,
+    val interactionHitbox: InteractionHitbox = InteractionHitbox(1f, 1f),
     val originOffset: BlockLocation = BlockLocation(0, 0, 0),
 ) {
+    @Serializable
+    @SerialName("blocky:interaction_hitbox")
+    data class InteractionHitbox(val width: Float, val height: Float)
+
 //    enum class FurnitureType {
 //        ARMOR_STAND, ITEM_FRAME, GLOW_ITEM_FRAME
 //    }
@@ -44,5 +47,4 @@ data class BlockyFurniture(
     )
 
     val hasStrictRotation get() = rotationType != RotationType.NONE
-    val hitboxMaterial get() = if (solidHitbox) Material.BARRIER else Material.OAK_SAPLING
 }

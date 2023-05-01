@@ -178,7 +178,6 @@ val Block.prefabKey
 val BlockData.prefabKey get(): PrefabKey? {
     val type =
         when {
-            //TODO This might also need sapling for future
             material == Material.BARRIER -> return null
             material == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
             material == Material.TRIPWIRE -> BlockType.WIRE

@@ -22,7 +22,7 @@ class BlockyMiddleClickListener : Listener {
         if (click != ClickType.CREATIVE) return
         val player = inventory.holder as? Player ?: return
         when {
-            (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.OAK_SAPLING, Material.ITEM_FRAME).apply { addAll(
+            (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.ITEM_FRAME).apply { addAll(
                 BLOCKY_SLABS).apply { addAll(BLOCKY_STAIRS) } }) -> {
                 //TODO For some reason BARRIER returns null here over entity, when everywhere else it doesnt? no clue
                 val lookingAtPrefab =
