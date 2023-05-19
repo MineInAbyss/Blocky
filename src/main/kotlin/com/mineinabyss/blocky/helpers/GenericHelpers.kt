@@ -28,6 +28,7 @@ import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.GearyItemProvider
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.nms.aliases.toNMS
@@ -78,6 +79,15 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
+internal fun GearyItemProvider.deserializeItemStackToEntity(
+    reference: ItemStack?,
+    holder: GearyEntity? = null,
+): GearyEntity? {
+    if (reference == null) return null
+    val itemStack = reference.toNMS() ?: return null
+    return deserializeItemStackToEntity(itemStack, holder)
+}
+
 internal fun Block.attemptBreakBlockyBlock(player: Player?) {
     val prefab = this.gearyEntity ?: return
     val blockBreakEvent = player?.let { BlockBreakEvent(this, it) }
@@ -96,7 +106,7 @@ internal fun Block.attemptBreakBlockyBlock(player: Player?) {
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
-    return toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.has<BlockyBlock>() == true
+    return itemProvider.deserializeItemStackToEntity(this, player.toGeary())?.has<BlockyBlock>() == true
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
@@ -115,7 +125,7 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
     val gearyBlock = block.gearyEntity ?: return false
     val info = gearyBlock.get<BlockyInfo>() ?: return false
-    val allowedToolTypes = toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary())?.get<BlockyMining>()?.toolTypes }
+    val allowedToolTypes = itemProvider.deserializeItemStackToEntity(this, player.toGeary())?.get<BlockyMining>()?.toolTypes
         ?: return false
 
     return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }

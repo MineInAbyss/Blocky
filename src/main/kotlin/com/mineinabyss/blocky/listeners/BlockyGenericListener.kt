@@ -21,7 +21,6 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
@@ -77,7 +76,8 @@ class BlockyGenericListener : Listener {
     fun BlockDamageEvent.onDamage() {
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
-        val itemInHand = player.inventory.itemInMainHand.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.get<BlockyMining>()
+
+        val itemInHand = itemProvider.deserializeItemStackToEntity(player.inventory.itemInMainHand, player.toGeary())?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /
                 (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
 

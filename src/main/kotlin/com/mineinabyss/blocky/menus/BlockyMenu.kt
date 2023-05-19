@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
+import com.mineinabyss.blocky.helpers.deserializeItemStackToEntity
 import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -9,7 +10,6 @@ import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.idofront.items.editItemMeta
-import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -46,7 +46,7 @@ fun HandleMenuClicks(key: PrefabKey, player: Player) {
         when (clickType) {
             ClickType.LEFT -> {
                 if (cursor == null) cursor = block
-                else if (cursor?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it) } == block?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }) cursor?.add(1)
+                else if (itemProvider.deserializeItemStackToEntity(cursor, player.toGeary()) == itemProvider.deserializeItemStackToEntity(block, player.toGeary())) cursor?.add(1)
                 else cursor = block?.asQuantity(1)
             }
             ClickType.RIGHT -> {

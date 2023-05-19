@@ -3,6 +3,7 @@ package com.mineinabyss.blocky
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDirectional
+import com.mineinabyss.blocky.helpers.deserializeItemStackToEntity
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
@@ -19,7 +20,6 @@ import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
-import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.plugin.actions
 import org.bukkit.Color
 import org.bukkit.command.Command
@@ -89,7 +89,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
                     val item = player.inventory.itemInMainHand
-                    val furniture = item.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary())?.get<BlockyFurniture>() }
+                    val furniture = itemProvider.deserializeItemStackToEntity(item, player.toGeary())?.get<BlockyFurniture>()
 
                     if (furniture == null) {
                         player.error("This command only supports furniture.")

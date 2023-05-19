@@ -10,12 +10,12 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
+import com.mineinabyss.blocky.helpers.deserializeItemStackToEntity
 import com.mineinabyss.blocky.helpers.getTargetBlock
 import com.mineinabyss.blocky.helpers.placeBlockyFurniture
 import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.idofront.nms.aliases.toNMS
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.block.Block
@@ -42,7 +42,7 @@ class BlockyFurnitureListener : Listener {
         val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
-        item?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
+        itemProvider.deserializeItemStackToEntity(item, player.toGeary())?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

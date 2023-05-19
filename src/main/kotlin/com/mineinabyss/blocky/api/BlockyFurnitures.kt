@@ -13,7 +13,6 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.nms.aliases.toNMS
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -48,7 +47,7 @@ object BlockyFurnitures {
     val Entity.isBlockyFurniture: Boolean get() = this.toGearyOrNull()?.isBlockyFurniture == true || this.isModelEngineFurniture
     val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
 
-    val ItemStack.blockyFurniture get() = toNMS()?.let { itemProvider.deserializeItemStackToEntity(it)?.get<BlockyFurniture>() }
+    val ItemStack.blockyFurniture get() = itemProvider.deserializeItemStackToEntity(this)
     val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
     val Location.blockyFurniture get() = this.block.gearyEntity?.get<BlockyFurniture>()
     val Block.blockyFurniture get() = this.gearyEntity?.get<BlockyFurniture>()
