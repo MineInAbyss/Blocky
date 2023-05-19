@@ -6,8 +6,10 @@ import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -36,7 +38,7 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item?.type in BLOCKY_SLABS) return
 
-            val blockyBlock = item?.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
+            val blockyBlock = item?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.get<BlockyBlock>() ?: return
             val against = clickedBlock ?: return
 
             if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
@@ -156,7 +158,7 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item?.type in BLOCKY_STAIRS) return
 
-            val blockyBlock = item?.toGearyOrNull(player)?.get<BlockyBlock>() ?: return
+            val blockyBlock = item?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.get<BlockyBlock>() ?: return
             val against = clickedBlock ?: return
             if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
             if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return

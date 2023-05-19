@@ -10,6 +10,7 @@ import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
+import com.mineinabyss.geary.papermc.tracking.items.GearyItemProvider
 import com.mineinabyss.idofront.config.IdofrontConfig
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.platforms.Platforms
@@ -26,6 +27,7 @@ import org.bukkit.block.data.type.*
 import org.bukkit.plugin.java.JavaPlugin
 
 val blockyPlugin: BlockyPlugin by lazy { JavaPlugin.getPlugin(BlockyPlugin::class.java) }
+val itemProvider by lazy { GearyItemProvider() }
 var blockMap = mapOf<BlockData, Int>()
 //var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 

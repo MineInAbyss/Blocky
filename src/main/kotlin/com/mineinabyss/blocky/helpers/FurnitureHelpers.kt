@@ -9,6 +9,7 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.components.features.BlockySeatLocations
+import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -17,7 +18,6 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
-import com.mineinabyss.looty.LootyFactory
 import com.ticxo.modelengine.api.ModelEngineAPI
 import io.th0rgal.protectionlib.ProtectionLib
 import net.kyori.adventure.text.Component
@@ -29,6 +29,7 @@ import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
+import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
 import org.joml.Vector3f
 import kotlin.math.max
@@ -96,10 +97,11 @@ fun GearyEntity.placeBlockyFurniture(
     }
     if (blockPlaceEvent.isCancelled) return
     val lootyItem = get<PrefabKey>()?.let {
-        LootyFactory.createFromPrefab(it)?.editItemMeta {
+        itemProvider.serializePrefabToItemStack(it)?.editItemMeta {
             displayName(Component.empty())
             (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
-                ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color) ?: return@editItemMeta
+                ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color)
+                ?: (this as? MapMeta)?.setColor((item.itemMeta as? MapMeta)?.color) ?: return@editItemMeta
         }
     } ?: return
 

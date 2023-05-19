@@ -24,10 +24,6 @@ data class BlockyFurniture(
     @SerialName("blocky:interaction_hitbox")
     data class InteractionHitbox(val width: Float, val height: Float)
 
-//    enum class FurnitureType {
-//        ARMOR_STAND, ITEM_FRAME, GLOW_ITEM_FRAME
-//    }
-
     enum class RotationType {
         NONE, STRICT, VERY_STRICT
     }

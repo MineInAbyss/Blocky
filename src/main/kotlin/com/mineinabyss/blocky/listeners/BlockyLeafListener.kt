@@ -8,7 +8,9 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import org.bukkit.Material
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
@@ -50,7 +52,7 @@ class BlockyLeafListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
-        val gearyItem = item?.toGearyOrNull(player) ?: return
+        val gearyItem = item?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) } ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val against = clickedBlock ?: return
@@ -68,7 +70,7 @@ class BlockyLeafListener : Listener {
     //TODO Isnt this all done inside placeBlockyBlock?
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        val gearyItem = itemInHand.toGearyOrNull(player) ?: return
+        val gearyItem = itemInHand.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) } ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
 
         if (!gearyItem.has<BlockyInfo>()) return

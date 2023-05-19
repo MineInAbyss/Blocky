@@ -1,15 +1,16 @@
 package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
+import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.clickable
 import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.mineinabyss.looty.LootyFactory
-import com.mineinabyss.looty.tracking.toGearyFromUUIDOrNull
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
@@ -40,12 +41,12 @@ fun BlockyUIScope.BlockyMenu() {
 
 @Composable
 fun HandleMenuClicks(key: PrefabKey, player: Player) {
-    val block = LootyFactory.createFromPrefab(key)
+    val block = itemProvider.serializePrefabToItemStack(key)
     Item(block, Modifier.clickable {
         when (clickType) {
             ClickType.LEFT -> {
                 if (cursor == null) cursor = block
-                else if (cursor?.toGearyFromUUIDOrNull() == block?.toGearyFromUUIDOrNull()) cursor?.add(1)
+                else if (cursor?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it) } == block?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }) cursor?.add(1)
                 else cursor = block?.asQuantity(1)
             }
             ClickType.RIGHT -> {

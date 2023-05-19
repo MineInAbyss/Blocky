@@ -12,9 +12,10 @@ import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
 import com.mineinabyss.blocky.helpers.getTargetBlock
 import com.mineinabyss.blocky.helpers.placeBlockyFurniture
+import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.block.Block
@@ -36,28 +37,13 @@ import org.bukkit.inventory.EquipmentSlot
 
 class BlockyFurnitureListener : Listener {
 
-    /*@EventHandler
-    fun HangingPlaceEvent.onPlacingItemFrame() {
-        val item = player?.let { itemStack?.toGearyOrNull(it) } ?: return
-        item.get<BlockyFurniture>()?.furnitureType?.let {
-            if (it == FurnitureType.ITEM_FRAME || it == FurnitureType.GLOW_ITEM_FRAME)
-                isCancelled = true
-        }
-    }*/
-
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
         val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
-        item?.toGearyOrNull(player)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
+        item?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
     }
-
-    /*@EventHandler(priority = EventPriority.HIGHEST)
-    fun HangingBreakEvent.onBreakHanging() {
-        if (cause == HangingBreakEvent.RemoveCause.ENTITY) return
-        if (entity.toGearyOrNull() != null) isCancelled = true
-    }*/
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingHitbox() {

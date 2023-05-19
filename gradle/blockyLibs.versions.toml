@@ -1,12 +1,10 @@
 [versions]
-gearyPaper = "0.23.10"
-looty = "0.9.3"
+gearyPaper = "0.24-SNAPSHOT"
 guiy="0.8.0"
-deeperworld="0.7.0"
+deeperworld="0.7.6"
 
 [libraries]
 geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "gearyPaper" }
-looty = { module = "com.mineinabyss:looty", version.ref = "looty" }
 deeperworld = { module = "com.mineinabyss:deeperworld", version.ref = "deeperworld" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 

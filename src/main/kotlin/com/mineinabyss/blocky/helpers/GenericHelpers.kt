@@ -21,15 +21,17 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
+import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.util.randomOrMin
-import com.mineinabyss.looty.tracking.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
 import org.bukkit.block.*
@@ -94,7 +96,7 @@ internal fun Block.attemptBreakBlockyBlock(player: Player?) {
 }
 
 fun ItemStack.isBlockyBlock(player: Player): Boolean {
-    return toGearyOrNull(player)?.has<BlockyBlock>() == true
+    return toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) }?.has<BlockyBlock>() == true
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
@@ -104,8 +106,7 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 
     if (info.onlyDropWithCorrectTool) {
         if (player == null) return
-        val itemInHand = player.inventory.itemInMainHand
-        if (!itemInHand.isCorrectTool(player, block)) return
+        if (!player.inventory.itemInMainHand.isCorrectTool(player, block)) return
     }
 
     gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
@@ -114,7 +115,8 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
     val gearyBlock = block.gearyEntity ?: return false
     val info = gearyBlock.get<BlockyInfo>() ?: return false
-    val allowedToolTypes = toGearyOrNull(player)?.get<BlockyMining>()?.toolTypes ?: return false
+    val allowedToolTypes = toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary())?.get<BlockyMining>()?.toolTypes }
+        ?: return false
 
     return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
 }

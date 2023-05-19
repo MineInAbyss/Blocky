@@ -13,8 +13,10 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
@@ -115,7 +117,7 @@ class BlockyNoteBlockListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
-        val gearyItem = item?.toGearyOrNull(player) ?: return
+        val gearyItem = item?.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) } ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val against = clickedBlock ?: return
 

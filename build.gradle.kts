@@ -3,7 +3,7 @@ plugins {
     alias(libs.plugins.mia.kotlin.jvm)
     alias(libs.plugins.kotlinx.serialization)
     alias(libs.plugins.mia.papermc)
-    //alias(libs.plugins.mia.nms.reo)
+    alias(libs.plugins.mia.nms)
     alias(libs.plugins.mia.copyjar)
     alias(libs.plugins.mia.publication)
     alias(libs.plugins.mia.autoversion)
@@ -13,6 +13,7 @@ plugins {
 repositories {
     mavenCentral()
     maven("https://repo.mineinabyss.com/releases")
+    maven("https://repo.mineinabyss.com/snapshots")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") { metadataSources { artifact() } } // Model Engine
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
@@ -31,7 +32,6 @@ dependencies {
     // Geary platform
     compileOnly(blockyLibs.geary.papermc)
     compileOnly(gearyLibs.autoscan)
-    compileOnly(blockyLibs.looty)
     compileOnly(blockyLibs.deeperworld)
     compileOnly(blockyLibs.guiy)
 

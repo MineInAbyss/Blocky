@@ -7,8 +7,7 @@ import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.papermc.gearyPaper
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.guiy.inventory.guiy
@@ -20,15 +19,15 @@ import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.plugin.actions
-import com.mineinabyss.looty.LootyFactory
-import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.Color
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.bukkit.inventory.meta.LeatherArmorMeta
+import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
 
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
@@ -76,7 +75,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         player.error("No empty slots in inventory")
                         return@playerAction
                     }
-                    val item = LootyFactory.createFromPrefab(PrefabKey.of(type))
+                    val item = itemProvider.serializePrefabToItemStack(PrefabKey.of(type))
                     if (item == null) {
                         player.error("$type exists but is not a block.")
                         return@playerAction
@@ -90,7 +89,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
                     val item = player.inventory.itemInMainHand
-                    val furniture = item.toGearyOrNull(player)?.get<BlockyFurniture>()
+                    val furniture = item.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary())?.get<BlockyFurniture>() }
 
                     if (furniture == null) {
                         player.error("This command only supports furniture.")
@@ -98,8 +97,9 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     item.editItemMeta {
-                        ((this as? LeatherArmorMeta)?.setColor(color.toColor)
-                            ?: (this as? PotionMeta)?.setColor(color.toColor)) ?: return@playerAction
+                        (this as? LeatherArmorMeta)?.setColor(color.toColor)
+                            ?: (this as? PotionMeta)?.setColor(color.toColor)
+                            ?: (this as? MapMeta)?.setColor(color.toColor) ?: return@playerAction
                     }
                     player.success("Dyed item to <$color>$color")
                 }

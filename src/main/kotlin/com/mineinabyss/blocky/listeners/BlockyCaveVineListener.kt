@@ -5,7 +5,9 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.nms.aliases.toNMS
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -80,7 +82,7 @@ class BlockyCaveVineListener : Listener {
             return
         }
 
-        val gearyVine = item.toGearyOrNull(player) ?: return
+        val gearyVine = item.toNMS()?.let { itemProvider.deserializeItemStackToEntity(it, player.toGeary()) } ?: return
         val blockyVine = gearyVine.get<BlockyBlock>() ?: return
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
         if (blockyVine.blockType != BlockType.CAVEVINE) return

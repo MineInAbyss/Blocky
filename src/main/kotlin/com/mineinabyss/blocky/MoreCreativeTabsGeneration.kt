@@ -11,7 +11,6 @@ import com.mineinabyss.blocky.systems.blockyFurnitureQuery
 import com.mineinabyss.blocky.systems.blockyPlantQuery
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.accessors.TargetScope
-import com.mineinabyss.looty.LootyFactory
 import okio.Path.Companion.toPath
 import org.bukkit.inventory.ItemStack
 import java.io.File
@@ -71,7 +70,7 @@ class MoreCreativeTabsGeneration {
         }
     }
 
-    private val PrefabKey.lootyItem get() = LootyFactory.createFromPrefab(this)
+    private val PrefabKey.lootyItem get() = itemProvider.serializePrefabToItemStack(this)
     private val ItemStack.customModelData get() = if (this.itemMeta.hasCustomModelData()) this.itemMeta.customModelData else 0
 
 }
