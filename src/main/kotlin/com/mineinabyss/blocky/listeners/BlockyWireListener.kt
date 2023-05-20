@@ -12,7 +12,6 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
@@ -67,7 +66,7 @@ class BlockyWireListener : Listener {
             block.state.update(true, false)
             blockAgainst.state.update(true, false)
 
-            if (itemProvider.deserializeItemStackToEntity(itemInHand, player.toGeary())?.has<BlockyBlock>() != true)
+            if (getGearyInventoryEntity(player, EquipmentSlot.HAND)?.has<BlockyBlock>() != true)
                 block.setBlockData(Material.TRIPWIRE.createBlockData(), false)
             block.fixClientsideUpdate()
         }
@@ -78,9 +77,8 @@ class BlockyWireListener : Listener {
         if (action == Action.RIGHT_CLICK_BLOCK && clickedBlock?.type == Material.TRIPWIRE) {
             if (hand != EquipmentSlot.HAND) return
 
-            val item = item ?: return
-            val hand = hand ?: return
-            val blockyBlock = itemProvider.deserializeItemStackToEntity(item, player.toGeary())?.get<BlockyBlock>() ?: return
+            val (item, hand) = (item ?: return) to (hand ?: return)
+            val blockyBlock = getGearyInventoryEntity(player, hand)?.get<BlockyBlock>() ?: return
             var type = item.type
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
@@ -111,30 +109,32 @@ class BlockyWireListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyWire() {
+        val (item, hand) = (item ?: return) to (hand ?: return)
+        val clickedBlock = clickedBlock ?: return
+
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
-        val clickedBlock = clickedBlock ?: return
         if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock.location) is Tripwire) {
             isCancelled = true
             return
         } else if (clickedBlock.type.isInteractable && !player.isSneaking) return
 
         // Fixes tripwire updating when placing blocks next to it
-        if (item?.type?.isBlock == true && itemProvider.deserializeItemStackToEntity(item, player.toGeary())?.has<BlockyBlock>() != true) {
+        if (item.type.isBlock && getGearyInventoryEntity(player, hand)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
                 if (clickedBlock.getRelative(it).gearyEntity == null) return@forEach
-                placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, item!!.type.createBlockData())
+                placeBlockyBlock(player, hand, item, clickedBlock, blockFace, item.type.createBlockData())
                 clickedBlock.fixClientsideUpdate()
             }
         }
 
-        val blockyWire = itemProvider.deserializeItemStackToEntity(item, player.toGeary()) ?: return
+        val blockyWire = getGearyInventoryEntity(player, hand) ?: return
         val wireBlock = blockyWire.get<BlockyBlock>() ?: return
         if (wireBlock.blockType != BlockType.WIRE) return
         if (!blockyWire.has<BlockyInfo>()) return
 
         val placedWire =
-            placeBlockyBlock(player, hand!!, item!!, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
+            placeBlockyBlock(player, hand, item, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
         placedWire.fixClientsideUpdate()
     }

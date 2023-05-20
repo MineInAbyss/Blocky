@@ -5,8 +5,6 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -71,7 +69,7 @@ class BlockyCaveVineListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyCaveVine() {
         val clickedBlock = clickedBlock ?: return
-        val item = item ?: return
+        val (item, hand) = (item ?: return) to (hand ?: return)
 
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
         if (clickedBlock.type.isInteractable && !clickedBlock.isBlockyCaveVine && !player.isSneaking) return
@@ -81,14 +79,14 @@ class BlockyCaveVineListener : Listener {
             return
         }
 
-        val gearyVine = itemProvider.deserializeItemStackToEntity(item, player.toGeary()) ?: return
+        val gearyVine = getGearyInventoryEntity(player, hand) ?: return
         val blockyVine = gearyVine.get<BlockyBlock>() ?: return
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
         if (blockyVine.blockType != BlockType.CAVEVINE) return
         if (!gearyVine.has<BlockyInfo>()) return
 
         val placedWire =
-            placeBlockyBlock(player, hand!!, item, clickedBlock, blockFace, blockyVine.getBlockyCaveVine()) ?: return
+            placeBlockyBlock(player, hand, item, clickedBlock, blockFace, blockyVine.getBlockyCaveVine()) ?: return
         if (gearyVine.has<BlockyLight>())
             handleLight.createBlockLight(placedWire.location, lightLevel!!)
     }

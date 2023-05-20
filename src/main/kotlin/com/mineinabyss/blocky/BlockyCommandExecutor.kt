@@ -3,12 +3,11 @@ package com.mineinabyss.blocky
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDirectional
-import com.mineinabyss.blocky.helpers.deserializeItemStackToEntity
+import com.mineinabyss.blocky.helpers.getGearyInventoryEntity
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.guiy.inventory.guiy
@@ -26,6 +25,7 @@ import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
@@ -89,7 +89,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
                     val item = player.inventory.itemInMainHand
-                    val furniture = itemProvider.deserializeItemStackToEntity(item, player.toGeary())?.get<BlockyFurniture>()
+                    val furniture = getGearyInventoryEntity(player, EquipmentSlot.HAND)?.get<BlockyFurniture>()
 
                     if (furniture == null) {
                         player.error("This command only supports furniture.")

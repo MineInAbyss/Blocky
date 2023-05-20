@@ -1,9 +1,8 @@
 package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
-import com.mineinabyss.blocky.helpers.deserializeItemStackToEntity
-import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
+import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
@@ -41,12 +40,12 @@ fun BlockyUIScope.BlockyMenu() {
 
 @Composable
 fun HandleMenuClicks(key: PrefabKey, player: Player) {
-    val block = itemProvider.serializePrefabToItemStack(key)
+    val block = key.toEntityOrNull()?.get<SetItem>()?.item?.toItemStackOrNull()
     Item(block, Modifier.clickable {
         when (clickType) {
             ClickType.LEFT -> {
                 if (cursor == null) cursor = block
-                else if (itemProvider.deserializeItemStackToEntity(cursor, player.toGeary()) == itemProvider.deserializeItemStackToEntity(block, player.toGeary())) cursor?.add(1)
+                else if (player.inventory.toGeary()?.itemOnCursor == key.toEntity()) cursor?.add(1)
                 else cursor = block?.asQuantity(1)
             }
             ClickType.RIGHT -> {

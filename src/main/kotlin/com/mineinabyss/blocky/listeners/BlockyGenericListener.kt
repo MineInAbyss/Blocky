@@ -18,7 +18,6 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
@@ -77,7 +76,7 @@ class BlockyGenericListener : Listener {
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
 
-        val itemInHand = itemProvider.deserializeItemStackToEntity(player.inventory.itemInMainHand, player.toGeary())?.get<BlockyMining>()
+        val itemInHand = getGearyInventoryEntity(player, EquipmentSlot.HAND)?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /
                 (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
 
@@ -231,7 +230,7 @@ class BlockyGenericListener : Listener {
 
         when {
             itemInHand.type !in materialSet -> return
-            itemInHand.isBlockyBlock(player) && blockPlaced.isBlockyBlock -> return
+            isBlockyBlock(player, EquipmentSlot.HAND) && blockPlaced.isBlockyBlock -> return
             // TODO Are these even needed?
             !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return

@@ -21,17 +21,15 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
-import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.papermc.tracking.items.GearyItemProvider
+import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.nms.aliases.toNMS
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
@@ -79,14 +77,7 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
-internal fun GearyItemProvider.deserializeItemStackToEntity(
-    reference: ItemStack?,
-    holder: GearyEntity? = null,
-): GearyEntity? {
-    if (reference == null) return null
-    val itemStack = reference.toNMS() ?: return null
-    return deserializeItemStackToEntity(itemStack, holder)
-}
+internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta.persistentDataContainer.decode()
 
 internal fun Block.attemptBreakBlockyBlock(player: Player?) {
     val prefab = this.gearyEntity ?: return
@@ -105,8 +96,14 @@ internal fun Block.attemptBreakBlockyBlock(player: Player?) {
     this.setType(Material.AIR, false)
 }
 
-fun ItemStack.isBlockyBlock(player: Player): Boolean {
-    return itemProvider.deserializeItemStackToEntity(this, player.toGeary())?.has<BlockyBlock>() == true
+fun isBlockyBlock(player: Player, slot: EquipmentSlot): Boolean {
+    return player.inventory.toGeary()?.let {
+        when (slot) {
+            EquipmentSlot.HAND -> it.itemInMainHand?.has<BlockyBlock>() == true
+            EquipmentSlot.OFF_HAND -> it.itemInOffhand?.has<BlockyBlock>() == true
+            else -> false
+        }
+    } ?: false
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
@@ -116,17 +113,26 @@ fun handleBlockyDrops(block: Block, player: Player?) {
 
     if (info.onlyDropWithCorrectTool) {
         if (player == null) return
-        if (!player.inventory.itemInMainHand.isCorrectTool(player, block)) return
+        if (!isCorrectTool(player, block, EquipmentSlot.HAND)) return
     }
 
     gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
 }
 
-private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
+internal fun getGearyInventoryEntity(player: Player, slot: EquipmentSlot): GearyEntity? {
+    return player.inventory.toGeary()?.let {
+        when (slot) {
+            EquipmentSlot.HAND -> it.itemInMainHand
+            EquipmentSlot.OFF_HAND -> it.itemInOffhand
+            else -> null
+        }
+    }
+}
+
+private fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
     val gearyBlock = block.gearyEntity ?: return false
     val info = gearyBlock.get<BlockyInfo>() ?: return false
-    val allowedToolTypes = itemProvider.deserializeItemStackToEntity(this, player.toGeary())?.get<BlockyMining>()?.toolTypes
-        ?: return false
+    val allowedToolTypes = getGearyInventoryEntity(player, hand)?.get<BlockyMining>()?.toolTypes ?: return false
 
     return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
 }
@@ -236,7 +242,7 @@ fun placeBlockyBlock(
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
 
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
-    if (!against.isBlockyBlock && !item.isBlockyBlock(player)) return null
+    if (!against.isBlockyBlock && getGearyInventoryEntity(player, hand)?.has<BlockyBlock>() == true) return null
     if (player.isInBlock(targetBlock)) return null
     if (against.isVanillaNoteBlock) return null
 

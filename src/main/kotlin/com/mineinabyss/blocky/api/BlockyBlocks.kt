@@ -3,12 +3,7 @@ package com.mineinabyss.blocky.api
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockyConfig
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.features.mining.BlockyMining
-import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -18,27 +13,27 @@ import org.bukkit.inventory.ItemStack
 object BlockyBlocks {
     val Block.gearyEntity get() = prefabKey?.toEntity()
     //TODO This might not work due to the way PlayerInstancedItems work? test it
-    val ItemStack.isBlockyBlock get() = itemProvider.deserializeItemStackToEntity(this)?.has<BlockyBlock>() == true
+    val ItemStack.isBlockyBlock get() = this.decode<BlockyBlock>() != null
     val PrefabKey.isBlockyBlock get() = this.toEntityOrNull()?.has<BlockyBlock>() == true
     val Location.isBlockyBlock get() = this.block.gearyEntity?.has<BlockyBlock>() == true
     val Block.isBlockyBlock get() = this.gearyEntity?.has<BlockyBlock>() == true
 
-    val ItemStack.isBlockyNoteBlock get() = itemProvider.deserializeItemStackToEntity(this)?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
+    val ItemStack.isBlockyNoteBlock get() = this.decode<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
     val PrefabKey.isBlockyNoteBlock get() = this.toEntityOrNull()?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
     val Location.isBlockyNoteBlock get() = this.block.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
     val Block.isBlockyNoteBlock get() = this.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
 
-    val ItemStack.isBlockyWire get() = itemProvider.deserializeItemStackToEntity(this)?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
+    val ItemStack.isBlockyWire get() = this.decode<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
     val PrefabKey.isBlockyWire get() = this.toEntityOrNull()?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
     val Location.isBlockyWire get() = this.block.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
     val Block.isBlockyWire get() = this.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
 
-    val ItemStack.isBlockyCaveVine get() = itemProvider.deserializeItemStackToEntity(this)?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
+    val ItemStack.isBlockyCaveVine get() = this.decode<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
     val PrefabKey.isBlockyCaveVine get() = this.toEntityOrNull()?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
     val Location.isBlockyCaveVine get() = this.block.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
     val Block.isBlockyCaveVine get() = this.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
 
-    val ItemStack.blockyBlock get() = itemProvider.deserializeItemStackToEntity(this)?.get<BlockyBlock>()
+    val ItemStack.blockyBlock get() = this.decode<BlockyBlock>()
     val PrefabKey.blockyBlock get() = this.toEntityOrNull()?.get<BlockyBlock>()
     val Location.blockyBlock get() = this.block.gearyEntity?.get<BlockyBlock>()
     val Block.blockyBlock get() = this.gearyEntity?.get<BlockyBlock>()
@@ -67,13 +62,5 @@ object BlockyBlocks {
         blockyBlock ?: return false
         this.block.attemptBreakBlockyBlock(player)
         return true
-    }
-
-    private fun ItemStack.isCorrectTool(player: Player, block: Block): Boolean {
-        val gearyBlock = block.gearyEntity ?: return false
-        val info = gearyBlock.get<BlockyInfo>() ?: return false
-        val allowedToolTypes = itemProvider.deserializeItemStackToEntity(this, player.toGeary())?.get<BlockyMining>()?.toolTypes ?: return false
-
-        return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
     }
 }

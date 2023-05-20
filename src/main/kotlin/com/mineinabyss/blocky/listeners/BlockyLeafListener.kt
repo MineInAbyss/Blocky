@@ -8,8 +8,6 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import org.bukkit.Material
 import org.bukkit.entity.ItemFrame
 import org.bukkit.event.EventHandler
@@ -47,11 +45,12 @@ class BlockyLeafListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun PlayerInteractEvent.onPreBlockyLeafPlace() {
+        val (item, hand) = (item ?: return) to (hand ?: return)
         player.eyeLocation.getNearbyEntitiesByType(ItemFrame::class.java, 0.1, 0.1, 0.1).firstOrNull() ?: return
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
-        val gearyItem = itemProvider.deserializeItemStackToEntity(item, player.toGeary()) ?: return
+        val gearyItem = getGearyInventoryEntity(player, hand) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val against = clickedBlock ?: return
@@ -62,14 +61,14 @@ class BlockyLeafListener : Listener {
         if (!gearyItem.has<BlockyInfo>()) return
         if (blockyBlock.blockType != BlockType.LEAF) return
 
-        val placed = placeBlockyBlock(player, hand!!, item!!, against, blockFace, blockyBlock.getBlockyLeaf()) ?: return
+        val placed = placeBlockyBlock(player, hand, item, against, blockFace, blockyBlock.getBlockyLeaf()) ?: return
         if (gearyItem.has<BlockyLight>()) handleLight.createBlockLight(placed.location, blockyLight!!)
     }
 
     //TODO Isnt this all done inside placeBlockyBlock?
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        val gearyItem = itemProvider.deserializeItemStackToEntity(itemInHand, player.toGeary()) ?: return
+        val gearyItem = getGearyInventoryEntity(player, EquipmentSlot.HAND) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
 
         if (!gearyItem.has<BlockyInfo>()) return

@@ -10,10 +10,9 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
-import com.mineinabyss.blocky.helpers.deserializeItemStackToEntity
+import com.mineinabyss.blocky.helpers.getGearyInventoryEntity
 import com.mineinabyss.blocky.helpers.getTargetBlock
 import com.mineinabyss.blocky.helpers.placeBlockyFurniture
-import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
@@ -39,10 +38,11 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
+        val (item, hand) = (item ?: return) to (hand ?: return)
         val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
-        itemProvider.deserializeItemStackToEntity(item, player.toGeary())?.placeBlockyFurniture(player, targetBlock.location, blockFace, item!!)
+        getGearyInventoryEntity(player, hand)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

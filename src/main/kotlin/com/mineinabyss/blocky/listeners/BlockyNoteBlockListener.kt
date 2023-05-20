@@ -13,8 +13,6 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.entities.rightClicked
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
@@ -113,17 +111,18 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
+        val (item, hand) = (item ?: return) to (hand ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
-        val gearyItem = itemProvider.deserializeItemStackToEntity(item, player.toGeary()) ?: return
+        val gearyItem = getGearyInventoryEntity(player, hand) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val against = clickedBlock ?: return
 
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
         if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 
-        placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
+        placeBlockyBlock(player, hand, item, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
     }
 
     @EventHandler(ignoreCancelled = true)
