@@ -27,6 +27,7 @@ import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.GearyPlayerInventory
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
@@ -97,7 +98,7 @@ internal fun Block.attemptBreakBlockyBlock(player: Player?) {
 }
 
 fun isBlockyBlock(player: Player, slot: EquipmentSlot): Boolean {
-    return player.inventory.toGeary()?.let {
+    return player.gearyInventory?.let {
         when (slot) {
             EquipmentSlot.HAND -> it.itemInMainHand?.has<BlockyBlock>() == true
             EquipmentSlot.OFF_HAND -> it.itemInOffhand?.has<BlockyBlock>() == true
@@ -119,20 +120,13 @@ fun handleBlockyDrops(block: Block, player: Player?) {
     gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
 }
 
-internal fun getGearyInventoryEntity(player: Player, slot: EquipmentSlot): GearyEntity? {
-    return player.inventory.toGeary()?.let {
-        when (slot) {
-            EquipmentSlot.HAND -> it.itemInMainHand
-            EquipmentSlot.OFF_HAND -> it.itemInOffhand
-            else -> null
-        }
-    }
-}
+internal val Player.gearyInventory: GearyPlayerInventory?
+    get() = inventory.toGeary()
 
 private fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
     val gearyBlock = block.gearyEntity ?: return false
     val info = gearyBlock.get<BlockyInfo>() ?: return false
-    val allowedToolTypes = getGearyInventoryEntity(player, hand)?.get<BlockyMining>()?.toolTypes ?: return false
+    val allowedToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes ?: return false
 
     return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
 }
@@ -242,7 +236,7 @@ fun placeBlockyBlock(
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
 
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
-    if (!against.isBlockyBlock && getGearyInventoryEntity(player, hand)?.has<BlockyBlock>() == true) return null
+    if (!against.isBlockyBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() == true) return null
     if (player.isInBlock(targetBlock)) return null
     if (against.isVanillaNoteBlock) return null
 

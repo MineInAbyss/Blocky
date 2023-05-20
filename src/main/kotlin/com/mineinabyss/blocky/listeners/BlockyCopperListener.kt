@@ -36,7 +36,7 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_SLABS) return
 
-            val blockyBlock = getGearyInventoryEntity(player, hand)?.get<BlockyBlock>() ?: return
+            val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
             val against = clickedBlock ?: return
 
             if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
@@ -157,7 +157,7 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_STAIRS) return
 
-            val blockyBlock = getGearyInventoryEntity(player, hand)?.get<BlockyBlock>() ?: return
+            val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
             val against = clickedBlock ?: return
             if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
             if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return

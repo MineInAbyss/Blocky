@@ -115,7 +115,7 @@ class BlockyNoteBlockListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
-        val gearyItem = getGearyInventoryEntity(player, hand) ?: return
+        val gearyItem = player.gearyInventory?.get(hand) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val against = clickedBlock ?: return
 

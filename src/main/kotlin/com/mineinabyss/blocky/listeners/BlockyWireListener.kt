@@ -66,7 +66,7 @@ class BlockyWireListener : Listener {
             block.state.update(true, false)
             blockAgainst.state.update(true, false)
 
-            if (getGearyInventoryEntity(player, EquipmentSlot.HAND)?.has<BlockyBlock>() != true)
+            if (player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true)
                 block.setBlockData(Material.TRIPWIRE.createBlockData(), false)
             block.fixClientsideUpdate()
         }
@@ -78,7 +78,7 @@ class BlockyWireListener : Listener {
             if (hand != EquipmentSlot.HAND) return
 
             val (item, hand) = (item ?: return) to (hand ?: return)
-            val blockyBlock = getGearyInventoryEntity(player, hand)?.get<BlockyBlock>() ?: return
+            val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
             var type = item.type
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
@@ -120,7 +120,7 @@ class BlockyWireListener : Listener {
         } else if (clickedBlock.type.isInteractable && !player.isSneaking) return
 
         // Fixes tripwire updating when placing blocks next to it
-        if (item.type.isBlock && getGearyInventoryEntity(player, hand)?.has<BlockyBlock>() != true) {
+        if (item.type.isBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
                 if (clickedBlock.getRelative(it).gearyEntity == null) return@forEach
                 placeBlockyBlock(player, hand, item, clickedBlock, blockFace, item.type.createBlockData())
@@ -128,7 +128,7 @@ class BlockyWireListener : Listener {
             }
         }
 
-        val blockyWire = getGearyInventoryEntity(player, hand) ?: return
+        val blockyWire = player.gearyInventory?.get(hand) ?: return
         val wireBlock = blockyWire.get<BlockyBlock>() ?: return
         if (wireBlock.blockType != BlockType.WIRE) return
         if (!blockyWire.has<BlockyInfo>()) return

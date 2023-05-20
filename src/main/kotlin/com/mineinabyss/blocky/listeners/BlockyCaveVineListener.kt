@@ -79,7 +79,7 @@ class BlockyCaveVineListener : Listener {
             return
         }
 
-        val gearyVine = getGearyInventoryEntity(player, hand) ?: return
+        val gearyVine = player.gearyInventory?.get(hand) ?: return
         val blockyVine = gearyVine.get<BlockyBlock>() ?: return
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
         if (blockyVine.blockType != BlockType.CAVEVINE) return

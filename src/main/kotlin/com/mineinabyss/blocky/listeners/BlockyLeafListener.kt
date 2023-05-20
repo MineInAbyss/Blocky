@@ -50,7 +50,7 @@ class BlockyLeafListener : Listener {
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
-        val gearyItem = getGearyInventoryEntity(player, hand) ?: return
+        val gearyItem = player.gearyInventory?.get(hand) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
         val blockyLight = gearyItem.get<BlockyLight>()?.lightLevel
         val against = clickedBlock ?: return
@@ -68,7 +68,7 @@ class BlockyLeafListener : Listener {
     //TODO Isnt this all done inside placeBlockyBlock?
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingBlockyBlock() {
-        val gearyItem = getGearyInventoryEntity(player, EquipmentSlot.HAND) ?: return
+        val gearyItem = player.gearyInventory?.get(hand) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
 
         if (!gearyItem.has<BlockyInfo>()) return

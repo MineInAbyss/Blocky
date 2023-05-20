@@ -3,7 +3,7 @@ package com.mineinabyss.blocky
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDirectional
-import com.mineinabyss.blocky.helpers.getGearyInventoryEntity
+import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
@@ -89,7 +89,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
                     val item = player.inventory.itemInMainHand
-                    val furniture = getGearyInventoryEntity(player, EquipmentSlot.HAND)?.get<BlockyFurniture>()
+                    val furniture = player.gearyInventory?.get(EquipmentSlot.HAND)?.get<BlockyFurniture>()
 
                     if (furniture == null) {
                         player.error("This command only supports furniture.")

@@ -3,9 +3,9 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
+import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.prefabKey
 import com.mineinabyss.blocky.itemProvider
-import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
@@ -29,7 +29,7 @@ class BlockyMiddleClickListener : Listener {
                     player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
                     player.getTargetEntity(5)?.prefabKey ?: return
                 val existingSlot = (0..8).firstOrNull {
-                    player.inventory.toGeary()?.get(it)?.get<PrefabKey>() == lookingAtPrefab
+                    player.gearyInventory?.get(it)?.get<PrefabKey>() == lookingAtPrefab
                 }
                 if (existingSlot != null) {
                     player.inventory.heldItemSlot = existingSlot

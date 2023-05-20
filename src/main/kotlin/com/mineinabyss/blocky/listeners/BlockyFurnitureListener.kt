@@ -10,7 +10,7 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
-import com.mineinabyss.blocky.helpers.getGearyInventoryEntity
+import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.getTargetBlock
 import com.mineinabyss.blocky.helpers.placeBlockyFurniture
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -42,7 +42,7 @@ class BlockyFurnitureListener : Listener {
         val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
 
-        getGearyInventoryEntity(player, hand)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item)
+        player.gearyInventory?.get(hand)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

@@ -76,7 +76,7 @@ class BlockyGenericListener : Listener {
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
 
-        val itemInHand = getGearyInventoryEntity(player, EquipmentSlot.HAND)?.get<BlockyMining>()
+        val itemInHand = player.gearyInventory?.get(EquipmentSlot.HAND)?.get<BlockyMining>()
         val breakTime = info.blockBreakTime /
                 (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
 
