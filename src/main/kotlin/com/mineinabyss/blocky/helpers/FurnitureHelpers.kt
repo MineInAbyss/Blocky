@@ -9,11 +9,11 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.components.features.BlockySeatLocations
-import com.mineinabyss.blocky.itemProvider
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.items.editItemMeta
@@ -97,7 +97,7 @@ fun GearyEntity.placeBlockyFurniture(
     }
     if (blockPlaceEvent.isCancelled) return
     val lootyItem = get<PrefabKey>()?.let {
-        itemProvider.serializePrefabToItemStack(it)?.editItemMeta {
+        itemTracking.provider.serializePrefabToItemStack(it)?.editItemMeta {
             displayName(Component.empty())
             (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
                 ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color)

@@ -5,7 +5,7 @@ import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.prefabKey
-import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
@@ -36,7 +36,7 @@ class BlockyMiddleClickListener : Listener {
                     isCancelled = true
                     return
                 }
-                cursor = itemProvider.serializePrefabToItemStack(lookingAtPrefab) ?: return
+                cursor = itemTracking.provider.serializePrefabToItemStack(lookingAtPrefab) ?: return
             }
         }
     }

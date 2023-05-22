@@ -9,6 +9,7 @@ import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.blocky.systems.blockyBlockQuery
 import com.mineinabyss.blocky.systems.blockyFurnitureQuery
 import com.mineinabyss.blocky.systems.blockyPlantQuery
+import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.accessors.TargetScope
 import okio.Path.Companion.toPath
@@ -70,7 +71,7 @@ class MoreCreativeTabsGeneration {
         }
     }
 
-    private val PrefabKey.lootyItem get() = itemProvider.serializePrefabToItemStack(this)
+    private val PrefabKey.lootyItem get() = itemTracking.provider.serializePrefabToItemStack(this)
     private val ItemStack.customModelData get() = if (this.itemMeta.hasCustomModelData()) this.itemMeta.customModelData else 0
 
 }

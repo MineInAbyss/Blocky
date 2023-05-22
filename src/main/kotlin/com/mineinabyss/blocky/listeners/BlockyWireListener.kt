@@ -11,7 +11,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.itemProvider
+import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
@@ -31,7 +31,7 @@ class BlockyWireListener : Listener {
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         blocks.filter { it.type == Material.TRIPWIRE }.forEach { wire ->
             val gearyEntity = wire.prefabKey ?: return@forEach
-            itemProvider.serializePrefabToItemStack(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
+            itemTracking.provider.serializePrefabToItemStack(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
             wire.type = Material.AIR
         }
     }
