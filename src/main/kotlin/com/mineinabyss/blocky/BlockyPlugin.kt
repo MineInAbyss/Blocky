@@ -64,7 +64,7 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         geary {
-            autoscan(classLoader, "com.mineinabyss") {
+            autoscan(classLoader, "com.mineinabyss.blocky") {
                 all()
             }
             on(GearyPhase.ENABLE) {
