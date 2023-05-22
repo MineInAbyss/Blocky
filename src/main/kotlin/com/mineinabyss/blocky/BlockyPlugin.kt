@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky
 
-//import net.minecraft.resources.ResourceLocation
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.compatibility.WorldEditListener
 import com.mineinabyss.blocky.compatibility.WorldEditSupport
@@ -15,6 +14,8 @@ import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
+import it.unimi.dsi.fastutil.ints.IntArrayList
+import net.minecraft.resources.ResourceLocation
 import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -25,7 +26,7 @@ import org.bukkit.block.data.type.*
 import org.bukkit.plugin.java.JavaPlugin
 
 var blockMap = mapOf<BlockData, Int>()
-//var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
+var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
