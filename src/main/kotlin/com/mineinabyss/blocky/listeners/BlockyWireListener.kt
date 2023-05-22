@@ -5,7 +5,7 @@ import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -47,7 +47,7 @@ class BlockyWireListener : Listener {
             val changed = block.getRelative(f)
             if (changed.type != Material.TRIPWIRE) return@forEach
 
-            blockyPlugin.launch {
+            blocky.plugin.launch {
                 val data = changed.blockData.clone()
                 delay(1)
                 changed.setBlockData(data, false)

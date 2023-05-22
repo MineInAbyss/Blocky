@@ -16,7 +16,6 @@ import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
@@ -32,16 +31,16 @@ import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
 
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
-    override val commands = commands(blockyPlugin) {
+    override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
                 fun reloadConfig() {
-                    blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
-                    blockyPlugin.runStartupFunctions()
+                    blocky.plugin.createBlockyContext()
+                    blocky.plugin.runStartupFunctions()
                     sender.success("Blocky configs has been reloaded!")
                 }
                 fun reloadItems() {
-                    blockyPlugin.launch {
+                    blocky.plugin.launch {
                         BlockyQuery.forEach {
                             prefabs.loader.reread(it.entity)
                         }

@@ -12,7 +12,7 @@
 //
 //    @EventHandler(priority = EventPriority.MONITOR)
 //    fun PlayerJoinEvent.removeDefaultTools() {
-//        /*if (!blockyConfig.noteBlocks.isEnabled) return
+//        /*if (!blocky.config.noteBlocks.isEnabled) return
 //        val packet = ClientboundUpdateTagsPacket(mapOf(Registries.BLOCK. .key() to createPayload(registryTagMap)))
 //        (player as CraftPlayer).handle.connection.send(packet)*/
 //    }

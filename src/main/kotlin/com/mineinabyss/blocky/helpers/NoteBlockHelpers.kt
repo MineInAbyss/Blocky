@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.geary.datatypes.GearyEntity
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -15,8 +15,8 @@ import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.entity.Player
 import org.bukkit.event.block.NotePlayEvent
 
-val NOTE_KEY = NamespacedKey(blockyPlugin, "note")
-val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "vanilla_note_block")
+val NOTE_KEY = NamespacedKey(blocky.plugin, "note")
+val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blocky.plugin, "vanilla_note_block")
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
     return blockMap.filter { it.key is NoteBlock && it.value == this.getDirectionalId(face, player) }.keys.firstOrNull() ?: return Material.NOTE_BLOCK.createBlockData() as NoteBlock

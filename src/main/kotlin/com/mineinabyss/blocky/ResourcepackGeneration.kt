@@ -25,7 +25,7 @@ import java.nio.charset.Charset
 class ResourcepackGeneration {
 
     fun generateDefaultAssets() {
-        val root = "${blockyPlugin.dataFolder.absolutePath}/assets/minecraft/blockstates".run {
+        val root = "${blocky.plugin.dataFolder.absolutePath}/assets/minecraft/blockstates".run {
             toPath().toFile().mkdirs(); this
         }
         val noteBlockFile = "${root}/note_block.json".toPath().toFile()
@@ -42,12 +42,12 @@ class ResourcepackGeneration {
         slabFiles.forEach { it.writeJson(getSlabBlockStates()) }
         stairFiles.forEach { it.writeJson(getStairBlockStates()) }
 
-        if (!blockyConfig.noteBlocks.isEnabled) noteBlockFile.delete()
-        if (!blockyConfig.tripWires.isEnabled) tripwireFile.delete()
-        //else if (!blockyConfig.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
-        if (!blockyConfig.caveVineBlocks.isEnabled) caveVineFile.delete()
-        if (!blockyConfig.slabBlocks.isEnabled) slabFiles.forEach { it.delete() }
-        if (!blockyConfig.stairBlocks.isEnabled) stairFiles.forEach { it.delete() }
+        if (!blocky.config.noteBlocks.isEnabled) noteBlockFile.delete()
+        if (!blocky.config.tripWires.isEnabled) tripwireFile.delete()
+        //else if (!blocky.config.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
+        if (!blocky.config.caveVineBlocks.isEnabled) caveVineFile.delete()
+        if (!blocky.config.slabBlocks.isEnabled) slabFiles.forEach { it.delete() }
+        if (!blocky.config.stairBlocks.isEnabled) stairFiles.forEach { it.delete() }
     }
 
     private fun getNoteBlockBlockStates(): JsonObject {

@@ -5,7 +5,7 @@ import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
@@ -29,7 +29,7 @@ fun Block.fixClientsideUpdate() {
     val players = location.world.getNearbyPlayers(location, 20.0)
     val chunk = location.chunk
     val map = mutableMapOf<Location, BlockData>()
-    blockyPlugin.launch {
+    blocky.plugin.launch {
         delay(1)
         for (x in ((chunk.x shl 4) - 17)..chunk.x + 32)
             for (z in ((chunk.z shl 4) - 17)..chunk.x + 32)

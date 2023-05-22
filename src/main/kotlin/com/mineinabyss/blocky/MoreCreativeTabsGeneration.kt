@@ -20,8 +20,8 @@ import java.nio.charset.Charset
 class MoreCreativeTabsGeneration {
 
     fun generateModAssets() {
-        if (!blockyConfig.MoreCreativeTabsMod.generateJsonForMod) return
-        val root = "${blockyPlugin.dataFolder.absolutePath}/MoreCreativeTabsMod/assets/minecraft/morecreativetabs".run {
+        if (!blocky.config.MoreCreativeTabsMod.generateJsonForMod) return
+        val root = "${blocky.plugin.dataFolder.absolutePath}/MoreCreativeTabsMod/assets/minecraft/morecreativetabs".run {
             toPath().toFile().mkdirs(); this
         }
         val langFile = "${root.toPath().parent.toString()}/lang/en_us.json".toPath().toFile().run { this.parentFile.mkdirs(); this.createNewFile(); this }

@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.mineinabyss.blocky.blockyConfig
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.helpers.ui.Navigator
 import com.mineinabyss.blocky.helpers.ui.composables.Button
 import com.mineinabyss.guiy.components.Item
@@ -17,10 +17,10 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 sealed class BlockyScreen(val title: String, val height: Int) {
-    object Default : BlockyScreen(blockyConfig.menus.defaultMenu.title, blockyConfig.menus.defaultMenu.height)
-    object NoteBlock : BlockyScreen(blockyConfig.menus.blockMenu.title, blockyConfig.menus.blockMenu.height)
-    object Wire : BlockyScreen(blockyConfig.menus.wireMenu.title, blockyConfig.menus.wireMenu.height)
-    object Furniture : BlockyScreen(blockyConfig.menus.furnitureMenu.title, blockyConfig.menus.furnitureMenu.height)
+    object Default : BlockyScreen(blocky.config.menus.defaultMenu.title, blocky.config.menus.defaultMenu.height)
+    object NoteBlock : BlockyScreen(blocky.config.menus.blockMenu.title, blocky.config.menus.blockMenu.height)
+    object Wire : BlockyScreen(blocky.config.menus.wireMenu.title, blocky.config.menus.wireMenu.height)
+    object Furniture : BlockyScreen(blocky.config.menus.furnitureMenu.title, blocky.config.menus.furnitureMenu.height)
 
 }
 

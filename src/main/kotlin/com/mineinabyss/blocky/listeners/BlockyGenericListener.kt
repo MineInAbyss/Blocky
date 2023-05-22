@@ -12,8 +12,7 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
-import com.mineinabyss.blocky.blockyConfig
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
@@ -92,7 +91,7 @@ class BlockyGenericListener : Listener {
         }.run { call(); this }
         if (damageEvent.isCancelled) return
 
-        blockyPlugin.launch {
+        blocky.plugin.launch {
             mining.miningTask = this.coroutineContext.job
             var stage = 0
             val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
@@ -232,11 +231,11 @@ class BlockyGenericListener : Listener {
             itemInHand.type !in materialSet -> return
             isBlockyBlock(player, EquipmentSlot.HAND) && blockPlaced.isBlockyBlock -> return
             // TODO Are these even needed?
-            !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
-            !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
-            !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
-            !blockyConfig.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
-            !blockyConfig.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
+            !blocky.config.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
+            !blocky.config.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
+            !blocky.config.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
+            !blocky.config.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
+            !blocky.config.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
             //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
 

@@ -10,7 +10,7 @@ import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockySound
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
@@ -39,7 +39,7 @@ class BlockySoundListener : Listener {
         val sound = block.gearyEntity?.get<BlockySound>()?.hitSound
             ?: if (hitGroup == Sound.BLOCK_WOOD_HIT) VANILLA_WOOD_BREAK else VANILLA_STONE_BREAK
 
-        blockyPlugin.launch {
+        blocky.plugin.launch {
             do {
                 block.world.playSound(
                     block.location,
@@ -61,7 +61,7 @@ class BlockySoundListener : Listener {
         val sound = entity.toGearyOrNull()?.get<BlockySound>()?.hitSound
             ?: if (hitGroup == Sound.BLOCK_WOOD_HIT) VANILLA_WOOD_BREAK else VANILLA_STONE_BREAK
 
-        blockyPlugin.launch {
+        blocky.plugin.launch {
             do {
                 entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
                 delay(3.ticks) // Add small delay to mimic vanilla

@@ -2,7 +2,6 @@ package com.mineinabyss.blocky
 
 import kotlinx.serialization.Serializable
 
-val blockyConfig get() = blockyPlugin.config.data
 @Serializable
 data class BlockyConfig(
     val menus: BlockyMenus,

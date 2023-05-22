@@ -20,6 +20,6 @@ data class BlockyInfo (
     val isUnbreakable: Boolean = false,
     val acceptedToolTypes: Set<ToolType> = setOf(ToolType.ANY),
     val onlyDropWithCorrectTool: Boolean = false,
-    val blockBreakTime: @Serializable(with = DurationSerializer::class) Duration = 2.seconds,
+    val blockBreakTime: @Serializable(DurationSerializer::class) Duration = 2.seconds,
     val blockDrop: List<BlockyDrops> = listOf(),
 )

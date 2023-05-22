@@ -3,7 +3,7 @@ package com.mineinabyss.blocky.helpers
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.*
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
@@ -34,7 +34,7 @@ import org.bukkit.inventory.meta.PotionMeta
 import org.joml.Vector3f
 import kotlin.math.max
 
-val FURNITURE_ORIGIN = NamespacedKey(blockyPlugin, "furniture_origin")
+val FURNITURE_ORIGIN = NamespacedKey(blocky.plugin, "furniture_origin")
 fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 
     return if (placedAgainst.isReplaceable) placedAgainst else {
@@ -198,7 +198,7 @@ fun GearyEntity.placeBlockyFurniture(
     interaction.toGeary().setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
 
     modelengine?.let { meg ->
-        if (!blockyPlugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let
+        if (!blocky.plugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let
         val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let
         ModelEngineAPI.getOrCreateModeledEntity(newFurniture).apply {
             addModel(activeModel, false)

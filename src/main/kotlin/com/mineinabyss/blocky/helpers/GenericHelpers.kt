@@ -10,8 +10,7 @@ import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.blockyConfig
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -223,7 +222,7 @@ val BlockData.prefabKey get(): PrefabKey? {
 //val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
-val Block.customBlockData get() = CustomBlockData(this, blockyPlugin)
+val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 
 fun placeBlockyBlock(
     player: Player,
@@ -236,11 +235,11 @@ fun placeBlockyBlock(
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
 
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
-    if (!against.isBlockyBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() == true) return null
+    if (!against.isBlockyBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true) return null
     if (player.isInBlock(targetBlock)) return null
     if (against.isVanillaNoteBlock) return null
 
-    if (!blockyConfig.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
+    if (!blocky.config.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
         targetBlock.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
 
     val currentData = targetBlock.blockData

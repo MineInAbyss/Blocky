@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
-import com.mineinabyss.blocky.blockyConfig
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -22,7 +22,7 @@ class BlockyLeafListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun LeavesDecayEvent.onLeafDecay() {
-        if (blockyConfig.leafBlocks.disableAllLeafDecay) isCancelled = true
+        if (blocky.config.leafBlocks.disableAllLeafDecay) isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -39,7 +39,7 @@ class BlockyLeafListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyLeaf() {
         if (!block.isBlockyLeaf()) return
-        if (blockyConfig.leafBlocks.disableBurnForBlockyLeaves) isCancelled = true
+        if (blocky.config.leafBlocks.disableBurnForBlockyLeaves) isCancelled = true
         if (block.gearyEntity?.has<BlockyBurnable>() == true) isCancelled = false
     }
 

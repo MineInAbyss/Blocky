@@ -6,8 +6,7 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.blockyConfig
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
@@ -36,7 +35,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
         if (!block.isVanillaNoteBlock) isCancelled = true
-        else if (block.isVanillaNoteBlock && !blockyConfig.noteBlocks.restoreFunctionality) {
+        else if (block.isVanillaNoteBlock && !blocky.config.noteBlocks.restoreFunctionality) {
             note = block.updateBlockyNote()
             instrument = block.getBlockyInstrument()
         } else return
@@ -63,7 +62,7 @@ class BlockyNoteBlockListener : Listener {
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
         if (block.type != Material.NOTE_BLOCK) return
-        if (blockyConfig.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
+        if (blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
 
         if (rightClicked) setUseInteractedBlock(Event.Result.DENY)
         if (block.isVanillaNoteBlock) {
@@ -92,7 +91,7 @@ class BlockyNoteBlockListener : Listener {
 
         if (event != GameEvent.NOTE_BLOCK_PLAY) return
         isCancelled = true
-        blockyPlugin.launch {
+        blocky.plugin.launch {
             delay(1.ticks)
             block.setBlockData(data, false)
         }
@@ -111,13 +110,13 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
+        val against = clickedBlock ?: return
         val (item, hand) = (item ?: return) to (hand ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
         val gearyItem = player.gearyInventory?.get(hand) ?: return
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val against = clickedBlock ?: return
 
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
         if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
@@ -140,7 +139,7 @@ class BlockyNoteBlockListener : Listener {
     fun BlockPlaceEvent.onPlaceNoteBlock() {
         if (!blockPlaced.isVanillaNoteBlock) return
 
-        if (!blockyConfig.noteBlocks.restoreFunctionality)
+        if (!blocky.config.noteBlocks.restoreFunctionality)
             blockPlaced.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
         else blockPlaced.customBlockData.set(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN, true)
     }
@@ -148,7 +147,7 @@ class BlockyNoteBlockListener : Listener {
     // Convert vanilla blocks into custom note blocks if any after changing the value
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun ChunkLoadEvent.migrateOnChunkLoad() {
-        CustomBlockData.getBlocksWithCustomData(blockyPlugin, chunk)
+        CustomBlockData.getBlocksWithCustomData(blocky.plugin, chunk)
             .filter { it.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN) }.forEach { block ->
 
                 if (block.blockData !is NoteBlock) {
@@ -157,7 +156,7 @@ class BlockyNoteBlockListener : Listener {
                 }
 
                 // Convert any VANILLA_NOTEBLOCK_KEY blocks to custom if restoreFunctionality is disabled
-                if (!blockyConfig.noteBlocks.restoreFunctionality) {
+                if (!blocky.config.noteBlocks.restoreFunctionality) {
                     // If block doesn't have VANILLA_NOTEBLOCK_KEY or NOTE_KEY,
                     // assume it to be a vanilla and convert it to custom
                     if (block.customBlockData.isEmpty) {

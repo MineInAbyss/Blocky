@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.api
 
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.blockyConfig
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -53,7 +53,7 @@ object BlockyBlocks {
                     else -> return false
                 }
         //TODO Actually place the block with its mechanics
-        if (!blockyConfig.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
+        if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
             block.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
         return true
     }
