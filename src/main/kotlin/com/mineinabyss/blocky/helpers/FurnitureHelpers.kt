@@ -153,17 +153,17 @@ fun GearyEntity.placeBlockyFurniture(
 
         furniture.properties.let { p ->
             itemDisplayTransform = p.displayTransform
+            displayWidth = p.displayWidth
+            displayHeight = p.displayHeight
             p.brightness?.let { brightness = it }
             p.trackingRotation?.let { billboard = it }
             p.viewRange?.let { viewRange = it }
             p.shadowRadius?.let { shadowRadius = it }
             p.shadowStrength?.let { shadowStrength = it }
 
-
             val isFixed: Boolean = itemDisplayTransform == ItemDisplay.ItemDisplayTransform.FIXED
             transformation = transformation.apply {
-                if (isFixed) scale.set(Vector3f(0.5f, 0.5f, 0.5f))
-                else scale.set(p.scale)
+                scale.set(p.scale ?: if (isFixed) Vector3f(0.5f, 0.5f, 0.5f) else Vector3f(1f, 1f, 1f))
             }
 
             setRotation(getYaw(rotation.rotateClockwise().rotateClockwise().rotateClockwise().rotateClockwise()), if (isFixed) 90f else 0f)
