@@ -27,7 +27,6 @@ dependencyResolutionManagement {
     versionCatalogs {
         create("libs") {
             from("com.mineinabyss:catalog:$idofrontVersion")
-            version("minecraft", "1.19.4-R0.1-SNAPSHOT")
         }
         create("gearyLibs").from("com.mineinabyss:geary-catalog:$gearyVersion")
         create("blockyLibs").from(files("gradle/blockyLibs.versions.toml"))
