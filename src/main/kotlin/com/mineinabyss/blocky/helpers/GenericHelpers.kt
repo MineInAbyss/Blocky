@@ -30,7 +30,6 @@ import com.mineinabyss.geary.papermc.tracking.items.GearyPlayerInventory
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
@@ -158,7 +157,7 @@ val Block.prefabKey
     get(): PrefabKey? {
         val type =
             when {
-                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.prefabKey.broadcastVal()
+                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.prefabKey
                 type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE

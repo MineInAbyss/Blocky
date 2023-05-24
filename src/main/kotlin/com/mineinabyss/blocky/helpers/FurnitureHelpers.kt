@@ -82,8 +82,6 @@ fun GearyEntity.placeBlockyFurniture(
     blockFace: BlockFace,
 ) {
     val furniture = get<BlockyFurniture>() ?: return
-    val placableOn = get<BlockyPlacableOn>()
-    val modelengine = get<BlockyModelEngine>()
     val blockPlaceEvent = BlockPlaceEvent(loc.block, loc.block.state, loc.block, item, player, true, EquipmentSlot.HAND)
     val rotation = getRotation(player.location.yaw, furniture)
     val yaw = if (furniture.hasStrictRotation) getYaw(rotation) else player.location.yaw - 180
@@ -91,11 +89,11 @@ fun GearyEntity.placeBlockyFurniture(
     when {
         !furniture.hasEnoughSpace(loc, yaw) -> blockPlaceEvent.isCancelled = true
         !ProtectionLib.canBuild(player, loc) || !blockPlaceEvent.canBuild() -> blockPlaceEvent.isCancelled = true
-        placableOn?.isPlacableOn(loc.block, blockFace) == false -> blockPlaceEvent.isCancelled = true
+        get<BlockyPlacableOn>()?.isPlacableOn(loc.block, blockFace) == false -> blockPlaceEvent.isCancelled = true
         loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> blockPlaceEvent.isCancelled = true
     }
     if (blockPlaceEvent.isCancelled) return
-    val lootyItem = get<ItemStack>()?.editItemMeta {
+    val lootyItem = get<ItemStack>()?.clone()?.editItemMeta {
         displayName(Component.empty())
         (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
             ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color)
@@ -136,6 +134,9 @@ fun GearyEntity.placeBlockyFurniture(
             isPersistent = true
             interactionWidth = furniture.interactionHitbox.width
             interactionHeight = furniture.interactionHitbox.height
+        }?.let { interaction ->
+            interaction.toGeary().setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
+            interaction
         } ?: run {
             newFurniture.removeBlockyFurniture()
             return
@@ -144,11 +145,11 @@ fun GearyEntity.placeBlockyFurniture(
 
     newFurniture.toGeary().apply {
         addPrefab(this@placeBlockyFurniture)
+        //TODO Fix PrefabKey when Offz adds helper methods
         setPersisting(BlockyFurnitureHitbox(interactionHitbox = interaction?.uniqueId))
     }
-    interaction?.toGeary()?.setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
 
-    modelengine?.let { meg ->
+    get<BlockyModelEngine>()?.let { meg ->
         if (!blocky.plugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let
         val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let
         ModelEngineAPI.getOrCreateModeledEntity(newFurniture).apply {
@@ -166,11 +167,11 @@ fun GearyEntity.placeBlockyFurniture(
     newFurniture.toGeary().let { gearyEntity ->
         if (gearyEntity.get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
             gearyEntity.placeFurnitureHitbox(yaw, loc, player)
-        } else if (has<BlockyLight>())
+        } else if (gearyEntity.has<BlockyLight>())
             handleLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()!!.lightLevel)
     }
 
-    player.swingMainHand()
+    player.swingHand(hand)
     if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
 }
 

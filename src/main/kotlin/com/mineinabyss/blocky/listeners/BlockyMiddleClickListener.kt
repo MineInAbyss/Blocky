@@ -7,6 +7,7 @@ import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.prefabKey
 import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.helpers.prefabs
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -29,7 +30,7 @@ class BlockyMiddleClickListener : Listener {
                     player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
                     player.getTargetEntity(5)?.prefabKey ?: return
                 val existingSlot = (0..8).firstOrNull {
-                    player.gearyInventory?.get(it)?.get<PrefabKey>() == lookingAtPrefab
+                    player.gearyInventory?.get(it)?.prefabs?.firstOrNull()?.get<PrefabKey>() == lookingAtPrefab
                 }
                 if (existingSlot != null) {
                     player.inventory.heldItemSlot = existingSlot

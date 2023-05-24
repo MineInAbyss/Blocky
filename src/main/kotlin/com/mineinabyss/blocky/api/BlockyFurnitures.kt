@@ -11,38 +11,29 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.messaging.broadcastVal
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
 import org.bukkit.block.Block
-import org.bukkit.entity.*
+import org.bukkit.entity.Entity
+import org.bukkit.entity.Interaction
+import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 
 object BlockyFurnitures {
 
-    /*val ItemStack.furnitureType: BlockyFurniture.FurnitureType?
-        get() = toGearyFromUUIDOrNull()?.get<BlockyFurniture>()?.furnitureType*/
-
-    /*val Entity.furnitureType: BlockyFurniture.FurnitureType?
-        get() = toGearyOrNull()?.get<BlockyFurniture>()?.furnitureType*/
-
-    val Entity.furnitureItem: ItemStack? get() {
-        return when (this) {
-            is ItemFrame -> this.item
-            is ArmorStand -> this.equipment.helmet
-            else -> null
-        }
-    }
-
-    val Entity.prefabKey get() = this.toGearyOrNull()?.get<PrefabKey>()
+    val Entity.prefabKey get() = this.toGearyOrNull()?.prefabs?.firstOrNull()?.get<PrefabKey>()
 
     val Entity.isModelEngineFurniture: Boolean get() = this.toGearyOrNull()?.isModelEngineFurniture ?: false
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
     val Block.isFurnitureHitbox: Boolean get() = this.persistentDataContainer.has(FURNITURE_ORIGIN)
-    val Entity.isFurnitureHitbox: Boolean get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
+    val Entity.isFurnitureHitbox: Boolean
+        get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
 
     val Block.isBlockyFurniture: Boolean get() = this.gearyEntity?.isBlockyFurniture ?: false
     val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
@@ -59,44 +50,45 @@ object BlockyFurnitures {
     val Block.blockyFurniture get() = this.gearyEntity?.get<BlockyFurniture>()
 
     val Location.blockyFurnitureEntity get() = this.block.blockyFurnitureEntity
-    val Block.blockyFurnitureEntity get() = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
-        origin.world?.getNearbyEntities(origin, 1.0,1.0,1.0)?.firstOrNull { entity ->
-            entity.isBlockyFurniture
-        }.broadcastVal("e: ")
-    }
+    val Block.blockyFurnitureEntity
+        get() = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
+            origin.getNearbyEntities(1.0, 1.0, 1.0).firstOrNull { entity ->
+                entity is ItemDisplay && entity.isBlockyFurniture
+            } as? ItemDisplay
+        }
 
-    val Block.blockySeat get() = this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
-        it.toGearyOrNull()?.let { g ->
-            g.has<BlockySeat>() && !g.has<BlockyFurniture>()
-        } ?: false
-    }
+    val Block.blockySeat
+        get() = this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
+            it.toGearyOrNull()?.let { g ->
+                g.has<BlockySeat>() && !g.has<BlockyFurniture>()
+            } ?: false
+        }
 
-    fun Entity.removeBlockyFurniture(): Boolean {
-        val furniture = (if (isFurnitureHitbox) (this as Interaction).baseFurniture else this) as? ItemDisplay ?: return false
-        if (!furniture.isBlockyFurniture) return false
-        furniture.interactionEntity?.remove()
-        furniture.removeAssosiatedSeats()
-        furniture.clearAssosiatedHitboxChunkEntries()
-        handleLight.removeBlockLight(furniture.location)
-        furniture.remove()
+    fun ItemDisplay.removeBlockyFurniture(): Boolean {
+        if (!isBlockyFurniture) return false
+
+        interactionEntity?.remove()
+        removeAssosiatedSeats()
+        clearAssosiatedHitboxChunkEntries()
+        handleLight.removeBlockLight(location)
+        remove()
         return true
     }
 
-    //TODO Change to force being ItemDisplay for safety
-    fun Entity.removeBlockyFurniture(player: Player): Boolean {
-        val furniture = (if (isFurnitureHitbox) (this as Interaction).baseFurniture else this) as? ItemDisplay ?: return false
-        if (!furniture.isBlockyFurniture) return false
+    fun ItemDisplay.removeBlockyFurniture(player: Player): Boolean {
+        if (!isBlockyFurniture) return false
         val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player)
         if (!ProtectionLib.canBreak(player, location)) furnitureBreakEvent.isCancelled = true
         if (furnitureBreakEvent.isCancelled) return false
-        furnitureBreakEvent.call()
 
-        furniture.interactionEntity?.remove()
-        furniture.removeAssosiatedSeats()
-        furniture.clearAssosiatedHitboxChunkEntries()
-        furniture.handleFurnitureDrops(player)
-        handleLight.removeBlockLight(furniture.location)
-        furniture.remove()
+        furnitureBreakEvent.call()
+        interactionEntity?.remove()
+        removeAssosiatedSeats()
+        clearAssosiatedHitboxChunkEntries()
+        handleFurnitureDrops(player)
+        handleLight.removeBlockLight(location)
+        uniqueId.broadcastVal("uuid2: ")
+        remove()
         return true
     }
 }
