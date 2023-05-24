@@ -12,6 +12,7 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcastVal
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -41,10 +42,16 @@ object BlockyFurnitures {
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
     val Block.isFurnitureHitbox: Boolean get() = this.persistentDataContainer.has(FURNITURE_ORIGIN)
-    val Entity.isFurnitureHitbox: Boolean get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
+    val Entity.isFurnitureHitbox: Boolean get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
+
     val Block.isBlockyFurniture: Boolean get() = this.gearyEntity?.isBlockyFurniture ?: false
-    val Entity.isBlockyFurniture: Boolean get() = this.toGearyOrNull()?.isBlockyFurniture == true || this.isModelEngineFurniture
     val GearyEntity.isBlockyFurniture: Boolean get() = has<BlockyFurniture>() || this.isModelEngineFurniture
+    val Entity.isBlockyFurniture: Boolean
+        get() = when (this) {
+            is ItemDisplay -> this.toGearyOrNull()?.isBlockyFurniture == true
+            is Interaction -> isFurnitureHitbox && this.baseFurniture?.toGearyOrNull()?.isBlockyFurniture == true
+            else -> false
+        } || isModelEngineFurniture
 
     val ItemStack.blockyFurniture get() = this.decode<BlockyFurniture>()
     val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
@@ -53,9 +60,9 @@ object BlockyFurnitures {
 
     val Location.blockyFurnitureEntity get() = this.block.blockyFurnitureEntity
     val Block.blockyFurnitureEntity get() = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
-        origin.world?.getNearbyEntities(origin.block.boundingBox)?.firstOrNull { entity ->
-            entity is ItemDisplay && entity.toGearyOrNull()?.has<BlockyFurniture>() == true
-        }
+        origin.world?.getNearbyEntities(origin, 1.0,1.0,1.0)?.firstOrNull { entity ->
+            entity.isBlockyFurniture
+        }.broadcastVal("e: ")
     }
 
     val Block.blockySeat get() = this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
@@ -64,21 +71,32 @@ object BlockyFurnitures {
         } ?: false
     }
 
+    fun Entity.removeBlockyFurniture(): Boolean {
+        val furniture = (if (isFurnitureHitbox) (this as Interaction).baseFurniture else this) as? ItemDisplay ?: return false
+        if (!furniture.isBlockyFurniture) return false
+        furniture.interactionEntity?.remove()
+        furniture.removeAssosiatedSeats()
+        furniture.clearAssosiatedHitboxChunkEntries()
+        handleLight.removeBlockLight(furniture.location)
+        furniture.remove()
+        return true
+    }
 
     //TODO Change to force being ItemDisplay for safety
-    fun Entity.removeBlockyFurniture(player: Player?) {
-        this.toGearyOrNull()?.get<BlockyFurniture>() ?: return
+    fun Entity.removeBlockyFurniture(player: Player): Boolean {
+        val furniture = (if (isFurnitureHitbox) (this as Interaction).baseFurniture else this) as? ItemDisplay ?: return false
+        if (!furniture.isBlockyFurniture) return false
         val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player)
         if (!ProtectionLib.canBreak(player, location)) furnitureBreakEvent.isCancelled = true
-        if (furnitureBreakEvent.isCancelled) return
+        if (furnitureBreakEvent.isCancelled) return false
         furnitureBreakEvent.call()
 
-        (this as ItemDisplay).interactionEntity?.remove()
-        this.removeAssosiatedSeats()
-        this.clearAssosiatedHitboxChunkEntries()
-        handleFurnitureDrops(player)
-        handleLight.removeBlockLight(this.location)
-        this.toGearyOrNull()?.clear()
-        this.remove()
+        furniture.interactionEntity?.remove()
+        furniture.removeAssosiatedSeats()
+        furniture.clearAssosiatedHitboxChunkEntries()
+        furniture.handleFurnitureDrops(player)
+        handleLight.removeBlockLight(furniture.location)
+        furniture.remove()
+        return true
     }
 }

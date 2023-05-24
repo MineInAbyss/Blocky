@@ -40,9 +40,9 @@ class BlockyFurnitureListener : Listener {
     fun PlayerInteractEvent.prePlacingFurniture() {
         val (item, hand) = (item ?: return) to (hand ?: return)
         val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
-        if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
+        if (action != Action.RIGHT_CLICK_BLOCK) return
 
-        player.gearyInventory?.get(hand)?.placeBlockyFurniture(player, targetBlock.location, blockFace, item)
+        player.gearyInventory?.get(hand)?.placeBlockyFurniture(targetBlock.location, player, hand, item, blockFace)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -86,7 +86,7 @@ class BlockyFurnitureListener : Listener {
 
 
         if (entity is Explosive) {
-            (hitEntity as ItemFrame).removeBlockyFurniture(null)
+            (hitEntity as ItemFrame).removeBlockyFurniture()
         } else isCancelled = true
     }
 
@@ -94,14 +94,14 @@ class BlockyFurnitureListener : Listener {
     fun BlockExplodeEvent.onBlockExplode() {
         blockList().filter { it.isFurnitureHitbox && it.blockyFurniture != null }
             .map { it.blockyFurnitureEntity }.toSet()
-            .forEach { it?.removeBlockyFurniture(null) }
+            .forEach { it?.removeBlockyFurniture() }
     }
 
     @EventHandler(ignoreCancelled = true)
-    fun EntityDamageByEntityEvent.onBreakingFrame() {
+    fun EntityDamageByEntityEvent.onBreakingFurniture() {
         if (!entity.isBlockyFurniture) return
         else if (entity.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
-        else entity.removeBlockyFurniture(damager as? Player)
+        else (damager as? Player)?.let { entity.removeBlockyFurniture(it) } ?: entity.removeBlockyFurniture()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

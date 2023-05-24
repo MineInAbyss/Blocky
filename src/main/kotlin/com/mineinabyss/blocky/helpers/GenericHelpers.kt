@@ -7,6 +7,7 @@ import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
+import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blockMap
@@ -25,11 +26,11 @@ import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
-import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.GearyPlayerInventory
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
@@ -157,7 +158,7 @@ val Block.prefabKey
     get(): PrefabKey? {
         val type =
             when {
-                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.toGearyOrNull()?.get()
+                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.prefabKey.broadcastVal()
                 type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE
@@ -167,6 +168,7 @@ val Block.prefabKey
                 else -> null
             } ?: return null
 
+        //TODO Cache this as parent methods are checked alot
         return BlockyBlockQuery.filter { it.type.blockType == type }.firstOrNull { scope ->
             val blockyBlock = scope.type
             if (scope.entity.has<BlockyDirectional>()) {

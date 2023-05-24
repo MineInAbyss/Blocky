@@ -17,7 +17,7 @@ data class BlockyFurniture(
     val properties: FurnitureProperties = FurnitureProperties(),
     val rotationType: RotationType = RotationType.VERY_STRICT,
     val collisionHitbox: List<BlockLocation> = emptyList(),
-    val interactionHitbox: InteractionHitbox = InteractionHitbox(1f, 1f),
+    val interactionHitbox: InteractionHitbox? = null,
     val originOffset: BlockLocation = BlockLocation(0, 0, 0),
 ) {
     @Serializable
