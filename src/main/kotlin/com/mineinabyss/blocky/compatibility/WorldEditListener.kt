@@ -51,7 +51,6 @@ class WorldEditListener : Listener {
                     blockData.material == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                     blockData.material == Material.TRIPWIRE -> BlockType.WIRE
                     blockData.material == Material.CAVE_VINES -> BlockType.CAVEVINE
-                    Tag.LEAVES.isTagged(blockData.material) -> BlockType.LEAF
                     // The new block isn't a blockyBlock so just return
                     else -> return extent.setBlock(pos.x, pos.y, pos.z, block)
                 }

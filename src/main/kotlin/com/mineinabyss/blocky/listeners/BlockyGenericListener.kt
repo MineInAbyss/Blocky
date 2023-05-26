@@ -236,7 +236,6 @@ class BlockyGenericListener : Listener {
             !blocky.config.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
             !blocky.config.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
             !blocky.config.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
-            //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
         }
 
         val material = when (itemInHand.type) {

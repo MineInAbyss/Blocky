@@ -43,15 +43,14 @@ object BlockyBlocks {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return false
         val blockyBlock = gearyEntity.get<BlockyBlock>() ?: return false
 
-        block.blockData =
-                when {
-                    block.isBlockyBlock -> return false
-                    block.isBlockyNoteBlock -> gearyEntity.getBlockyNoteBlock()
-                    block.isBlockyWire -> blockyBlock.getBlockyTripWire()
-                    block.isBlockyCaveVine -> blockyBlock.getBlockyCaveVine()
-                    //block.isFakeWaxedCopper -> blockyBlock.get
-                    else -> return false
-                }
+        block.blockData = when {
+            block.isBlockyBlock -> return false
+            block.isBlockyNoteBlock -> gearyEntity.getBlockyNoteBlock()
+            block.isBlockyWire -> blockyBlock.getBlockyTripWire()
+            block.isBlockyCaveVine -> blockyBlock.getBlockyCaveVine()
+            //block.isFakeWaxedCopper -> blockyBlock.get
+            else -> return false
+        }
         //TODO Actually place the block with its mechanics
         if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
             block.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)

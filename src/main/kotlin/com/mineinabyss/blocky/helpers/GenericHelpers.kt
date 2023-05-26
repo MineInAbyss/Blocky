@@ -161,7 +161,6 @@ val Block.prefabKey
                 type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
                 type == Material.TRIPWIRE -> BlockType.WIRE
                 type == Material.CAVE_VINES -> BlockType.CAVEVINE
-                Tag.LEAVES.isTagged(type) -> BlockType.LEAF
                 type in BLOCKY_SLABS -> BlockType.SLAB
                 type in BLOCKY_STAIRS -> BlockType.STAIR
                 else -> null
@@ -194,7 +193,6 @@ val BlockData.prefabKey get(): PrefabKey? {
             material == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
             material == Material.TRIPWIRE -> BlockType.WIRE
             material == Material.CAVE_VINES -> BlockType.CAVEVINE
-            Tag.LEAVES.isTagged(material) -> BlockType.LEAF
             material in BLOCKY_SLABS -> BlockType.SLAB
             material in BLOCKY_STAIRS -> BlockType.STAIR
             else -> null

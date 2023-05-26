@@ -30,21 +30,18 @@ class ResourcepackGeneration {
         }
         val noteBlockFile = "${root}/note_block.json".toPath().toFile()
         val tripwireFile = "${root}/tripwire.json".toPath().toFile()
-        //val leafFiles = leafList.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile().run { createNewFile(); this } }
         val caveVineFile = "${root}/cave_vine.json".toPath().toFile()
         val slabFiles = BLOCKY_SLABS.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
         val stairFiles = BLOCKY_STAIRS.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
 
         noteBlockFile.writeJson(getNoteBlockBlockStates())
         tripwireFile.writeJson(getTripwireBlockStates())
-        //leafFiles.forEach { it.writeText(getLeafBlockStates().toString(), Charset.defaultCharset()) }
         caveVineFile.writeJson(getCaveVineBlockStates())
         slabFiles.forEach { it.writeJson(getSlabBlockStates()) }
         stairFiles.forEach { it.writeJson(getStairBlockStates()) }
 
         if (!blocky.config.noteBlocks.isEnabled) noteBlockFile.delete()
         if (!blocky.config.tripWires.isEnabled) tripwireFile.delete()
-        //else if (!blocky.config.leafBlocks.isEnabled) leafFiles.forEach { it.delete() }
         if (!blocky.config.caveVineBlocks.isEnabled) caveVineFile.delete()
         if (!blocky.config.slabBlocks.isEnabled) slabFiles.forEach { it.delete() }
         if (!blocky.config.stairBlocks.isEnabled) stairFiles.forEach { it.delete() }
@@ -105,23 +102,6 @@ class ResourcepackGeneration {
             isDisarmed,
             isPowered
         )
-    }
-
-    private fun getLeafBlockStates(): JsonObject {
-        val variants = JsonObject()
-        val blockModel = JsonObject()
-        val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.LEAF }.map { it.type }
-        //blockModel.add(Bukkit.createBlockData().getNoteBlockData(), "minecraft:block/note_block".getModelJson())
-        blockMap.filter { it.key is Leaves }.forEach { block ->
-            val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
-            blockModel.add((block.key as Leaves).getLeafBlockStates(), modelID.getModelJson())
-        }
-        variants.add("variants", blockModel)
-        return variants
-    }
-
-    private fun BlockData.getLeafBlockStates(): String {
-        return "distance=${(this as Leaves).distance},persistent=true,waterlogged=false"
     }
 
     private fun getCaveVineBlockStates(): JsonObject {

@@ -53,8 +53,6 @@ class BlockyPlugin : JavaPlugin() {
         )
 
         blocky.config.run {
-            // Until reworked deprecate leaf blocks
-            //if (leafBlocks.isEnabled) listeners(BlockyLeafListener())
             if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
             if (tripWires.isEnabled) listeners(BlockyWireListener())
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
@@ -136,19 +134,6 @@ class BlockyPlugin : JavaPlugin() {
                 }
             }
         }
-
-        // Calculates leaf states
-        // Should waterlog be used aswell?
-        /*if (blocky.config.leafBlocks.isEnabled) for (l in 1..63) {
-            val leafData = Bukkit.createBlockData(getLeafMaterial(l)) as Leaves
-            val distance = getLeafDistance(l)
-            if (distance == 1 && blocky.config.leafBlocks.shouldReserveOnePersistentLeafPerType) continue // Skip if one leaf is reserved
-
-            leafData.isPersistent = true
-            leafData.distance = distance
-            // Due to map using material before distance the Int is scued by 1 if set to reserve 1 state
-            blockMap.putIfAbsent(leafData, getBlockMapEntryForLeaf(l))
-        }*/
 
         // Calculates cave-vine states
         if (blocky.config.caveVineBlocks.isEnabled) {
