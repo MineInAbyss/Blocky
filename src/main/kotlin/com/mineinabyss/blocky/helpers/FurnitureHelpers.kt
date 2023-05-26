@@ -48,7 +48,7 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
     return mutableListOf<Location>().apply {
         relativeCoordinates.forEach { blockLoc ->
-            this += blockLoc.groundRotate(rotation).add(center)
+            add(blockLoc.groundRotate(rotation).add(center))
         }
     }
 }
@@ -92,6 +92,7 @@ fun GearyEntity.placeBlockyFurniture(
         get<BlockyPlacableOn>()?.isPlacableOn(loc.block, blockFace) == false -> blockPlaceEvent.isCancelled = true
         loc.block.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> blockPlaceEvent.isCancelled = true
     }
+
     if (blockPlaceEvent.isCancelled) return
     val lootyItem = get<ItemStack>()?.clone()?.editItemMeta {
         displayName(Component.empty())
@@ -134,9 +135,6 @@ fun GearyEntity.placeBlockyFurniture(
             isPersistent = true
             interactionWidth = furniture.interactionHitbox.width
             interactionHeight = furniture.interactionHitbox.height
-        }?.let { interaction ->
-            interaction.toGeary().setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
-            interaction
         } ?: run {
             newFurniture.removeBlockyFurniture()
             return
@@ -148,6 +146,7 @@ fun GearyEntity.placeBlockyFurniture(
         //TODO Fix PrefabKey when Offz adds helper methods
         setPersisting(BlockyFurnitureHitbox(interactionHitbox = interaction?.uniqueId))
     }
+    interaction?.toGeary()?.setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
 
     get<BlockyModelEngine>()?.let { meg ->
         if (!blocky.plugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let
@@ -166,7 +165,7 @@ fun GearyEntity.placeBlockyFurniture(
 
     newFurniture.toGeary().let { gearyEntity ->
         if (gearyEntity.get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
-            gearyEntity.placeFurnitureHitbox(yaw, loc, player)
+            gearyEntity.placeFurnitureHitbox(newFurniture.location.yaw, loc, player)
         } else if (gearyEntity.has<BlockyLight>())
             handleLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()!!.lightLevel)
     }
@@ -178,14 +177,12 @@ fun GearyEntity.placeBlockyFurniture(
 private fun GearyEntity.placeFurnitureHitbox(yaw: Float, originLocation: Location, player: Player) {
     val furniture = get<BlockyFurniture>() ?: return
     val locations = getLocations(yaw, originLocation, furniture.collisionHitbox)
-    val light = this.get<BlockyLight>()?.lightLevel
-    val seat = this.get<BlockySeat>()
 
     locations.forEach { loc ->
         loc.block.setType(Material.BARRIER, false)
-        light?.let { handleLight.createBlockLight(loc, light) }
-        seat?.let {
-            spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, seat.heightOffset) }, player.location.yaw - 180)
+        this.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
+        this.get<BlockySeat>()?.let {
+            spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180)
         }
 
         loc.block.persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, originLocation)
