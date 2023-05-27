@@ -44,9 +44,16 @@ class BlockyFurnitureListener : Listener {
         block.blockyFurnitureEntity?.removeBlockyFurniture(player)
     }
 
+    @EventHandler(ignoreCancelled = true)
+    fun EntityDamageByEntityEvent.onBreakingFurniture() {
+        val furniture = (entity as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return
+        if (furniture.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
+        else (damager as? Player)?.let { furniture.removeBlockyFurniture(it) } ?: furniture.removeBlockyFurniture()
+    }
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun PlayerInteractEntityEvent.onSitting() {
-        val entity = rightClicked
+        val entity = rightClicked as? Interaction ?: return
         if (!ProtectionLib.canInteract(player, entity.location)) return
         if (!entity.isFurnitureHitbox || player.isSneaking) return
 
@@ -98,13 +105,6 @@ class BlockyFurnitureListener : Listener {
         blockList().filter { it.isFurnitureHitbox && it.blockyFurniture != null }
             .map { it.blockyFurnitureEntity }.toSet()
             .forEach { it?.removeBlockyFurniture() }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun EntityDamageByEntityEvent.onBreakingFurniture() {
-        val furniture = (entity as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return
-        if (furniture.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
-        else (damager as? Player)?.let { furniture.removeBlockyFurniture(it) } ?: furniture.removeBlockyFurniture()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
