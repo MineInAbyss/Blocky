@@ -13,7 +13,6 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcastVal
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -94,7 +93,6 @@ object BlockyFurnitures {
         clearAssosiatedHitboxChunkEntries()
         handleFurnitureDrops(player)
         handleLight.removeBlockLight(location)
-        uniqueId.broadcastVal("uuid2: ")
         remove()
         return true
     }
