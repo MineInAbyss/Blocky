@@ -11,6 +11,7 @@ import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
@@ -23,6 +24,9 @@ import org.bukkit.Note
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.*
+import org.bukkit.event.EventHandler
+import org.bukkit.event.Listener
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.plugin.java.JavaPlugin
 
 var blockMap = mapOf<BlockData, Int>()
@@ -45,6 +49,7 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         BlockyCommandExecutor()
+
         listeners(
             BlockyGenericListener(),
             BlockyFurnitureListener(),
@@ -61,6 +66,7 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
+        //server.pluginManager.registerEvents(test(), this)
         geary {
             autoscan(classLoader, "com.mineinabyss.blocky") {
                 all()
@@ -68,6 +74,13 @@ class BlockyPlugin : JavaPlugin() {
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
             }
+        }
+    }
+
+    class test : Listener {
+        @EventHandler
+        fun PlayerInteractEvent.on() {
+            broadcast(hand)
         }
     }
 

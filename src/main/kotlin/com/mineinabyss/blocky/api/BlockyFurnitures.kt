@@ -64,6 +64,13 @@ object BlockyFurnitures {
             } ?: false
         }
 
+    val Interaction.blockySeat
+        get() = this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {
+            it.toGearyOrNull()?.let { g ->
+                g.has<BlockySeat>() && !g.has<BlockyFurniture>()
+            } ?: false
+        }
+
     fun ItemDisplay.removeBlockyFurniture(): Boolean {
         if (!isBlockyFurniture) return false
 

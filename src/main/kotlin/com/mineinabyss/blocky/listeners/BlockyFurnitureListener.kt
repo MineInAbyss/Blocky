@@ -22,6 +22,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.ProjectileHitEvent
+import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.inventory.EquipmentSlot
@@ -44,6 +45,16 @@ class BlockyFurnitureListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
+    fun PlayerInteractEntityEvent.onSitting() {
+        val entity = rightClicked
+        if (!ProtectionLib.canInteract(player, entity.location)) return
+        if (!entity.isFurnitureHitbox || player.isSneaking) return
+
+        player.sitOnBlockySeat(entity)
+        isCancelled = true
+    }
+
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun PlayerInteractEvent.onSitting() {
         val block = clickedBlock ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
@@ -51,7 +62,7 @@ class BlockyFurnitureListener : Listener {
         if (!block.isFurnitureHitbox || player.isSneaking) return
 
         player.sitOnBlockySeat(block)
-        if (!player.inventory.itemInMainHand.type.isAir) isCancelled = true
+        isCancelled = true
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -91,7 +102,7 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun EntityDamageByEntityEvent.onBreakingFurniture() {
-        val furniture = (this as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return
+        val furniture = (entity as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return
         if (furniture.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
         else (damager as? Player)?.let { furniture.removeBlockyFurniture(it) } ?: furniture.removeBlockyFurniture()
     }
@@ -105,6 +116,12 @@ class BlockyFurnitureListener : Listener {
 
     private fun Player.sitOnBlockySeat(block: Block) {
         block.blockySeat?.let {
+            if (this.passengers.isEmpty()) it.addPassenger(this)
+        }
+    }
+
+    private fun Player.sitOnBlockySeat(entity: Interaction) {
+        entity.blockySeat?.let {
             if (this.passengers.isEmpty()) it.addPassenger(this)
         }
     }

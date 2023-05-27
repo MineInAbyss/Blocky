@@ -164,10 +164,15 @@ fun GearyEntity.placeBlockyFurniture(
     }
 
     newFurniture.toGeary().let { gearyEntity ->
-        if (gearyEntity.get<BlockyFurniture>()?.collisionHitbox?.isNotEmpty() == true) {
+        if (furniture.collisionHitbox.isNotEmpty()) {
             gearyEntity.placeFurnitureHitbox(newFurniture.location.yaw, loc, player)
-        } else if (gearyEntity.has<BlockyLight>())
-            handleLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()!!.lightLevel)
+        } else if (furniture.interactionHitbox != null) {
+            gearyEntity.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
+            gearyEntity.get<BlockySeat>()?.let {
+                spawnFurnitureSeat(loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }, player.location.yaw - 180)
+            }
+        } else gearyEntity.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
+
     }
 
     player.swingHand(hand)
@@ -207,7 +212,8 @@ internal fun Entity.handleFurnitureDrops(player: Player?) {
 }
 
 //TODO Fix seat breaking below 0.0 offset and remove max() check here
-fun spawnFurnitureSeat(location: Location, yaw: Float) {
+fun spawnFurnitureSeat(furniture: ItemDisplay, yaw: Float) {
+    val location = furniture.location
     location.spawn<ArmorStand> {
         isVisible = false
         isMarker = true
@@ -217,7 +223,7 @@ fun spawnFurnitureSeat(location: Location, yaw: Float) {
         setRotation(yaw, 0F)
     }?.apply {
         toGeary().setPersisting(BlockySeat(location.y - location.toBlockCenterLocation().y))
-        persistentDataContainer.set(FURNITURE_ORIGIN, DataType.LOCATION, location)
+        persistentDataContainer.set(FURNITURE_ORIGIN, DataType.UUID, furniture.uniqueId)
     } ?: return
 }
 
