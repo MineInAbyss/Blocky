@@ -15,7 +15,10 @@ import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
 import it.unimi.dsi.fastutil.ints.IntArrayList
+import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
+import net.minecraft.tags.BlockTags
+import net.minecraft.world.item.Item
 import org.bukkit.Bukkit
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -50,7 +53,7 @@ class BlockyPlugin : JavaPlugin() {
             BlockyGenericListener(),
             BlockyFurnitureListener(),
             BlockyMiddleClickListener(),
-            //BlockyNMSListener(),
+            BlockyNMSListener(),
         )
 
         blocky.config.run {
@@ -75,25 +78,24 @@ class BlockyPlugin : JavaPlugin() {
 
     fun runStartupFunctions() {
         blockMap = createBlockMap()
-        //registryTagMap = createTagRegistryMap()
+        registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
         MoreCreativeTabsGeneration().generateModAssets()
     }
 
-    /*private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
-        val map = Registry.BLOCK.tags.map { pair ->
+    private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
+
+        return BuiltInRegistries.BLOCK.tags.map { pair ->
             pair.first.location to IntArrayList(pair.second.size()).apply {
                 // If the tag is MINEABLE_WITH_AXE, don't add noteblock
                 if (pair.first.location == BlockTags.MINEABLE_WITH_AXE.location) {
                     pair.second.filter {
                         Item.BY_BLOCK[it.value()].toString() != "note_block"
-                    }.forEach { add(Registry.BLOCK.getId(it.value())) }
-                } else pair.second.forEach { add(Registry.BLOCK.getId(it.value())) }
+                    }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
+                } else pair.second.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
             }
         }.toList().toMap()
-
-        return map
-    }*/
+    }
 
     private fun createBlockMap(): Map<BlockData, Int> {
         val blockMap = mutableMapOf<BlockData, Int>()
