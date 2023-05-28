@@ -55,7 +55,7 @@ class BlockyGenericListener : Listener {
 
         removePotionEffect(SLOW_DIGGING)
         block.location.getNearbyPlayers(16.0).forEach {
-            it.sendBlockChange(block.location, block.blockData)
+            it.sendBlockDamage(block.location, 0f, block.location.hashCode())
         }
     }
 

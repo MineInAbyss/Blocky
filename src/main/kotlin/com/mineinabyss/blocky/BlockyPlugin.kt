@@ -2,8 +2,9 @@ package com.mineinabyss.blocky
 
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.compatibility.WorldEditListener
-import com.mineinabyss.blocky.compatibility.WorldEditSupport
+import com.mineinabyss.blocky.compatibility.breaker.BlockyBlockProvider
+import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
+import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyDirectional
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
@@ -22,6 +23,7 @@ import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
+import eu.asangarin.breaker.Breaker
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
@@ -39,7 +41,7 @@ import org.bukkit.plugin.java.JavaPlugin
 var blockMap = mapOf<BlockData, Int>()
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
-
+val breaker by lazy { Bukkit.getPluginManager().getPlugin("Breaker") as Breaker }
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
         Platforms.load(this, "mineinabyss")
@@ -81,6 +83,9 @@ class BlockyPlugin : JavaPlugin() {
             }
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
+                if (Bukkit.getPluginManager().isPluginEnabled("Breaker")) {
+                    breaker.blockProviders.register(BlockyBlockProvider)
+                }
             }
         }
     }

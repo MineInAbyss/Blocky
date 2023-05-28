@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.compatibility
+package com.mineinabyss.blocky.compatibility.worldedit
 
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType

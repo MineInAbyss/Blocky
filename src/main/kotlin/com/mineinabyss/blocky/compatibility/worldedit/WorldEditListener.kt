@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.compatibility
+package com.mineinabyss.blocky.compatibility.worldedit
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity

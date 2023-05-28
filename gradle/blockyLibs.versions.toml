@@ -13,3 +13,5 @@ minecraft-plugin-morepersistentdatatypes = "com.jeff_media:MorePersistentDataTyp
 minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.3.0-Bukkit"
 minecraft-plugin-modelengine = "com.ticxo.modelengine:api:R3.1.7"
 minecraft-plugin-protectionlib = "com.github.oraxen:protectionlib:1.2.7"
+minecraft-plugin-mythic = "io.lumine:Mythic-Dist:5.2.6"
+minecraft-plugin-breaker = "eu.asangarin:breaker:3.1.1"
