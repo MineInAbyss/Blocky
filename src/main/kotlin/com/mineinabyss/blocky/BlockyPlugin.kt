@@ -19,7 +19,6 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
@@ -41,7 +40,7 @@ import org.bukkit.plugin.java.JavaPlugin
 var blockMap = mapOf<BlockData, Int>()
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
-val breaker by lazy { Bukkit.getPluginManager().getPlugin("Breaker") as Breaker }
+val breaker by lazy { Bukkit.getPluginManager().getPlugin("Breaker") as? Breaker }
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
         Platforms.load(this, "mineinabyss")
@@ -84,7 +83,7 @@ class BlockyPlugin : JavaPlugin() {
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
                 if (Bukkit.getPluginManager().isPluginEnabled("Breaker")) {
-                    breaker.blockProviders.register(BlockyBlockProvider)
+                    breaker?.blockProviders?.register(BlockyBlockProvider)
                 }
             }
         }
@@ -104,7 +103,6 @@ class BlockyPlugin : JavaPlugin() {
             BlockyBlockQuery.filter { it.prefabKey.isBlockyBlock }.forEach { scope ->
                 scope.prefabKey.toEntityOrNull()?.let { entity ->
                     entity.get<BlockyBlock>()?.let { blockyBlock ->
-                        broadcast(blockyBlock.blockType)
                         val blockData = blockMap.entries.filter {
                             when (blockyBlock.blockType) {
                                 BlockyBlock.BlockType.NOTEBLOCK -> it.key is NoteBlock
@@ -112,7 +110,7 @@ class BlockyPlugin : JavaPlugin() {
                                 BlockyBlock.BlockType.CAVEVINE -> it.key is CaveVinesPlant
                                 BlockyBlock.BlockType.SLAB -> it.key is Slab
                                 BlockyBlock.BlockType.STAIR -> it.key is Stairs
-                                // TODO This apparently is needed otherwise "WhenExpression is not exhaustive"
+                                // Note: This apparently is needed otherwise "WhenExpression is not exhaustive"
                                 else -> return@forEach
                             }
                         }.firstOrNull { it.value == blockyBlock.blockId }?.key ?: return@forEach

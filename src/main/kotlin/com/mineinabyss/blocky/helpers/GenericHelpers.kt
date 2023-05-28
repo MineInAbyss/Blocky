@@ -22,6 +22,7 @@ import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.items.GearyPlayerInventory
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
@@ -33,10 +34,8 @@ import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Lectern
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.EntityType
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
-import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
@@ -73,11 +72,8 @@ internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta.persisten
 
 internal fun Block.attemptBreakBlockyBlock(player: Player?) {
     val prefab = this.gearyEntity ?: return
-    val blockBreakEvent = player?.let { BlockBreakEvent(this, it) }
-    val blockyBreakEvent = BlockyBlockBreakEvent(this, player).run { call(); this }
-
-    if (!ProtectionLib.canBreak(player, this.location)) blockyBreakEvent.isCancelled = true
-    if (blockBreakEvent?.isCancelled == true || blockyBreakEvent.isCancelled) return
+    BlockyBlockBreakEvent(this, player).callEvent() || return
+    if (!ProtectionLib.canBreak(player, this.location)) return
 
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
     if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
@@ -103,10 +99,7 @@ fun handleBlockyDrops(block: Block, player: Player?) {
     val info = gearyBlock.get<BlockyInfo>() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
 
-    if (info.onlyDropWithCorrectTool) {
-        if (player == null) return
-        if (!isCorrectTool(player, block, EquipmentSlot.HAND)) return
-    }
+    if (info.onlyDropWithCorrectTool && !isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
 
     gearyBlock.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, block.location) ?: return
 }
@@ -115,11 +108,23 @@ internal val Player.gearyInventory: GearyPlayerInventory?
     get() = inventory.toGeary()
 
 private fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
-    val gearyBlock = block.gearyEntity ?: return false
-    val info = gearyBlock.get<BlockyInfo>() ?: return false
-    val allowedToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes ?: return false
+    val info = block.gearyEntity?.get<BlockyInfo>() ?: return false
+    val heldToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes
+        ?: getVanillaToolTypes(player.inventory.getItem(hand))?.let { setOf(it) } ?: setOf()
 
-    return ToolType.ANY in allowedToolTypes || info.acceptedToolTypes.any { it in allowedToolTypes }
+    return ToolType.ANY in info.acceptedToolTypes || info.acceptedToolTypes.any { it in heldToolTypes }
+}
+
+private fun getVanillaToolTypes(itemStack: ItemStack): ToolType? {
+    return when {
+        MaterialTags.AXES.isTagged(itemStack.type) -> ToolType.AXE
+        MaterialTags.PICKAXES.isTagged(itemStack.type) -> ToolType.PICKAXE
+        MaterialTags.SWORDS.isTagged(itemStack.type) -> ToolType.SWORD
+        MaterialTags.SHOVELS.isTagged(itemStack.type) -> ToolType.SHOVEL
+        MaterialTags.HOES.isTagged(itemStack.type) -> ToolType.HOE
+        itemStack.type == Material.SHEARS -> ToolType.SHEARS
+        else -> null
+    }
 }
 
 fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
@@ -139,9 +144,11 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
 
         if (player?.gameMode == GameMode.CREATIVE) return
 
-        if (drop.exp < 0)
-            (location.world.spawnEntity(location, EntityType.EXPERIENCE_ORB) as ExperienceOrb).experience = drop.exp
-        (1..amount).forEach { _ -> item?.let { item -> location.world.dropItemNaturally(location, item) } }
+        if (drop.exp > 0) location.spawn<ExperienceOrb> { experience = drop.exp }
+        item?.let {
+            item.amount = amount
+            location.world.dropItemNaturally(location, item)
+        }
     }
 }
 

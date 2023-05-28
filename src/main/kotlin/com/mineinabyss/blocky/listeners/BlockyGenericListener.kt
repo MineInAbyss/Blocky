@@ -11,6 +11,7 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
+import com.mineinabyss.blocky.breaker
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
@@ -18,6 +19,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
+import eu.asangarin.breaker.api.BreakerTriggerEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
@@ -44,6 +46,7 @@ import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
 class BlockyGenericListener : Listener {
 
     private fun Player.resetCustomBreak(block: Block) {
+        if (breaker?.database?.shouldHandle(block) == true) return
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
             block.isBlockyFurniture ->
@@ -55,6 +58,7 @@ class BlockyGenericListener : Listener {
 
         removePotionEffect(SLOW_DIGGING)
         block.location.getNearbyPlayers(16.0).forEach {
+            it.sendBlockChange(block.location, block.blockData)
             it.sendBlockDamage(block.location, 0f, block.location.hashCode())
         }
     }
@@ -69,6 +73,8 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
+        // If breaker is set to handle block, return
+        if (breaker?.database?.shouldHandle(block) == true) return
         val info = block.gearyEntity?.get<BlockyInfo>() ?: return
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
 
@@ -128,9 +134,23 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakBlockyBlock() {
-        if (player.gameMode == GameMode.CREATIVE && block.isBlockyBlock) {
-            block.attemptBreakBlockyBlock(player)
+        if (!block.isBlockyBlock) return
+
+        block.attemptBreakBlockyBlock(player)
+
+        if (block.getRelative(BlockFace.UP).isBlockyBlock) {
+            block.updateNoteBlockAbove()
         }
+
+        isDropItems = false
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST)
+    fun BreakerTriggerEvent.onBreakBlockyBlock() {
+        if (!block.isBlockyBlock) return
+
+        if (player.gameMode == GameMode.CREATIVE)
+            block.attemptBreakBlockyBlock(player)
 
         if (block.getRelative(BlockFace.UP).isBlockyBlock) {
             block.updateNoteBlockAbove()
