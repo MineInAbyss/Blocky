@@ -1,4 +1,4 @@
-name: Java CI with Gradle
+name: Build
 
 on:
   push:
@@ -7,6 +7,10 @@ on:
     paths-ignore:
       - '**.md'
   pull_request:
+
+concurrency:
+  cancel-in-progress: true
+  group: ci-${{ github.ref }}
 
 jobs:
   build:
@@ -19,12 +23,7 @@ jobs:
         with:
           distribution: temurin
           java-version: 17
+          cache: gradle
 
       - name: Build
         run: gradle build
-
-      - name: Upload build
-        uses: actions/upload-artifact@v1
-        with:
-          name: build
-          path: build/libs
