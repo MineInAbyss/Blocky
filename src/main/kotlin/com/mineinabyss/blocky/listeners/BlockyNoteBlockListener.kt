@@ -84,7 +84,7 @@ class BlockyNoteBlockListener : Listener {
             block.updateNoteBlockAbove()
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun GenericGameEvent.disableRedstone() {
         val block = location.block
         val data = block.blockData.clone() as? NoteBlock ?: return

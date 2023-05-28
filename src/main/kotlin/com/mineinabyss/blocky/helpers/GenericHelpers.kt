@@ -21,7 +21,6 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.items.GearyPlayerInventory
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
-import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
@@ -184,21 +183,21 @@ fun placeBlockyBlock(
     targetBlock.setBlockData(newData, isFlowing)
 
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player)
+    blockPlaceEvent.callEvent()
 
     when {
-        blockPlaceEvent.isCancelled -> blockyEvent.isCancelled = true
         targetBlock.gearyEntity?.get<BlockyPlacableOn>()
-            ?.isPlacableOn(targetBlock, face) == true -> blockyEvent.isCancelled = true
+            ?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
 
         !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() ->
-            blockyEvent.isCancelled = true
+            blockPlaceEvent.isCancelled = true
 
-        !targetBlock.correctAllBlockStates(player, face, item) -> blockyEvent.isCancelled = true
+        !targetBlock.correctAllBlockStates(player, face, item) -> blockPlaceEvent.isCancelled = true
     }
 
-    blockyEvent.call()
-    if (blockyEvent.isCancelled) {
+    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player)
+    blockyEvent.callEvent()
+    if (blockPlaceEvent.isCancelled || blockyEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
         return null
     }
