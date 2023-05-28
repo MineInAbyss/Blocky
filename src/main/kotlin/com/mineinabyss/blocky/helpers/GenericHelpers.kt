@@ -5,15 +5,10 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
-import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
-import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
-import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyDirectional
 import com.mineinabyss.blocky.components.features.BlockyDrops
@@ -21,14 +16,11 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
-import com.mineinabyss.blocky.systems.BlockyBlockQuery
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
+import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.items.GearyPlayerInventory
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
-import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
@@ -153,69 +145,8 @@ fun List<BlockyDrops>.handleBlockDrop(player: Player?, location: Location) {
     }
 }
 
-val Block.prefabKey
-    get(): PrefabKey? {
-        val type =
-            when {
-                this.isFurnitureHitbox -> return this.blockyFurnitureEntity?.prefabKey
-                type == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
-                type == Material.TRIPWIRE -> BlockType.WIRE
-                type == Material.CAVE_VINES -> BlockType.CAVEVINE
-                type in BLOCKY_SLABS -> BlockType.SLAB
-                type in BLOCKY_STAIRS -> BlockType.STAIR
-                else -> null
-            } ?: return null
-
-        //TODO Cache this as parent methods are checked alot
-        return BlockyBlockQuery.filter { it.type.blockType == type }.firstOrNull { scope ->
-            val blockyBlock = scope.type
-            if (scope.entity.has<BlockyDirectional>()) {
-                val directional = scope.entity.get<BlockyDirectional>()
-                ((directional?.yBlock?.toEntityOrNull()
-                    ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
-                        (directional?.xBlock?.toEntityOrNull()
-                            ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData] ||
-                        (directional?.zBlock?.toEntityOrNull()
-                            ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[blockData]) &&
-                        blockyBlock.blockType == type
-            } else if (blockyBlock.blockType == BlockType.SLAB) {
-                BLOCKY_SLABS.elementAt(blockyBlock.blockId - 1) == blockData.material
-            } else if (blockyBlock.blockType == BlockType.STAIR) {
-                BLOCKY_STAIRS.elementAt(blockyBlock.blockId - 1) == blockData.material
-            } else blockyBlock.blockId == blockMap[blockData] && blockyBlock.blockType == type
-        }?.prefabKey
-    }
-
-val BlockData.prefabKey get(): PrefabKey? {
-    val type =
-        when {
-            material == Material.BARRIER -> return null
-            material == Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
-            material == Material.TRIPWIRE -> BlockType.WIRE
-            material == Material.CAVE_VINES -> BlockType.CAVEVINE
-            material in BLOCKY_SLABS -> BlockType.SLAB
-            material in BLOCKY_STAIRS -> BlockType.STAIR
-            else -> null
-        } ?: return null
-
-    return BlockyBlockQuery.filter { it.type.blockType == type }.firstOrNull { scope ->
-        val blockyBlock = scope.type
-        if (scope.entity.has<BlockyDirectional>()) {
-            val directional = scope.entity.get<BlockyDirectional>()
-            ((directional?.yBlock?.toEntityOrNull()
-                ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[this] ||
-                    (directional?.xBlock?.toEntityOrNull()
-                        ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[this] ||
-                    (directional?.zBlock?.toEntityOrNull()
-                        ?: scope.entity).get<BlockyBlock>()?.blockId == blockMap[this]) &&
-                    blockyBlock.blockType == type
-        } else if (blockyBlock.blockType == BlockType.SLAB) {
-            BLOCKY_SLABS.elementAt(blockyBlock.blockId - 1) == this.material
-        } else if (blockyBlock.blockType == BlockType.STAIR) {
-            BLOCKY_STAIRS.elementAt(blockyBlock.blockId - 1) == this.material
-        } else blockyBlock.blockId == blockMap[this] && blockyBlock.blockType == type
-    }?.prefabKey
-}
+val Block.prefabKey get() = prefabMap[blockData]
+val BlockData.prefabKey get() = prefabMap[this]
 
 
 //val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true

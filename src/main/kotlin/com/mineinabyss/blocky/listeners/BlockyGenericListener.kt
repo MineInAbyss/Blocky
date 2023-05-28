@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.listeners
 
-import com.comphenix.protocol.ProtocolLibrary
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
@@ -43,7 +42,6 @@ import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
 
 class BlockyGenericListener : Listener {
-    val protocolManager = ProtocolLibrary.getProtocolManager()
 
     private fun Player.resetCustomBreak(block: Block) {
         when {
