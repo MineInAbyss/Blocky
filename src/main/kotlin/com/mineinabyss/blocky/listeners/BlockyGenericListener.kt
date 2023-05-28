@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.listeners
 
 import com.comphenix.protocol.PacketType
 import com.comphenix.protocol.ProtocolLibrary
+import com.comphenix.protocol.wrappers.BlockPosition
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
@@ -22,10 +23,7 @@ import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
-import org.bukkit.GameMode
-import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.Tag
+import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Directional
@@ -58,7 +56,8 @@ class BlockyGenericListener : Listener {
 
         removePotionEffect(SLOW_DIGGING)
         block.location.getNearbyPlayers(16.0).forEach {
-            it.sendBlockChange(block.location, block.blockData)
+            //it.sendBlockChange(block.location, block.blockData)
+            it.sendBlockDamage(block.location, -1)
         }
     }
 
@@ -99,11 +98,9 @@ class BlockyGenericListener : Listener {
 
             do { //TODO Fix visual glitch for blockbreaker
                 block.location.getNearbyPlayers(16.0).forEach { p ->
-                    p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
+                    p.sendBlockDamage(block.location, stage)
+                    //p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
                 }
-                //TODO Let client acknowledge block change?
-                val packet = protocolManager.createPacket(PacketType.Play.Server.BLOCK_CHANGED_ACK)
-                protocolManager.sendServerPacket(player, packet)
                 delay(breakTime / 10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
         }
@@ -112,6 +109,14 @@ class BlockyGenericListener : Listener {
             if (player.toGeary().has(mining::class))
                 block.attemptBreakBlockyBlock(player)
         }
+    }
+
+    private fun Player.sendBlockDamage(location: Location, stage: Int) {
+        val packet = protocolManager.createPacket(PacketType.Play.Server.BLOCK_BREAK_ANIMATION)
+        packet.integers.write(0, location.hashCode()).write(1, stage)
+        packet.blockPositionModifier.write(0, BlockPosition(location.toVector()))
+
+        protocolManager.sendServerPacket(player, packet)
     }
 
     // Call the BlockyAbortDamage events or ancel the break task if player stops breaking a normal block
