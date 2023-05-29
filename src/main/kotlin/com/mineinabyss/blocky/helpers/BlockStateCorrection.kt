@@ -190,14 +190,23 @@ object BlockStateCorrection {
 
             is Stairs -> {
                 data.facing = player.facing
-                if (eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += 0.6 }?.y!!)
-                    data.half = Bisected.Half.BOTTOM
-                else data.half = Bisected.Half.TOP
+                when {
+                    eye.hitBlockFace == BlockFace.UP -> data.half = Bisected.Half.BOTTOM
+                    eye.hitBlockFace == BlockFace.DOWN -> data.half = Bisected.Half.TOP
+                    eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += 0.6 }?.y!! -> data.half =
+                        Bisected.Half.BOTTOM
+                    else -> data.half = Bisected.Half.TOP
+                }
             }
 
             is Slab -> {
-                if (eye.hitPosition.y <= eye.hitBlock?.location?.toCenterLocation()?.y!!) data.type = Slab.Type.BOTTOM
-                else data.type = Slab.Type.TOP
+                when {
+                    eye.hitBlockFace == BlockFace.UP -> data.type = Slab.Type.BOTTOM
+                    eye.hitBlockFace == BlockFace.DOWN -> data.type = Slab.Type.TOP
+                    eye.hitPosition.y < eye.hitBlock?.location?.clone()?.apply { y += 0.6 }?.y!! -> data.type =
+                        Slab.Type.BOTTOM
+                    else -> data.type = Slab.Type.TOP
+                }
             }
         }
         setBlockData(data, true)
