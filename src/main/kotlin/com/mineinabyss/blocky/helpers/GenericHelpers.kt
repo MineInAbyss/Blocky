@@ -71,6 +71,7 @@ val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EA
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 
+internal infix fun <A, B, C> Pair<A, B>.to(that: C): Triple<A, B, C> = Triple(this.first, this.second, that)
 internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta.persistentDataContainer.decode()
 internal val Player.gearyInventory get() = inventory.toGeary()
 
@@ -127,8 +128,7 @@ fun placeBlockyBlock(
     blockPlaceEvent.callEvent()
 
     when {
-        targetBlock.gearyEntity?.get<BlockyPlacableOn>()
-            ?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
+        targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
 
         !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() ->
             blockPlaceEvent.isCancelled = true

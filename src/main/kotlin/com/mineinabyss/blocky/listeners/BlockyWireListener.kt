@@ -77,15 +77,13 @@ class BlockyWireListener : Listener {
         if (action == Action.RIGHT_CLICK_BLOCK && clickedBlock?.type == Material.TRIPWIRE) {
             if (hand != EquipmentSlot.HAND) return
 
-            val (item, hand) = (item ?: return) to (hand ?: return)
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
             val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
             var type = item.type
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
             if (type == Material.TRIPWIRE || type == Material.STRING || type.isBlock) {
-                clickedBlock?.getRelative(BlockFace.DOWN)?.let { block ->
-                    placeBlockyBlock(player, hand, item, block, blockFace, blockyBlock.getBlockyTripWire()) ?: return
-                } ?: return
+                placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.getBlockyTripWire()) ?: return
             }
             player.swingMainHand()
         }

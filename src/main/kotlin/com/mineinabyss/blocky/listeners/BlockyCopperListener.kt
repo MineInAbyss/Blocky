@@ -152,13 +152,12 @@ class BlockyCopperListener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockyStair() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
+            val (against, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
             if (action != Action.RIGHT_CLICK_BLOCK) return
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_STAIRS) return
 
             val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
-            val against = clickedBlock ?: return
             if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
             if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
 

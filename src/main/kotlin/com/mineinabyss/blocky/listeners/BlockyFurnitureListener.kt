@@ -31,8 +31,8 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
-        val (item, hand) = (item ?: return) to (hand ?: return)
-        val targetBlock = clickedBlock?.let { getTargetBlock(it, blockFace) } ?: return
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
+        val targetBlock = getTargetBlock(block, blockFace) ?: return
         if (action != Action.RIGHT_CLICK_BLOCK) return
 
         player.gearyInventory?.get(hand)?.placeBlockyFurniture(targetBlock.location, player, hand, item, blockFace)

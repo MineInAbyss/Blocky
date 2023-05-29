@@ -17,6 +17,7 @@ import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
 import org.bukkit.Material
+import org.bukkit.Tag
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.Event
@@ -99,19 +100,22 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onInteractBlockyNoteBlock() {
-        val block = clickedBlock ?: return
-        val item = item ?: return
-        val type = item.clone().type
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
+        //TODO Figure out  why water replaces custom block
+        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return
 
-        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock || hand != EquipmentSlot.HAND) return
         setUseInteractedBlock(Event.Result.DENY)
-        if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, type.createBlockData())
+        //TODO Might need old check if it is Blocky block?
+        if (item.type.isBlock)
+            if (Tag.STAIRS.isTagged(item.type) || Tag.SLABS.isTagged(item.type))
+                placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
+            else BlockStateCorrection.placeItemAsBlock(player, hand, item, block)
+            //placeBlockyBlock(player, hand, item, block, blockFace, type.createBlockData())
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
-        val against = clickedBlock ?: return
-        val (item, hand) = (item ?: return) to (hand ?: return)
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
 
@@ -119,9 +123,10 @@ class BlockyNoteBlockListener : Listener {
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
 
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
-        if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
+        //TODO Change to proper interactable check cuz spigot bad
+        if ((block.type.isInteractable && !block.isBlockyBlock) && !player.isSneaking) return
 
-        placeBlockyBlock(player, hand, item, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
+        placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
     }
 
     @EventHandler(ignoreCancelled = true)

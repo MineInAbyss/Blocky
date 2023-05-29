@@ -68,13 +68,12 @@ class BlockyCaveVineListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyCaveVine() {
-        val clickedBlock = clickedBlock ?: return
-        val (item, hand) = (item ?: return) to (hand ?: return)
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
 
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
-        if (clickedBlock.type.isInteractable && !clickedBlock.isBlockyCaveVine && !player.isSneaking) return
+        if (block.type.isInteractable && !block.isBlockyCaveVine && !player.isSneaking) return
         if (item.type == Material.GLOW_BERRIES) return // Handled by [onGlowBerryPlace()]
-        if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock.location) is CaveVines) {
+        if (blockFace == BlockFace.UP && player.world.getBlockData(block.location) is CaveVines) {
             isCancelled = true
             return
         }
@@ -86,7 +85,7 @@ class BlockyCaveVineListener : Listener {
         if (!gearyVine.has<BlockyInfo>()) return
 
         val placedWire =
-            placeBlockyBlock(player, hand, item, clickedBlock, blockFace, blockyVine.getBlockyCaveVine()) ?: return
+            placeBlockyBlock(player, hand, item, block, blockFace, blockyVine.getBlockyCaveVine()) ?: return
         if (gearyVine.has<BlockyLight>())
             handleLight.createBlockLight(placedWire.location, lightLevel!!)
     }

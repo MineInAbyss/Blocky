@@ -2,6 +2,12 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.mineinabyss.blocky.helpers.GenericHelpers.getRelativeFacing
+import com.mineinabyss.idofront.nms.aliases.toNMS
+import net.minecraft.core.BlockPos
+import net.minecraft.world.InteractionHand
+import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.phys.BlockHitResult
+import net.minecraft.world.phys.Vec3
 import org.bukkit.Axis
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
@@ -13,15 +19,36 @@ import org.bukkit.block.data.type.*
 import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Lectern
+import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.BlockInventoryHolder
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.BlockStateMeta
 import org.bukkit.inventory.meta.SkullMeta
 
 object BlockStateCorrection {
 
-    //TODO This might be better to call via an event or something in stead of this god awful method
+    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack, placedAgainst: Block) {
+        val blockHitResult = getBlockHitResult(player, placedAgainst) ?: return
+        val hand = when (slot) {
+            EquipmentSlot.HAND -> InteractionHand.MAIN_HAND
+            EquipmentSlot.OFF_HAND -> InteractionHand.OFF_HAND
+            else -> return
+        }
+
+        if (Tag.STAIRS.isTagged(itemStack.type) || Tag.SLABS.isTagged(itemStack.type))
+            handleHalfBlocks(itemStack.type.createBlockData(), player)
+        else itemStack.toNMS()?.useOn(UseOnContext(player.toNMS(), hand, blockHitResult), hand)
+    }
+
+    private fun getBlockHitResult(player: Player, block: Block): BlockHitResult? {
+        val human = (player as? CraftPlayer)?.handle ?: return null
+        val loc = player.eyeLocation
+        return BlockHitResult(Vec3(loc.x, loc.y, loc.z), human.direction.opposite, BlockPos(block.x, block.y, block.z), false)
+    }
+
+    //TODO This might be better to call via an event or something instead of this god awful method
     // Even NMS might be better as nmsItem.place is a method
     fun correctAllBlockStates(block: Block, player: Player, face: BlockFace, item: ItemStack): Boolean {
         val data = block.blockData.clone()
@@ -177,9 +204,8 @@ object BlockStateCorrection {
         return true
     }
 
-    private fun Block.handleHalfBlocks(player: Player) {
-        val eye = player.rayTraceBlocks(5.0, FluidCollisionMode.NEVER) ?: return
-        val data = blockData.clone()
+    private fun handleHalfBlocks(data: BlockData, player: Player): BlockData {
+        val eye = player.rayTraceBlocks(5.0, FluidCollisionMode.NEVER) ?: return data
         when (data) {
             is TrapDoor -> {
                 data.facing = player.facing.oppositeFace
@@ -209,7 +235,11 @@ object BlockStateCorrection {
                 }
             }
         }
-        setBlockData(data, true)
+        return data
+    }
+
+    private fun Block.handleHalfBlocks(player: Player) {
+        handleHalfBlocks(blockData, player)
     }
 
     private fun Block.handleRotatableBlocks(player: Player) {
