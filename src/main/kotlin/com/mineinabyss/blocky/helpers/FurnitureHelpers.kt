@@ -13,6 +13,7 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.components.features.BlockySeatLocations
+import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -206,7 +207,9 @@ internal fun Entity.clearAssosiatedHitboxChunkEntries() {
 }
 
 internal fun Entity.handleFurnitureDrops(player: Player?) {
-    this.toGearyOrNull()?.get<BlockyInfo>()?.blockDrop?.handleBlockDrop(player, this.location) ?: return
+    this.toGearyOrNull()?.get<BlockyInfo>()?.blockDrop?.let {
+        GenericHelpers.handleBlockDrop(it, player, location)
+    } ?: return
 }
 
 //TODO Fix seat breaking below 0.0 offset and remove max() check here
@@ -240,11 +243,5 @@ fun spawnFurnitureSeat(location: Location, yaw: Float): ArmorStand? {
 fun ItemDisplay.removeAssosiatedSeats() {
     this.toGearyOrNull()?.get<BlockySeatLocations>()?.seats?.forEach { seatLoc ->
         seatLoc.block.blockySeat?.remove()
-    }
-}
-
-fun Entity.removeInteractionHitbox() {
-    this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.interactionHitbox?.let {
-        Bukkit.getEntity(it)?.remove()
     }
 }

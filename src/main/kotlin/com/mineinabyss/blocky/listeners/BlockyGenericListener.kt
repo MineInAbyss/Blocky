@@ -12,10 +12,12 @@ import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEve
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.breaker
+import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
@@ -169,7 +171,7 @@ class BlockyGenericListener : Listener {
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
             val data = type.createBlockData()
             if (Tag.ANVIL.isTagged(type))
-                (data as Directional).facing = getAnvilFacing(blockFace)
+                (data as Directional).facing = GenericHelpers.getAnvilFacing(blockFace)
             block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
             isCancelled = true
         }
@@ -243,7 +245,7 @@ class BlockyGenericListener : Listener {
 
         when {
             itemInHand.type !in materialSet -> return
-            isBlockyBlock(player, EquipmentSlot.HAND) && blockPlaced.isBlockyBlock -> return
+            blockPlaced.isBlockyBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() == true -> return
             // TODO Are these even needed?
             !blocky.config.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blocky.config.tripWires.isEnabled && itemInHand.type == Material.STRING -> return

@@ -19,7 +19,7 @@ val NOTE_KEY = NamespacedKey(blocky.plugin, "note")
 val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blocky.plugin, "vanilla_note_block")
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
-    return blockMap.filter { it.key is NoteBlock && it.value == this.getDirectionalId(face, player) }.keys.firstOrNull() ?: return Material.NOTE_BLOCK.createBlockData() as NoteBlock
+    return blockMap.filter { it.key is NoteBlock && it.value == GenericHelpers.getDirectionalId(this, face, player) }.keys.firstOrNull() ?: return Material.NOTE_BLOCK.createBlockData() as NoteBlock
 }
 
 fun Block.updateNoteBlockAbove() {

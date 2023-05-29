@@ -252,8 +252,8 @@ class BlockyCopperListener {
         }
 
         private fun Block.getStairShape(player: Player): Stairs.Shape {
-            val leftBlock = getLeftBlock(player)
-            val rightBlock = getRightBlock(player)
+            val leftBlock = GenericHelpers.getLeftBlock(this, player)
+            val rightBlock = GenericHelpers.getRightBlock(this, player)
             val aheadBlock = getRelative(player.facing)
             val behindBlock = getRelative(player.facing.oppositeFace)
 
