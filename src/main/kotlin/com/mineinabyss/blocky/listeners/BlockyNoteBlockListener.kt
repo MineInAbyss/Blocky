@@ -148,8 +148,8 @@ class BlockyNoteBlockListener : Listener {
         if (!blockPlaced.isVanillaNoteBlock) return
 
         if (!blocky.config.noteBlocks.restoreFunctionality)
-            blockPlaced.persistentDataContainer.encode(VanillaNoteBlock)
-        else blockPlaced.persistentDataContainer.encode(VanillaNoteBlock)
+            blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
+        else blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
     }
 
     //TODO Make sure this works
@@ -179,10 +179,11 @@ class BlockyNoteBlockListener : Listener {
                     }
                 } else {
                     if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
-                        (block.blockData as NoteBlock).instrument = Instrument.PIANO
-                        (block.blockData as NoteBlock).note = block.getBlockyNote() // Set note from PDC data
+                        val noteblock = block.blockData as? NoteBlock ?: return@forEach
+                        noteblock.instrument = Instrument.PIANO
+                        noteblock.note = block.getBlockyNote() // Set note from PDC data
 
-                        block.persistentDataContainer.encode(VanillaNoteBlock((block.blockData as NoteBlock).note.id.toInt()))
+                        block.persistentDataContainer.encode(VanillaNoteBlock(noteblock.note.id.toInt()))
                     }
                 }
             }
