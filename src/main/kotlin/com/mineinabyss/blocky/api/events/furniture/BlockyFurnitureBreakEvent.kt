@@ -9,7 +9,7 @@ import org.bukkit.event.HandlerList
 
 class BlockyFurnitureBreakEvent(
     entity: Entity,
-    val player: Player?
+    val player: Player
 ) : BlockyFurnitureEvent(entity), Cancellable {
 
     override val furniture get() = entity.toGeary().get<BlockyFurniture>()!!

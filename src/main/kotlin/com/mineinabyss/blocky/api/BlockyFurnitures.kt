@@ -15,6 +15,7 @@ import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
+import org.bukkit.Rotation
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Interaction
@@ -70,30 +71,29 @@ object BlockyFurnitures {
             } ?: false
         }
 
-    fun ItemDisplay.removeBlockyFurniture(): Boolean {
-        if (!isBlockyFurniture) return false
-
-        interactionEntity?.remove()
-        removeAssosiatedSeats()
-        clearAssosiatedHitboxChunkEntries()
-        handleLight.removeBlockLight(location)
-        remove()
-        return true
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, rotation: Rotation, yaw: Float, itemStack: ItemStack) {
+        prefabKey.toEntityOrNull()?.let { placeBlockyFurniture(it, location, rotation, yaw, itemStack) }
     }
 
-    fun ItemDisplay.removeBlockyFurniture(player: Player): Boolean {
-        if (!isBlockyFurniture) return false
-        val furnitureBreakEvent = BlockyFurnitureBreakEvent(this, player)
-        if (!ProtectionLib.canBreak(player, location)) furnitureBreakEvent.isCancelled = true
-        if (furnitureBreakEvent.isCancelled) return false
+    fun removeFurniture(location: Location) {
+        location.blockyFurnitureEntity?.let { removeFurniture(it) }
+    }
 
-        furnitureBreakEvent.call()
-        interactionEntity?.remove()
-        removeAssosiatedSeats()
-        clearAssosiatedHitboxChunkEntries()
-        handleFurnitureDrops(player)
-        handleLight.removeBlockLight(location)
-        remove()
+    fun removeFurniture(furniture: ItemDisplay, player: Player? = null): Boolean {
+        if (!furniture.isBlockyFurniture) return false
+        player?.let {
+            val furnitureBreakEvent = BlockyFurnitureBreakEvent(furniture, player)
+            if (!ProtectionLib.canBreak(player, furniture.location)) furnitureBreakEvent.isCancelled = true
+            furnitureBreakEvent.call()
+            if (furnitureBreakEvent.isCancelled) return false
+        }
+
+        furniture.interactionEntity?.remove()
+        furniture.removeAssosiatedSeats()
+        furniture.clearAssosiatedHitboxChunkEntries()
+        furniture.handleFurnitureDrops(player)
+        handleLight.removeBlockLight(furniture.location)
+        furniture.remove()
         return true
     }
 }

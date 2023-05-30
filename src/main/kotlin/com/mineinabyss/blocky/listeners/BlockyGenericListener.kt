@@ -113,7 +113,7 @@ class BlockyGenericListener : Listener {
 
         mining.miningTask?.invokeOnCompletion {
             if (player.toGeary().has(mining::class))
-                block.attemptBreakBlockyBlock(player)
+                attemptBreakBlockyBlock(block, player)
         }
     }
 
@@ -139,7 +139,7 @@ class BlockyGenericListener : Listener {
     fun BlockBreakEvent.onBreakBlockyBlock() {
         if (!block.isBlockyBlock) return
 
-        block.attemptBreakBlockyBlock(player)
+        attemptBreakBlockyBlock(block, player) || return
 
         if (block.getRelative(BlockFace.UP).isBlockyBlock) {
             block.updateNoteBlockAbove()
@@ -153,7 +153,7 @@ class BlockyGenericListener : Listener {
         if (!block.isBlockyBlock) return
 
         if (player.gameMode == GameMode.CREATIVE)
-            block.attemptBreakBlockyBlock(player)
+            attemptBreakBlockyBlock(block, player) || return
 
         if (block.getRelative(BlockFace.UP).isBlockyBlock) {
             block.updateNoteBlockAbove()

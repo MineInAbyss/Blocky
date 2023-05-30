@@ -13,7 +13,6 @@ import org.joml.Vector3f
 @Serializable
 @SerialName("blocky:furniture")
 data class BlockyFurniture(
-    //val furnitureType: FurnitureType,
     val properties: FurnitureProperties = FurnitureProperties(),
     val rotationType: RotationType = RotationType.VERY_STRICT,
     val collisionHitbox: List<BlockLocation> = emptyList(),

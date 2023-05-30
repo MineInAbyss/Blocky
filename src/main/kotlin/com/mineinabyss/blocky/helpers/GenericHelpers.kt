@@ -78,33 +78,6 @@ internal infix fun <A, B, C> Pair<A, B>.to(that: C): Triple<A, B, C> = Triple(th
 internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta.persistentDataContainer.decode()
 internal val Player.gearyInventory get() = inventory.toGeary()
 
-
-internal fun Block.attemptBreakBlockyBlock(player: Player?) {
-    val prefab = this.gearyEntity ?: return
-    BlockyBlockBreakEvent(this, player).callEvent() || return
-    if (!ProtectionLib.canBreak(player, this.location)) return
-
-    if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(this.location)
-    if (prefab.has<BlockyInfo>()) handleBlockyDrops(this, player)
-    if (player != null && player.gameMode != GameMode.CREATIVE)
-        player.inventory.itemInMainHand.damage(1, player)
-
-    this.customBlockData.clear()
-    this.setType(Material.AIR, false)
-}
-
-fun handleBlockyDrops(block: Block, player: Player?) {
-    val gearyBlock = block.gearyEntity ?: return
-    val info = gearyBlock.get<BlockyInfo>() ?: return
-    if (!gearyBlock.has<BlockyBlock>()) return
-
-    if (info.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
-
-    gearyBlock.get<BlockyInfo>()?.blockDrop?.let {
-        GenericHelpers.handleBlockDrop(it, player, block.location)
-    } ?: return
-}
-
 fun placeBlockyBlock(
     player: Player,
     hand: EquipmentSlot,
@@ -165,6 +138,37 @@ fun placeBlockyBlock(
     targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     player.swingMainHand()
     return targetBlock
+}
+
+internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Boolean {
+    player?.let {
+        val breakEvent = BlockyBlockBreakEvent(block, player)
+        if (!ProtectionLib.canBreak(it, block.location)) breakEvent.isCancelled = true
+        breakEvent.callEvent() || return false
+        if (player.gameMode != GameMode.CREATIVE)
+            player.inventory.itemInMainHand.damage(1, player)
+    }
+
+    val prefab = block.gearyEntity ?: return false
+    if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
+    if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
+
+
+    block.customBlockData.clear()
+    block.setType(Material.AIR, false)
+    return true
+}
+
+fun handleBlockyDrops(block: Block, player: Player?) {
+    val gearyBlock = block.gearyEntity ?: return
+    val info = gearyBlock.get<BlockyInfo>() ?: return
+    if (!gearyBlock.has<BlockyBlock>()) return
+
+    if (info.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
+
+    gearyBlock.get<BlockyInfo>()?.blockDrop?.let {
+        GenericHelpers.handleBlockDrop(it, player, block.location)
+    } ?: return
 }
 
 object GenericHelpers {
