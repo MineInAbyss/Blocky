@@ -2,7 +2,6 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
@@ -11,6 +10,7 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.BlockyDirectional
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.BlockyLight
@@ -20,6 +20,7 @@ import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
+import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
@@ -69,7 +70,6 @@ const val DEFAULT_FALL_PITCH = 0.75f
 val Block.prefabKey get() = prefabMap[blockData]
 val BlockData.prefabKey get() = prefabMap[this]
 
-//val Block.isBlockyBlock get() = gearyEntity?.has<BlockyBlock>() == true
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
@@ -94,7 +94,7 @@ fun placeBlockyBlock(
     if (against.isVanillaNoteBlock) return null
 
     if (!blocky.config.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
-        targetBlock.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
+        targetBlock.persistentDataContainer.encode(VanillaNoteBlock(0))
 
     val currentData = targetBlock.blockData
     val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA

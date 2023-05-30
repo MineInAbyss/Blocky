@@ -1,15 +1,11 @@
 package com.mineinabyss.blocky.compatibility.worldedit
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
-import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.features.BlockyLight
-import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.sk89q.worldedit.WorldEditException
 import com.sk89q.worldedit.bukkit.BukkitAdapter
 import com.sk89q.worldedit.event.extent.EditSessionEvent
@@ -18,7 +14,6 @@ import com.sk89q.worldedit.math.BlockVector3
 import com.sk89q.worldedit.util.eventbus.Subscribe
 import com.sk89q.worldedit.world.block.BlockStateHolder
 import org.bukkit.*
-import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 
@@ -43,27 +38,13 @@ class WorldEditListener : Listener {
 
                 if (oldEntity.has<BlockyLight>())
                     handleLight.removeBlockLight(loc)
-                if (oldEntity.has<BlockySeat>()) //TODO Consider if this should even be handled?
-                    loc.block.blockyFurnitureEntity?.removeAssosiatedSeats()
 
                 // Get the BlockyType of the new block
-                val type = when (blockData.material) {
-                    Material.NOTE_BLOCK -> BlockType.NOTEBLOCK
-                    Material.TRIPWIRE -> BlockType.WIRE
-                    Material.CAVE_VINES -> BlockType.CAVEVINE
-                    // The new block isn't a blockyBlock so just return
-                    else -> return extent.setBlock(pos.x, pos.y, pos.z, block)
-                }
-
-                val gearyEntity =
-                    BlockyBlockQuery.firstOrNull { it.type.blockId == blockMap[blockData] && it.type.blockType == type }
-                        ?.prefabKey?.toEntityOrNull() ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
+                val gearyEntity = prefabMap[blockData]?.toEntityOrNull() ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
 
                 // TODO Add more checks here as noteworthy stuff is added
                 if (gearyEntity.has<BlockyLight>())
                     handleLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()?.lightLevel!!)
-                if (gearyEntity.has<BlockySeat>()) // This is probably never called until we go insane and support furniture in WorldEdit
-                    spawnFurnitureSeat(loc, ((actor as? Player)?.location?.yaw?.minus(180) ?: 0f))
 
                 return extent.setBlock(pos.blockX, pos.blockY, pos.blockZ, block)
             }

@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
@@ -12,6 +11,8 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.geary.papermc.datastore.decode
+import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
@@ -144,8 +145,8 @@ class BlockyWireListener : Listener {
         if (block.gearyEntity?.has<BlockyTallWire>() != true) return
 
         blockAbove.type = Material.TRIPWIRE
-        blockAbove.persistentDataContainer.set(BlockyTallWire().getKey(), DataType.LOCATION, block.location)
-        block.persistentDataContainer.set(BlockyTallWire().getKey(), DataType.LOCATION, blockAbove.location)
+        blockAbove.persistentDataContainer.encode(BlockyTallWire(block.location))
+        block.persistentDataContainer.encode(BlockyTallWire(blockAbove.location))
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
@@ -153,7 +154,7 @@ class BlockyWireListener : Listener {
         if (block.type != Material.TRIPWIRE) return
         if (block.gearyEntity?.has<BlockyTallWire>() == true) return
 
-        val mainWire = block.persistentDataContainer.get(BlockyTallWire().getKey(), DataType.LOCATION)?.block ?: return
+        val mainWire = block.persistentDataContainer.decode<BlockyTallWire>()?.baseWire ?: return
         if (mainWire.type != Material.TRIPWIRE) return
         if (mainWire.gearyEntity?.has<BlockyTallWire>() != true) return
         breakWireBlock(mainWire, player)

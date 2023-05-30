@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
@@ -10,6 +9,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyTallWire
+import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.idofront.events.call
 import kotlinx.coroutines.delay
 import org.bukkit.Location
@@ -67,11 +67,8 @@ fun Player.isInBlock(block: Block): Boolean {
 }
 
 fun handleTallWire(block: Block) {
-    block.persistentDataContainer.getOrDefault(
-        BlockyTallWire().getKey(),
-        DataType.LOCATION,
-        block.getRelative(BlockFace.UP).location
-    ).block.let {
+    val tallWire = block.persistentDataContainer.decode<BlockyTallWire>() ?: BlockyTallWire(block.getRelative(BlockFace.UP).location)
+    tallWire.baseWire.let {
         it.customBlockData.clear()
         it.type = Material.AIR
     }

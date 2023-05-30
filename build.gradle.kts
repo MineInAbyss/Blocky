@@ -49,7 +49,7 @@ dependencies {
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)
-    implementation(blockyLibs.minecraft.plugin.morepersistentdatatypes)
+    //implementation(blockyLibs.minecraft.plugin.morepersistentdatatypes)
 
     implementation(libs.bundles.idofront.core)
     implementation(libs.idofront.nms)

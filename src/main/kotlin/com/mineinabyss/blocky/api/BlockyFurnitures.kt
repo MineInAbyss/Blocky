@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.api
 
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
 import com.mineinabyss.blocky.components.core.BlockyFurniture
@@ -9,6 +8,7 @@ import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
@@ -50,12 +50,7 @@ object BlockyFurnitures {
     val Block.blockyFurniture get() = this.gearyEntity?.get<BlockyFurniture>()
 
     val Location.blockyFurnitureEntity get() = this.block.blockyFurnitureEntity
-    val Block.blockyFurnitureEntity
-        get() = this.persistentDataContainer.get(FURNITURE_ORIGIN, DataType.LOCATION)?.let { origin ->
-            origin.getNearbyEntities(1.0, 1.0, 1.0).firstOrNull { entity ->
-                entity is ItemDisplay && entity.isBlockyFurniture
-            } as? ItemDisplay
-        }
+    val Block.blockyFurnitureEntity get() = this.persistentDataContainer.decode<BlockyFurnitureHitbox>()?.baseEntity
 
     val Block.blockySeat
         get() = this.world.getNearbyEntities(this.boundingBox.expand(0.4)).firstOrNull {

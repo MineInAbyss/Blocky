@@ -3,16 +3,19 @@ package com.mineinabyss.blocky.listeners
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
+import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.datastore.has
+import com.mineinabyss.geary.papermc.datastore.remove
 import com.mineinabyss.idofront.entities.rightClicked
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
@@ -145,18 +148,19 @@ class BlockyNoteBlockListener : Listener {
         if (!blockPlaced.isVanillaNoteBlock) return
 
         if (!blocky.config.noteBlocks.restoreFunctionality)
-            blockPlaced.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
-        else blockPlaced.customBlockData.set(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN, true)
+            blockPlaced.persistentDataContainer.encode(VanillaNoteBlock)
+        else blockPlaced.persistentDataContainer.encode(VanillaNoteBlock)
     }
 
+    //TODO Make sure this works
     // Convert vanilla blocks into custom note blocks if any after changing the value
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun ChunkLoadEvent.migrateOnChunkLoad() {
         CustomBlockData.getBlocksWithCustomData(blocky.plugin, chunk)
-            .filter { it.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN) }.forEach { block ->
+            .filter { it.persistentDataContainer.has<VanillaNoteBlock>() }.forEach { block ->
 
                 if (block.blockData !is NoteBlock) {
-                    block.customBlockData.remove(VANILLA_NOTEBLOCK_KEY)
+                    block.persistentDataContainer.remove<VanillaNoteBlock>()
                     return@forEach
                 }
 
@@ -165,26 +169,20 @@ class BlockyNoteBlockListener : Listener {
                     // If block doesn't have VANILLA_NOTEBLOCK_KEY or NOTE_KEY,
                     // assume it to be a vanilla and convert it to custom
                     if (block.customBlockData.isEmpty) {
-                        block.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
+                        block.persistentDataContainer.encode(VanillaNoteBlock(0))
                         block.blockData = Material.NOTE_BLOCK.createBlockData()
                     }
                     // If block has NOTE_KEY, aka it was a custom vanilla block, convert to full vanilla
-                    else if (block.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN)) {
-                        block.customBlockData.set(
-                            NOTE_KEY,
-                            DataType.INTEGER,
-                            (block.blockData as NoteBlock).note.id.toInt()
-                        )
+                    else if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
+                        block.persistentDataContainer.encode(VanillaNoteBlock((block.blockData as NoteBlock).note.id.toInt()))
                         block.blockData = Material.NOTE_BLOCK.createBlockData()
-                        block.customBlockData.remove(VANILLA_NOTEBLOCK_KEY)
                     }
                 } else {
-                    if (block.customBlockData.has(NOTE_KEY, DataType.INTEGER)) {
+                    if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
                         (block.blockData as NoteBlock).instrument = Instrument.PIANO
                         (block.blockData as NoteBlock).note = block.getBlockyNote() // Set note from PDC data
 
-                        block.customBlockData.remove(NOTE_KEY)
-                        block.customBlockData.set(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN, true)
+                        block.persistentDataContainer.encode(VanillaNoteBlock((block.blockData as NoteBlock).note.id.toInt()))
                     }
                 }
             }

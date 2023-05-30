@@ -1,11 +1,12 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.BlockyCopperBlock
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
@@ -85,7 +86,7 @@ class BlockyCopperListener {
             }
 
             // Set PDC Key so that the converter knows it should skip this blocky block
-            loc.block.persistentDataContainer.set(BLOCKY_COPPER_BLOCK, DataType.BOOLEAN, true)
+            loc.block.persistentDataContainer.encode(BlockyCopperBlock)
             player.swingMainHand()
         }
 
@@ -201,7 +202,7 @@ class BlockyCopperListener {
             }
 
             // Set PDC Key so that the converter knows it should skip this blocky block
-            loc.block.persistentDataContainer.set(BLOCKY_COPPER_BLOCK, DataType.BOOLEAN, true)
+            loc.block.persistentDataContainer.encode(BlockyCopperBlock)
             player.swingMainHand()
         }
 

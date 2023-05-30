@@ -1,9 +1,10 @@
 package com.mineinabyss.blocky.api
 
-import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
+import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -56,7 +57,7 @@ object BlockyBlocks {
         }
         //TODO Actually place the block with its mechanics
         if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
-            block.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
+            block.persistentDataContainer.encode(VanillaNoteBlock(0))
         return true
     }
 
