@@ -7,7 +7,6 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
@@ -129,7 +128,6 @@ class BlockyWireListener : Listener {
         val blockyWire = player.gearyInventory?.get(hand) ?: return
         val wireBlock = blockyWire.get<BlockyBlock>() ?: return
         if (wireBlock.blockType != BlockType.WIRE) return
-        if (!blockyWire.has<BlockyInfo>()) return
 
         val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire()) ?: return
 

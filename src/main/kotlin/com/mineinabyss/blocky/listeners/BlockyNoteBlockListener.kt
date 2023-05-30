@@ -8,7 +8,6 @@ import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
@@ -135,9 +134,8 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
         blockList().forEach { block ->
-            val prefab = block.gearyEntity ?: return@forEach
             if (!block.isBlockyNoteBlock) return@forEach
-            if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
+            handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)
         }
     }

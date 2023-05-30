@@ -9,12 +9,8 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
-import com.mineinabyss.blocky.components.features.BlockyDirectional
-import com.mineinabyss.blocky.components.features.BlockyDrops
-import com.mineinabyss.blocky.components.features.BlockyLight
-import com.mineinabyss.blocky.components.features.BlockyPlacableOn
+import com.mineinabyss.blocky.components.features.*
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.prefabMap
@@ -25,10 +21,7 @@ import com.mineinabyss.geary.papermc.tracking.items.toGeary
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
-import org.bukkit.GameMode
-import org.bukkit.Location
-import org.bukkit.Material
-import org.bukkit.Sound
+import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
@@ -43,6 +36,7 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import kotlin.random.Random
+import kotlin.time.Duration
 
 const val VANILLA_STONE_PLACE = "blocky.stone.place"
 const val VANILLA_STONE_BREAK = "blocky.stone.break"
@@ -74,6 +68,7 @@ val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EA
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 
+internal fun minOf(duration: Duration, duration2: Duration) = if (duration < duration2) duration else duration2
 internal infix fun <A, B, C> Pair<A, B>.to(that: C): Triple<A, B, C> = Triple(this.first, this.second, that)
 internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta.persistentDataContainer.decode()
 internal val Player.gearyInventory get() = inventory.toGeary()
@@ -151,7 +146,7 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
 
     val prefab = block.gearyEntity ?: return false
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
-    if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, player)
+    handleBlockyDrops(block, player)
 
 
     block.customBlockData.clear()
@@ -161,17 +156,19 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
 
 fun handleBlockyDrops(block: Block, player: Player?) {
     val gearyBlock = block.gearyEntity ?: return
-    val info = gearyBlock.get<BlockyInfo>() ?: return
+    val drop = gearyBlock.get<BlockyDrops>() ?: return
     if (!gearyBlock.has<BlockyBlock>()) return
 
-    if (info.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
-
-    gearyBlock.get<BlockyInfo>()?.blockDrop?.let {
-        GenericHelpers.handleBlockDrop(it, player, block.location)
-    } ?: return
+    if (drop.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
+    GenericHelpers.handleBlockDrop(drop, player, block.location)
 }
 
 object GenericHelpers {
+
+    fun ItemStack.isSimilarNoDurab(other: ItemStack): Boolean {
+        if (other === this) return true
+        return type == other.type && hasItemMeta() == other.hasItemMeta() && if (hasItemMeta()) Bukkit.getItemFactory().equals(itemMeta, other.itemMeta) else true
+    }
 
     fun Block.isInteractable(): Boolean {
         return when {
@@ -291,14 +288,14 @@ object GenericHelpers {
     }
 
     fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
-        val info = block.gearyEntity?.get<BlockyInfo>() ?: return false
+        val acceptedToolTypes = block.gearyEntity?.get<BlockyDrops>()?.acceptedToolTypes ?: block.gearyEntity?.get<BlockyBreaking>()?.modifiers?.heldTypes?.map { it.toolType } ?: return false
         val heldToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes
             ?: getVanillaToolTypes(player.inventory.getItem(hand))?.let { setOf(it) } ?: setOf()
 
-        return ToolType.ANY in info.acceptedToolTypes || info.acceptedToolTypes.any { it in heldToolTypes }
+        return ToolType.ANY in acceptedToolTypes || acceptedToolTypes.any { it in heldToolTypes }
     }
 
-    private fun getVanillaToolTypes(itemStack: ItemStack): ToolType? {
+    fun getVanillaToolTypes(itemStack: ItemStack): ToolType? {
         return when {
             MaterialTags.AXES.isTagged(itemStack.type) -> ToolType.AXE
             MaterialTags.PICKAXES.isTagged(itemStack.type) -> ToolType.PICKAXE
@@ -310,8 +307,8 @@ object GenericHelpers {
         }
     }
 
-    fun handleBlockDrop(drops: List<BlockyDrops>, player: Player?, location: Location) {
-        drops.forEach { drop ->
+    fun handleBlockDrop(blockyDrop: BlockyDrops, player: Player?, location: Location) {
+        blockyDrop.drops.forEach { drop ->
             val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
             val item =
                 if (drop.affectedBySilkTouch && Enchantment.SILK_TOUCH in hand.enchantments)

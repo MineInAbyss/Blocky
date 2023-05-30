@@ -5,8 +5,8 @@ import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.core.BlockyModelEngine
+import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockySeat
 import com.mineinabyss.blocky.components.features.BlockySeatLocations
@@ -189,9 +189,7 @@ internal fun Entity.clearAssosiatedHitboxChunkEntries() {
 }
 
 internal fun Entity.handleFurnitureDrops(player: Player?) {
-    this.toGearyOrNull()?.get<BlockyInfo>()?.blockDrop?.let {
-        GenericHelpers.handleBlockDrop(it, player, location)
-    } ?: return
+    this.toGearyOrNull()?.get<BlockyDrops>()?.let { GenericHelpers.handleBlockDrop(it, player, location) }
 }
 
 //TODO Fix seat breaking below 0.0 offset and remove max() check here

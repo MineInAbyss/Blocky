@@ -10,10 +10,7 @@ import kotlinx.serialization.Serializable
 */
 @Serializable
 @SerialName("blocky:mining")
-data class BlockyMining(
-    val breakSpeedModifier: Double = 1.0,
-    val toolTypes: Set<ToolType> = setOf(ToolType.ANY)
-)
+data class BlockyMining(val toolTypes: Set<ToolType> = setOf(ToolType.ANY))
 
 enum class ToolType {
     PICKAXE, AXE, SHOVEL, HOE, SWORD, SHEARS, ANY

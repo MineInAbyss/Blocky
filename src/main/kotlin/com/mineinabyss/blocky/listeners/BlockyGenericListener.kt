@@ -14,7 +14,7 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.breaker
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
@@ -77,21 +77,17 @@ class BlockyGenericListener : Listener {
     fun BlockDamageEvent.onDamage() {
         // If breaker is set to handle block, return
         if (breaker?.database?.shouldHandle(block) == true) return
-        val info = block.gearyEntity?.get<BlockyInfo>() ?: return
+        val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
+        val breakTime = breaking.calculateBreakTime(player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
 
-        val itemInHand = player.gearyInventory?.get(EquipmentSlot.HAND)?.get<BlockyMining>()
-        val breakTime = info.blockBreakTime /
-                (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
-
-        if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
+        if (player.gameMode == GameMode.CREATIVE || block.gearyEntity?.get<BlockyInfo>()?.isUnbreakable == true) return
         if (mining.miningTask?.isActive == true) return
         isCancelled = true
 
         val damageEvent = when {
             block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
             block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.blockyFurnitureEntity ?: return, player)
-
             else -> return
         }.run { call(); this }
         if (damageEvent.isCancelled) return
@@ -112,7 +108,12 @@ class BlockyGenericListener : Listener {
 
         mining.miningTask?.invokeOnCompletion {
             if (player.toGeary().has(mining::class))
+            {
                 attemptBreakBlockyBlock(block, player)
+                block.location.getNearbyPlayers(16.0).forEach { p ->
+                    p.sendBlockDamage(block.location, 0f, block.location.hashCode())
+                }
+            }
         }
     }
 

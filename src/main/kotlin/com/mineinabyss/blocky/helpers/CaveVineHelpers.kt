@@ -4,7 +4,6 @@ import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.idofront.events.call
 import org.bukkit.Material
@@ -23,13 +22,13 @@ val Block.isBlockyCaveVine: Boolean get() =
 
 fun breakCaveVineBlock(block: Block, player: Player?) {
     val gearyBlock = block.gearyEntity ?: return
-    if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
+    if (!gearyBlock.has<BlockyBlock>()) return
 
     val caveVineEvent = BlockyBlockBreakEvent(block, player).run { this.call(); this }
     if (caveVineEvent.isCancelled) return
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
-    if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
+    handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
     if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)
         breakCaveVineBlock(block.getRelative(BlockFace.DOWN), null)

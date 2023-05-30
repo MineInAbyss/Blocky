@@ -2,7 +2,6 @@ package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
@@ -83,10 +82,8 @@ class BlockyCaveVineListener : Listener {
         val blockyVine = gearyVine.get<BlockyBlock>() ?: return
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
         if (blockyVine.blockType != BlockType.CAVEVINE) return
-        if (!gearyVine.has<BlockyInfo>()) return
 
-        val placedWire =
-            placeBlockyBlock(player, hand, item, block, blockFace, blockyVine.getBlockyCaveVine()) ?: return
+        val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, blockyVine.getBlockyCaveVine()) ?: return
         if (gearyVine.has<BlockyLight>())
             handleLight.createBlockLight(placedWire.location, lightLevel!!)
     }

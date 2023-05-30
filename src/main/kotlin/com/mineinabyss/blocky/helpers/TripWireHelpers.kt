@@ -6,7 +6,6 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
@@ -43,14 +42,14 @@ fun Block.fixClientsideUpdate() {
 
 fun breakWireBlock(block: Block, player: Player?) {
     val gearyBlock = block.gearyEntity ?: return
-    if (!gearyBlock.has<BlockyInfo>() || !gearyBlock.has<BlockyBlock>()) return
+    if (!gearyBlock.has<BlockyBlock>()) return
 
     val blockyEvent = BlockyBlockBreakEvent(block, player).run { this.call(); this }
     if (blockyEvent.isCancelled) return
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
-    if (gearyBlock.has<BlockyInfo>()) handleBlockyDrops(block, player)
     if (gearyBlock.has<BlockyTallWire>()) handleTallWire(block)
+    handleBlockyDrops(block, player)
 
     block.type = Material.AIR
     block.fixClientsideUpdate()
