@@ -17,6 +17,7 @@ import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
@@ -166,7 +167,7 @@ class BlockyGenericListener : Listener {
         val type = item?.clone()?.type ?: return
 
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
             val data = type.createBlockData()
@@ -185,7 +186,7 @@ class BlockyGenericListener : Listener {
         val type = item.clone().type
 
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         if (Tag.SLABS.isTagged(type) && relative.type == type) {
             val sound = relative.blockSoundGroup
@@ -206,7 +207,7 @@ class BlockyGenericListener : Listener {
         var type = item.clone().type
 
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         if (item.type == Material.BUCKET && relative.isLiquid) {
             val sound =

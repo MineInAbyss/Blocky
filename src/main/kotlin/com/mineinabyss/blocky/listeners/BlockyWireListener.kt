@@ -11,6 +11,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.tracking.items.itemTracking
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
@@ -107,22 +108,20 @@ class BlockyWireListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyWire() {
-        val (item, hand) = (item ?: return) to (hand ?: return)
-        val clickedBlock = clickedBlock ?: return
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
 
-        if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (hand != EquipmentSlot.HAND) return
-        if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock.location) is Tripwire) {
+        if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
+        if (blockFace == BlockFace.UP && block.blockData is Tripwire) {
             isCancelled = true
             return
-        } else if (clickedBlock.type.isInteractable && !player.isSneaking) return
+        } else if (!player.isSneaking && block.isInteractable()) return
 
         // Fixes tripwire updating when placing blocks next to it
         if (item.type.isBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (clickedBlock.getRelative(it).gearyEntity == null) return@forEach
-                placeBlockyBlock(player, hand, item, clickedBlock, blockFace, item.type.createBlockData())
-                clickedBlock.fixClientsideUpdate()
+                if (block.getRelative(it).gearyEntity == null) return@forEach
+                placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
+                block.fixClientsideUpdate()
             }
         }
 
@@ -131,8 +130,7 @@ class BlockyWireListener : Listener {
         if (wireBlock.blockType != BlockType.WIRE) return
         if (!blockyWire.has<BlockyInfo>()) return
 
-        val placedWire =
-            placeBlockyBlock(player, hand, item, clickedBlock, blockFace, wireBlock.getBlockyTripWire()) ?: return
+        val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
         placedWire.fixClientsideUpdate()
     }

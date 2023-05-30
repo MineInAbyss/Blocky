@@ -12,6 +12,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.idofront.entities.rightClicked
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
@@ -123,8 +124,7 @@ class BlockyNoteBlockListener : Listener {
         val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
 
         if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
-        //TODO Change to proper interactable check cuz spigot bad
-        if ((block.type.isInteractable && !block.isBlockyBlock) && !player.isSneaking) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
     }

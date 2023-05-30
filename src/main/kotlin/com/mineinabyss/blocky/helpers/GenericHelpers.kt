@@ -5,6 +5,7 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.jeff_media.morepersistentdatatypes.DataType
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
@@ -31,6 +32,8 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.Chest
+import org.bukkit.block.data.type.Fence
+import org.bukkit.block.data.type.Stairs
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.Player
@@ -164,21 +167,17 @@ fun placeBlockyBlock(
     return targetBlock
 }
 
-
-
-private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
-    val yaw = location.yaw.toInt()
-    val pitch = location.pitch.toInt()
-
-    return when {
-        directional.isLogType -> null
-        directional.isDropperType && pitch >= 45 -> BlockFace.UP
-        directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
-        else -> GenericHelpers.getRelativeBlockFace(yaw)
-    }
-}
-
 object GenericHelpers {
+
+    fun Block.isInteractable(): Boolean {
+        return when {
+            isBlockyBlock || isBlockyFurniture || isBlockyCaveVine -> false
+            blockData is Stairs || blockData is Fence -> false
+            !type.isInteractable || type in setOf(Material.PUMPKIN, Material.MOVING_PISTON, Material.REDSTONE_ORE, Material.REDSTONE_WIRE) -> false
+            else -> true
+        }
+    }
+
     fun getDirectionalId(gearyEntity: GearyEntity, face: BlockFace, player: Player?): Int {
         return gearyEntity.get<BlockyDirectional>()?.let { directional ->
             if (directional.isLogType) {
@@ -200,6 +199,18 @@ object GenericHelpers {
                 }.get<BlockyBlock>()?.blockId ?: 0
             }
         } ?: gearyEntity.get<BlockyBlock>()?.blockId ?: 0
+    }
+
+    private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
+        val yaw = location.yaw.toInt()
+        val pitch = location.pitch.toInt()
+
+        return when {
+            directional.isLogType -> null
+            directional.isDropperType && pitch >= 45 -> BlockFace.UP
+            directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
+            else -> GenericHelpers.getRelativeBlockFace(yaw)
+        }
     }
 
     fun getRelativeBlockFace(yaw: Int): BlockFace {

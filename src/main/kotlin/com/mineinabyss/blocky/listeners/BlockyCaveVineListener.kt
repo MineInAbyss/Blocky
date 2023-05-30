@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -71,7 +72,7 @@ class BlockyCaveVineListener : Listener {
         val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
 
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && !block.isBlockyCaveVine && !player.isSneaking) return
+        if (!player.isSneaking && block.isInteractable()) return
         if (item.type == Material.GLOW_BERRIES) return // Handled by [onGlowBerryPlace()]
         if (blockFace == BlockFace.UP && player.world.getBlockData(block.location) is CaveVines) {
             isCancelled = true

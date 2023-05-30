@@ -2,10 +2,10 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
@@ -31,33 +31,32 @@ class BlockyCopperListener {
         // If the GearyItem isn't using a blockyslab as its main material, replicate functionality
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockySlab() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
             if (action != Action.RIGHT_CLICK_BLOCK) return
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_SLABS) return
 
             val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
-            val against = clickedBlock ?: return
 
             if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
-            if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
+            if (!player.isSneaking && block.isInteractable()) return
 
             val blockyData = BLOCKY_SLABS.elementAt(blockyBlock.blockId).createBlockData() as Slab
-            val relative = against.getRelative(blockFace)
+            val relative = block.getRelative(blockFace)
             val oldData: BlockData
 
             when {
                 // When the relative block is same slab, make it a double slab
-                against.type == blockyData.material && (against.blockData as Slab).type == Type.BOTTOM -> {
+                block.type == blockyData.material && (block.blockData as Slab).type == Type.BOTTOM -> {
                     blockyData.type = Type.DOUBLE
-                    oldData = against.blockData
-                    against.blockData = blockyData
+                    oldData = block.blockData
+                    block.blockData = blockyData
                 }
 
-                against.isReplaceable -> {
+                block.isReplaceable -> {
                     blockyData.type = blockFace.getSlabHalf(player)
-                    oldData = against.blockData
-                    against.blockData = blockyData
+                    oldData = block.blockData
+                    block.blockData = blockyData
                 }
 
                 relative.type.isAir -> {
@@ -76,7 +75,7 @@ class BlockyCopperListener {
                 else -> return
             }
 
-            val loc = if (relative.blockData == blockyData) relative.location else against.location
+            val loc = if (relative.blockData == blockyData) relative.location else block.location
 
             val blockyEvent = BlockyBlockPlaceEvent(loc.block, player).run { call(); this }
             if (!ProtectionLib.canBuild(player, loc)) blockyEvent.isCancelled = true
@@ -152,26 +151,26 @@ class BlockyCopperListener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockyStair() {
-            val (against, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
             if (action != Action.RIGHT_CLICK_BLOCK) return
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_STAIRS) return
 
             val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
             if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
-            if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
+            if (!player.isSneaking && block.isInteractable()) return
 
             val blockyData = BLOCKY_STAIRS.elementAt(blockyBlock.blockId).createBlockData() as Stairs
-            val relative = against.getRelative(blockFace)
+            val relative = block.getRelative(blockFace)
             val oldData: BlockData
 
             when {
-                against.isReplaceable -> {
+                block.isReplaceable -> {
                     blockyData.half = blockFace.getStairHalf(player)
                     blockyData.facing = player.facing
-                    blockyData.shape = against.getStairShape(player)
-                    oldData = against.blockData
-                    against.blockData = blockyData
+                    blockyData.shape = block.getStairShape(player)
+                    oldData = block.blockData
+                    block.blockData = blockyData
                 }
 
                 relative.type.isAir -> {
@@ -193,7 +192,7 @@ class BlockyCopperListener {
                 else -> return
             }
 
-            val loc = if (relative.blockData == blockyData) relative.location else against.location
+            val loc = if (relative.blockData == blockyData) relative.location else block.location
             val blockyEvent = BlockyBlockPlaceEvent(loc.block, player).run { call(); this }
             if (!ProtectionLib.canBuild(player, loc)) blockyEvent.isCancelled = true
             if (blockyEvent.isCancelled) {
