@@ -22,7 +22,6 @@ import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.time.inWholeTicks
-import eu.asangarin.breaker.api.BreakerTriggerEvent
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
@@ -138,26 +137,8 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakBlockyBlock() {
         if (!block.isBlockyBlock) return
-
         attemptBreakBlockyBlock(block, player) || return
-
-        if (block.getRelative(BlockFace.UP).isBlockyBlock) {
-            block.updateNoteBlockAbove()
-        }
-
         isDropItems = false
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    fun BreakerTriggerEvent.onBreakBlockyBlock() {
-        if (!block.isBlockyBlock) return
-
-        if (player.gameMode == GameMode.CREATIVE)
-            attemptBreakBlockyBlock(block, player) || return
-
-        if (block.getRelative(BlockFace.UP).isBlockyBlock) {
-            block.updateNoteBlockAbove()
-        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

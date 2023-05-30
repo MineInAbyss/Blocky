@@ -68,7 +68,7 @@ fun Player.isInBlock(block: Block): Boolean {
 
 fun handleTallWire(block: Block) {
     val tallWire = block.persistentDataContainer.decode<BlockyTallWire>() ?: BlockyTallWire(block.getRelative(BlockFace.UP).location)
-    tallWire.baseWire.let {
+    tallWire.baseWire?.let {
         it.customBlockData.clear()
         it.type = Material.AIR
     }

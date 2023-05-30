@@ -8,6 +8,6 @@ import org.bukkit.block.Block
 
 @Serializable
 @SerialName("blocky:tall_wire")
-data class BlockyTallWire(val _baseWire: @Serializable(LocationSerializer::class) Location) {
-    val baseWire: Block get() = _baseWire.block
+data class BlockyTallWire(val _baseWire: @Serializable(LocationSerializer::class) Location? = null) {
+    val baseWire: Block? get() = _baseWire?.block
 }

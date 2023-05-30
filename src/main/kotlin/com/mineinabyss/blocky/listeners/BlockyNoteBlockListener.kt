@@ -76,17 +76,17 @@ class BlockyNoteBlockListener : Listener {
         }
     }
 
-    // Handle playing the sound. If BlockData isn't in map, it means this should be handled by vanilla
-    // AKA restoreFunctionality enabled and normal block
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
-        if (!block.isBlockyNoteBlock) return
-
-        isCancelled = true
-        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!))
-            block.playBlockyNoteBlock()
-        if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
+        if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK) {
+            isCancelled = true
             block.updateNoteBlockAbove()
+        }
+
+        if (block.type == Material.NOTE_BLOCK) {
+            isCancelled = true
+            block.state.update(true, false)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
