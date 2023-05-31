@@ -10,7 +10,7 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
-import com.mineinabyss.blocky.components.features.BlockySeat
+import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib

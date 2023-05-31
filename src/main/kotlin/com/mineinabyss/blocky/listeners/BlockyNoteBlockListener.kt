@@ -9,7 +9,7 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
-import com.mineinabyss.blocky.components.features.BlockyBurnable
+import com.mineinabyss.blocky.components.features.blocks.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode

@@ -3,7 +3,7 @@ package com.mineinabyss.blocky
 import com.google.gson.JsonObject
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
-import com.mineinabyss.blocky.components.features.BlockyDirectional
+import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
 import com.mineinabyss.blocky.helpers.isCardinal

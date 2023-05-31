@@ -11,7 +11,7 @@ import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEve
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockySound
+import com.mineinabyss.blocky.components.features.BlockySound
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -147,7 +147,7 @@ class BlockySoundListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyFurnitureBreakEvent.onBreakBlockyFurniture() {
-        player?.toGeary()?.remove<PlayerIsMining>()
+        player.toGeary().remove<PlayerIsMining>()
         val sound = entity.toGeary().get<BlockySound>()?.breakSound ?: entity.location.block.blockData.soundGroup.breakSound.key.toString()
         entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_BREAK_VOLUME, DEFAULT_BREAK_PITCH)
     }

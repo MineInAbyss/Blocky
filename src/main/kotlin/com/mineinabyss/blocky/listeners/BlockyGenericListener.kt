@@ -107,8 +107,7 @@ class BlockyGenericListener : Listener {
         }
 
         mining.miningTask?.invokeOnCompletion {
-            if (player.toGeary().has(mining::class))
-            {
+            if (player.toGeary().has(mining::class)) {
                 attemptBreakBlockyBlock(block, player)
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, 0f, block.location.hashCode())

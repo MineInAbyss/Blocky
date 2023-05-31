@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.seconds
 @Serializable
 @SerialName("blocky:breaking")
 data class BlockyBreaking(
-    val baseDuration: @Serializable(DurationSerializer::class) Duration = 2.seconds,
+    val baseDuration: @Serializable(DurationSerializer::class) Duration = 3.seconds,
     val modifiers: BlockyModifiers = BlockyModifiers()
 ) {
     fun calculateBreakTime(player: Player, hand: EquipmentSlot, itemInHand: ItemStack?): Duration {

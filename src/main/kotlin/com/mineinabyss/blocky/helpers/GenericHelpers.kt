@@ -10,7 +10,11 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
-import com.mineinabyss.blocky.components.features.*
+import com.mineinabyss.blocky.components.features.BlockyBreaking
+import com.mineinabyss.blocky.components.features.BlockyDrops
+import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.BlockyPlacableOn
+import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.prefabMap
@@ -122,7 +126,7 @@ fun placeBlockyBlock(
 
     if (player.gameMode != GameMode.CREATIVE) {
         if (MaterialTags.BUCKETS.isTagged(item)) item.type = Material.BUCKET
-        else item.amount = item.amount - 1
+        else item.subtract()
     }
 
     targetBlock.gearyEntity?.let { entity ->
@@ -311,7 +315,7 @@ object GenericHelpers {
         blockyDrop.drops.forEach { drop ->
             val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
             val item =
-                if (drop.affectedBySilkTouch && Enchantment.SILK_TOUCH in hand.enchantments)
+                if (Enchantment.SILK_TOUCH in hand.enchantments)
                     drop.silkTouchedDrop?.toItemStack()
                 else drop.item?.toItemStack()
             val amount =

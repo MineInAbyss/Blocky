@@ -7,7 +7,7 @@ import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyLight
-import com.mineinabyss.blocky.components.features.BlockyTallWire
+import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.idofront.events.call
 import kotlinx.coroutines.delay

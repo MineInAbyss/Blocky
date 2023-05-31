@@ -3,8 +3,8 @@ package com.mineinabyss.blocky.systems
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.blocky.components.core.BlockyModelEngine
-import com.mineinabyss.blocky.components.features.BlockyDirectional
+import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
+import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.family.family

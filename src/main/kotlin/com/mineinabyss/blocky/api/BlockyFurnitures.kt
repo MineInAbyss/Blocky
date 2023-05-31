@@ -4,8 +4,8 @@ import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
-import com.mineinabyss.blocky.components.core.BlockyModelEngine
-import com.mineinabyss.blocky.components.features.BlockySeat
+import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
+import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode

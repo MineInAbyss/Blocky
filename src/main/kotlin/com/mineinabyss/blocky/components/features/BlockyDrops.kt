@@ -20,7 +20,6 @@ data class BlockyDrops(
         val amount: @Serializable(with = IntRangeSerializer::class) IntRange = 1..1,
         val exp: Int = 0,
         val affectedByFortune: Boolean = false,
-        val affectedBySilkTouch: Boolean = true,
         val silkTouchedDrop: SerializableItemStack? = null
     )
 }

@@ -5,11 +5,11 @@ import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
-import com.mineinabyss.blocky.components.core.BlockyModelEngine
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.BlockyLight
-import com.mineinabyss.blocky.components.features.BlockySeat
-import com.mineinabyss.blocky.components.features.BlockySeatLocations
+import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
+import com.mineinabyss.blocky.components.features.furniture.BlockySeat
+import com.mineinabyss.blocky.components.features.furniture.BlockySeatLocations
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
