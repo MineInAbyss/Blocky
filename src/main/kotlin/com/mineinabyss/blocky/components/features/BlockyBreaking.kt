@@ -1,5 +1,7 @@
 package com.mineinabyss.blocky.components.features
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
+import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.helpers.GenericHelpers
@@ -10,6 +12,7 @@ import com.mineinabyss.idofront.serialization.DurationSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import org.bukkit.block.Block
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
@@ -22,7 +25,8 @@ data class BlockyBreaking(
     val baseDuration: @Serializable(DurationSerializer::class) Duration = 3.seconds,
     val modifiers: BlockyModifiers = BlockyModifiers()
 ) {
-    fun calculateBreakTime(player: Player, hand: EquipmentSlot, itemInHand: ItemStack?): Duration {
+    fun calculateBreakTime(block: Block, player: Player, hand: EquipmentSlot, itemInHand: ItemStack?): Duration {
+        if (block.gearyEntity?.get<BlockyInfo>()?.isUnbreakable == true) return Duration.INFINITE
         if (itemInHand == null || itemInHand.type.isAir) return baseDuration
 
         if (modifiers.heldItems.isNotEmpty()) {

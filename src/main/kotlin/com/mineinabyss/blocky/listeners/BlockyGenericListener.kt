@@ -13,7 +13,6 @@ import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.breaker
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
@@ -21,6 +20,7 @@ import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
@@ -77,11 +77,13 @@ class BlockyGenericListener : Listener {
     fun BlockDamageEvent.onDamage() {
         // If breaker is set to handle block, return
         if (breaker?.database?.shouldHandle(block) == true) return
+        if (!block.isBlockyBlock) return
+
         val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
-        val breakTime = breaking.calculateBreakTime(player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
+        val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand).broadcastVal("breakTime")
 
-        if (player.gameMode == GameMode.CREATIVE || block.gearyEntity?.get<BlockyInfo>()?.isUnbreakable == true) return
+        if (player.gameMode == GameMode.CREATIVE) return
         if (mining.miningTask?.isActive == true) return
         isCancelled = true
 
