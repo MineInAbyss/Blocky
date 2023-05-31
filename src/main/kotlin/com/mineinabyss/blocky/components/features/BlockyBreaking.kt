@@ -26,6 +26,7 @@ data class BlockyBreaking(
     val baseDuration: @Serializable(DurationSerializer::class) Duration = 3.seconds,
     val modifiers: BlockyModifiers = BlockyModifiers()
 ) {
+
     fun calculateBreakTime(block: Block, player: Player, hand: EquipmentSlot, heldItem: ItemStack?): Duration {
         val itemInHand = heldItem ?: ItemStack(Material.AIR)
         var duration = baseDuration

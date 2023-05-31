@@ -80,7 +80,7 @@ class BlockyGenericListener : Listener {
 
         val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
-        val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
+        var breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
 
         if (player.gameMode == GameMode.CREATIVE) return
         if (mining.miningTask?.isActive == true) return
@@ -104,6 +104,8 @@ class BlockyGenericListener : Listener {
                     p.sendBlockDamage(block.location, stage.toFloat() / 10, block.location.hashCode())
                 }
                 delay(breakTime / 10)
+                // Recalculate breaktime in case potion effects changed etc
+                breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)  * (stage/10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
         }
 
