@@ -44,8 +44,8 @@ dependencies {
     //compileOnly(libs.minecraft.headlib.api)
     compileOnly(libs.minecraft.anvilgui)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
-    compileOnly(blockyLibs.minecraft.plugin.breaker)
-    compileOnly(blockyLibs.minecraft.plugin.mythic)
+    //compileOnly(blockyLibs.minecraft.plugin.breaker)
+    //compileOnly(blockyLibs.minecraft.plugin.mythic)
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)

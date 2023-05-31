@@ -11,7 +11,7 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.breaker
+//import com.mineinabyss.blocky.breaker
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
@@ -47,7 +47,7 @@ import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
 class BlockyGenericListener : Listener {
 
     private fun Player.resetCustomBreak(block: Block) {
-        if (breaker?.database?.shouldHandle(block) == true) return
+        //if (breaker?.database?.shouldHandle(block) == true) return
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
             block.isBlockyFurniture ->
@@ -75,7 +75,7 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
         // If breaker is set to handle block, return
-        if (breaker?.database?.shouldHandle(block) == true) return
+        //if (breaker?.database?.shouldHandle(block) == true) return
         if (!block.isBlockyBlock) return
 
         val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
