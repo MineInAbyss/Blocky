@@ -20,7 +20,6 @@ import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
@@ -81,7 +80,7 @@ class BlockyGenericListener : Listener {
 
         val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
-        val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand).broadcastVal("breakTime")
+        val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
 
         if (player.gameMode == GameMode.CREATIVE) return
         if (mining.miningTask?.isActive == true) return
