@@ -1,10 +1,8 @@
 package com.mineinabyss.blocky.api
 
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.VanillaNoteBlock
+import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.Location
 import org.bukkit.block.Block
@@ -43,21 +41,21 @@ object BlockyBlocks {
     val Block.blockyBlock get() = this.gearyEntity?.get<BlockyBlock>()
 
     fun placeBlockyBlock(location: Location, prefabKey: PrefabKey): Boolean {
-        val block = location.block
         val gearyEntity = prefabKey.toEntityOrNull() ?: return false
         val blockyBlock = gearyEntity.get<BlockyBlock>() ?: return false
 
-        block.blockData = when {
-            block.isBlockyBlock -> return false
-            block.isBlockyNoteBlock -> gearyEntity.getBlockyNoteBlock()
-            block.isBlockyWire -> blockyBlock.getBlockyTripWire()
-            block.isBlockyCaveVine -> blockyBlock.getBlockyCaveVine()
-            //block.isFakeWaxedCopper -> blockyBlock.get
+        location.block.blockData = when (blockyBlock.blockType) {
+            BlockyBlock.BlockType.NOTEBLOCK -> gearyEntity.getBlockyNoteBlock()
+            BlockyBlock.BlockType.WIRE -> blockyBlock.getBlockyTripWire()
+            BlockyBlock.BlockType.CAVEVINE -> blockyBlock.getBlockyCaveVine()
             else -> return false
         }
-        //TODO Actually place the block with its mechanics
-        if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
-            block.persistentDataContainer.encode(VanillaNoteBlock(0))
+
+        /*if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
+            block.persistentDataContainer.encode(VanillaNoteBlock(0))*/
+
+        if (gearyEntity.has<BlockyLight>())
+            handleLight.createBlockLight(location, gearyEntity.get<BlockyLight>()!!.lightLevel)
         return true
     }
 
