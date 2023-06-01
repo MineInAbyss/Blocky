@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
+//import com.mineinabyss.blocky.breaker
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
@@ -11,7 +12,6 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
-//import com.mineinabyss.blocky.breaker
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
@@ -20,7 +20,6 @@ import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.time.inWholeTicks
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
@@ -43,6 +42,7 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
+import kotlin.time.Duration
 
 class BlockyGenericListener : Listener {
 
@@ -80,12 +80,12 @@ class BlockyGenericListener : Listener {
 
         val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
-        var breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
+        val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
 
+        if (breakTime <= Duration.ZERO) return
         if (player.gameMode == GameMode.CREATIVE) return
         if (mining.miningTask?.isActive == true) return
         isCancelled = true
-
         val damageEvent = when {
             block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
             block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.blockyFurnitureEntity ?: return, player)
@@ -96,8 +96,7 @@ class BlockyGenericListener : Listener {
         blocky.plugin.launch {
             mining.miningTask = this.coroutineContext.job
             var stage = 0
-            val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
-            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, false))
+            player.addPotionEffect(PotionEffect(SLOW_DIGGING, -1, Int.MAX_VALUE, false, false, false))
 
             do {
                 block.location.getNearbyPlayers(16.0).forEach { p ->
@@ -105,12 +104,13 @@ class BlockyGenericListener : Listener {
                 }
                 delay(breakTime / 10)
                 // Recalculate breaktime in case potion effects changed etc
-                breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)  * (stage/10)
+                //breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)  * (stage/10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
         }
 
         mining.miningTask?.invokeOnCompletion {
             if (player.toGeary().has(mining::class)) {
+                player.removePotionEffect(SLOW_DIGGING)
                 attemptBreakBlockyBlock(block, player)
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, 0f, block.location.hashCode())
