@@ -10,6 +10,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
@@ -68,8 +69,10 @@ object BlockyFurnitures {
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
         placeBlockyFurniture(prefabKey, location, yaw, itemStack)
 
-    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) =
-        placeBlockyFurniture(prefabKey, location, yaw)
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float): ItemDisplay? {
+        val itemStack = prefabKey.toEntityOrNull()?.get<SetItem>()?.item?.toItemStackOrNull() ?: return null
+        return placeBlockyFurniture(prefabKey, location, yaw, itemStack)
+    }
 
     fun removeFurniture(location: Location) {
         location.blockyFurnitureEntity?.let { removeFurniture(it) }
