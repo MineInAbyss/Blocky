@@ -16,6 +16,7 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
@@ -78,16 +79,17 @@ internal fun placeBlockyFurniture(
     prefabKey: PrefabKey,
     loc: Location,
     yaw: Float = loc.yaw,
-    itemStack: ItemStack
+    item: ItemStack?
 ): ItemDisplay? {
-    val gearyEntity = (prefabKey.toEntityOrNull() ?: return null)
+    val gearyEntity = prefabKey.toEntityOrNull() ?: return null
+    val itemStack = item ?: gearyEntity.get<SetItem>()?.item?.toItemStack() ?: return null
     val furniture = gearyEntity.get<BlockyFurniture>() ?: return null
-    val furnitureItem = gearyEntity.get<ItemStack>()?.clone()?.editItemMeta {
+    val furnitureItem = itemStack.clone().editItemMeta {
         displayName(Component.empty())
         (this as? LeatherArmorMeta)?.setColor((itemStack.itemMeta as? LeatherArmorMeta)?.color)
             ?: (this as? PotionMeta)?.setColor((itemStack.itemMeta as? PotionMeta)?.color)
             ?: (this as? MapMeta)?.setColor((itemStack.itemMeta as? MapMeta)?.color) ?: return@editItemMeta
-    } ?: return null
+    }
 
     val newFurniture = loc.toBlockCenterLocation().spawn<ItemDisplay> {
         isPersistent = true

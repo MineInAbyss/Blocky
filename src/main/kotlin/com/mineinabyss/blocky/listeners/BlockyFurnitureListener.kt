@@ -53,7 +53,7 @@ class BlockyFurnitureListener : Listener {
             targetBlock.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> return
         }
 
-        val prefabKey = gearyEntity.prefabs.firstOrNull()?.get<PrefabKey>() ?: return
+        val prefabKey = gearyEntity.prefabs.firstOrNull()?.get<PrefabKey>() ?: gearyEntity.get<PrefabKey>() ?: return
         val newFurniture = placeBlockyFurniture(prefabKey, targetBlock.location, yaw, item) ?: return
 
         if (!BlockyFurniturePlaceEvent(newFurniture, player).callEvent()) {
