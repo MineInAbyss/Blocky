@@ -13,6 +13,8 @@ import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.helpers.prefabs
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.block.Block
@@ -40,8 +42,7 @@ class BlockyFurnitureListener : Listener {
         val targetBlock = getTargetBlock(block, blockFace) ?: return
         val gearyEntity = player.gearyInventory?.get(hand) ?: return
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return
-        val rotation = getRotation(player.location.yaw, furniture)
-        val yaw = if (furniture.hasStrictRotation) getYaw(rotation) else player.location.yaw
+        val yaw = if (furniture.hasStrictRotation) getYaw(getRotation(player.location.yaw, furniture)) else player.location.yaw
 
         if (action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE) return
         if (!furniture.hasEnoughSpace(targetBlock.location, yaw)) return
@@ -52,7 +53,8 @@ class BlockyFurnitureListener : Listener {
             targetBlock.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> return
         }
 
-        val newFurniture = placeBlockyFurniture(gearyEntity, targetBlock.location, rotation, yaw, item) ?: return
+        val prefabKey = gearyEntity.prefabs.firstOrNull()?.get<PrefabKey>() ?: return
+        val newFurniture = placeBlockyFurniture(prefabKey, targetBlock.location, yaw, item) ?: return
 
         if (!BlockyFurniturePlaceEvent(newFurniture, player).callEvent()) {
             removeFurniture(newFurniture)

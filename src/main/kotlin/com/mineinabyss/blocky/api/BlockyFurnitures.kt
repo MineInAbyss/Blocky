@@ -65,6 +65,10 @@ object BlockyFurnitures {
             } ?: false
         }
 
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) {
+        placeBlockyFurniture(prefabKey, location, yaw, itemStack)
+    }
+
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) {
         placeBlockyFurniture(prefabKey, location, yaw)
     }

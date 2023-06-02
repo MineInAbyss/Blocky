@@ -79,9 +79,9 @@ internal fun placeBlockyFurniture(
     prefabKey: PrefabKey,
     loc: Location,
     yaw: Float = loc.yaw,
+    itemStack: ItemStack? = prefabKey.toEntityOrNull()?.get<SetItem>()?.item?.toItemStackOrNull()
 ): ItemDisplay? {
-    val gearyEntity = prefabKey.toEntityOrNull() ?: return null
-    val item = gearyEntity.get<SetItem>()?.item?.toItemStackOrNull() ?: return null
+    val (gearyEntity, item) = (prefabKey.toEntityOrNull() ?: return null) to (itemStack ?: return null)
     val furniture = gearyEntity.get<BlockyFurniture>() ?: return null
     val lootyItem = gearyEntity.get<ItemStack>()?.clone()?.editItemMeta {
         displayName(Component.empty())
@@ -110,10 +110,7 @@ internal fun placeBlockyFurniture(
                 scale.set(p.scale ?: if (isFixed) Vector3f(0.5f, 0.5f, 0.5f) else Vector3f(1f, 1f, 1f))
             }
 
-            setRotation(
-                getYaw(getRotation(yaw, furniture)),
-                if (isFixed) 90f else 0f
-            )
+            setRotation(getYaw(getRotation(yaw, furniture)), if (isFixed) 90f else 0f)
             if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE)
                 teleport(location.toCenterLocation())
 
