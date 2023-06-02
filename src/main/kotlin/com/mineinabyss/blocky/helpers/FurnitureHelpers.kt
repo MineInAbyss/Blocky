@@ -16,7 +16,6 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
@@ -79,15 +78,15 @@ internal fun placeBlockyFurniture(
     prefabKey: PrefabKey,
     loc: Location,
     yaw: Float = loc.yaw,
-    itemStack: ItemStack? = prefabKey.toEntityOrNull()?.get<SetItem>()?.item?.toItemStackOrNull()
+    itemStack: ItemStack
 ): ItemDisplay? {
-    val (gearyEntity, item) = (prefabKey.toEntityOrNull() ?: return null) to (itemStack ?: return null)
+    val gearyEntity = (prefabKey.toEntityOrNull() ?: return null)
     val furniture = gearyEntity.get<BlockyFurniture>() ?: return null
-    val lootyItem = gearyEntity.get<ItemStack>()?.clone()?.editItemMeta {
+    val furnitureItem = gearyEntity.get<ItemStack>()?.clone()?.editItemMeta {
         displayName(Component.empty())
-        (this as? LeatherArmorMeta)?.setColor((item.itemMeta as? LeatherArmorMeta)?.color)
-            ?: (this as? PotionMeta)?.setColor((item.itemMeta as? PotionMeta)?.color)
-            ?: (this as? MapMeta)?.setColor((item.itemMeta as? MapMeta)?.color) ?: return@editItemMeta
+        (this as? LeatherArmorMeta)?.setColor((itemStack.itemMeta as? LeatherArmorMeta)?.color)
+            ?: (this as? PotionMeta)?.setColor((itemStack.itemMeta as? PotionMeta)?.color)
+            ?: (this as? MapMeta)?.setColor((itemStack.itemMeta as? MapMeta)?.color) ?: return@editItemMeta
     } ?: return null
 
     val newFurniture = loc.toBlockCenterLocation().spawn<ItemDisplay> {
@@ -115,7 +114,7 @@ internal fun placeBlockyFurniture(
                 teleport(location.toCenterLocation())
 
         }
-        this.itemStack = lootyItem
+        this.itemStack = furnitureItem
     } ?: return null
 
     // Spawn Interaction Entity if defined and remove both entities if it fails

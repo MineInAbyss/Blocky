@@ -65,13 +65,11 @@ object BlockyFurnitures {
             } ?: false
         }
 
-    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) {
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
         placeBlockyFurniture(prefabKey, location, yaw, itemStack)
-    }
 
-    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) {
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) =
         placeBlockyFurniture(prefabKey, location, yaw)
-    }
 
     fun removeFurniture(location: Location) {
         location.blockyFurnitureEntity?.let { removeFurniture(it) }
