@@ -16,6 +16,8 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
+import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.spawning.spawn
@@ -73,13 +75,13 @@ val ItemDisplay.interactionEntity: Interaction?
 val Interaction.baseFurniture: ItemDisplay?
     get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity
 
-fun placeBlockyFurniture(
-    gearyEntity: GearyEntity,
+internal fun placeBlockyFurniture(
+    prefabKey: PrefabKey,
     loc: Location,
-    rotation: Rotation,
-    yaw: Float,
-    item: ItemStack,
+    yaw: Float = loc.yaw,
 ): ItemDisplay? {
+    val gearyEntity = prefabKey.toEntityOrNull() ?: return null
+    val item = gearyEntity.get<SetItem>()?.item?.toItemStackOrNull() ?: return null
     val furniture = gearyEntity.get<BlockyFurniture>() ?: return null
     val lootyItem = gearyEntity.get<ItemStack>()?.clone()?.editItemMeta {
         displayName(Component.empty())
@@ -109,7 +111,7 @@ fun placeBlockyFurniture(
             }
 
             setRotation(
-                getYaw(rotation.rotateClockwise().rotateClockwise().rotateClockwise().rotateClockwise()),
+                getYaw(getRotation(yaw, furniture)),
                 if (isFixed) 90f else 0f
             )
             if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE)

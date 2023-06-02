@@ -15,7 +15,6 @@ import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
-import org.bukkit.Rotation
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Interaction
@@ -66,8 +65,8 @@ object BlockyFurnitures {
             } ?: false
         }
 
-    fun placeFurniture(prefabKey: PrefabKey, location: Location, rotation: Rotation, yaw: Float, itemStack: ItemStack) {
-        prefabKey.toEntityOrNull()?.let { placeBlockyFurniture(it, location, rotation, yaw, itemStack) }
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) {
+        placeBlockyFurniture(prefabKey, location, yaw)
     }
 
     fun removeFurniture(location: Location) {

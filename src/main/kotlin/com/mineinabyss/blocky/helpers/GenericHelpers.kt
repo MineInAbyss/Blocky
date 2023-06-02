@@ -154,7 +154,7 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
 
 
     block.customBlockData.clear()
-    block.setType(Material.AIR, false)
+    block.setType(Material.AIR, true)
     return true
 }
 
