@@ -1,15 +1,13 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
 import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.components.features.furniture.BlockySeat
-import com.mineinabyss.blocky.components.features.furniture.BlockySeatLocations
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
@@ -20,12 +18,12 @@ import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.spawning.spawn
 import com.ticxo.modelengine.api.ModelEngineAPI
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
 import org.bukkit.Rotation
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -37,7 +35,6 @@ import org.bukkit.inventory.meta.PotionMeta
 import org.joml.Vector3f
 import kotlin.math.max
 
-val FURNITURE_ORIGIN = NamespacedKey(blocky.plugin, "furniture_origin")
 fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
 
     return if (placedAgainst.isReplaceable) placedAgainst else {
@@ -70,10 +67,7 @@ fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     else collisionHitbox.let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
 }
 
-val ItemDisplay.interactionEntity: Interaction?
-    get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.interactionHitbox
-val Interaction.baseFurniture: ItemDisplay?
-    get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity
+
 
 internal fun placeBlockyFurniture(
     prefabKey: PrefabKey,
@@ -94,7 +88,6 @@ internal fun placeBlockyFurniture(
     val newFurniture = loc.toBlockCenterLocation().spawn<ItemDisplay> {
         isPersistent = true
         setRotation(yaw, 0F)
-        setGravity(false)
 
         furniture.properties.let { p ->
             itemDisplayTransform = p.displayTransform
@@ -133,13 +126,12 @@ internal fun placeBlockyFurniture(
 
     newFurniture.toGeary().apply {
         addPrefab(gearyEntity)
-        //TODO Fix PrefabKey when Offz adds helper methods
-        setPersisting(BlockyFurnitureHitbox(_interactionHitbox = interaction?.uniqueId))
+        interaction?.let { setPersisting(BlockyFurnitureHitbox(_interactionHitbox = interaction.uniqueId)) }
     }
     interaction?.toGeary()?.setPersisting(BlockyFurnitureHitbox(_baseEntity = newFurniture.uniqueId))
 
     gearyEntity.get<BlockyModelEngine>()?.let { meg ->
-        if (!blocky.plugin.server.pluginManager.isPluginEnabled("ModelEngine")) return@let
+        if (!Plugins.isEnabled<ModelEngineAPI>()) return@let
         val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let
         ModelEngineAPI.getOrCreateModeledEntity(newFurniture).apply {
             addModel(activeModel, false)
@@ -155,7 +147,6 @@ internal fun placeBlockyFurniture(
             newGeary.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
             newGeary.get<BlockySeat>()?.let { spawnFurnitureSeat(newFurniture, yaw) }
         } else newGeary.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
-
     }
 
     return newFurniture
@@ -175,8 +166,7 @@ private fun GearyEntity.placeFurnitureHitbox(baseEntity: ItemDisplay, yaw: Float
     }
 
     if (locations.isNotEmpty()) {
-        setPersisting(BlockySeatLocations(locations))
-        setPersisting(BlockyFurnitureHitbox(locations))
+        this.getOrSetPersisting { BlockyFurnitureHitbox() }.hitbox.addAll(locations)
     }
 }
 
@@ -202,14 +192,8 @@ fun spawnFurnitureSeat(furniture: ItemDisplay, yaw: Float, height: Double = 0.0)
         setGravity(false)
         setRotation(yaw, 0F)
     }?.let { seat ->
-        seat.toGeary().setPersisting(BlockySeat(seat.location.y - seat.location.toBlockCenterLocation().y))
-        seat.persistentDataContainer.encode(BlockyFurnitureHitbox(_baseEntity = furniture.uniqueId))
+        furniture.toGeary().getOrSetPersisting { BlockyAssociatedSeats() }._seats.add(seat.uniqueId)
+        seat.toGeary().setPersisting(BlockyFurnitureHitbox(_baseEntity = furniture.uniqueId))
         seat
-    }
-}
-
-fun ItemDisplay.removeAssosiatedSeats() {
-    this.toGearyOrNull()?.get<BlockySeatLocations>()?.seats?.forEach { seatLoc ->
-        seatLoc.block.blockySeat?.remove()
     }
 }

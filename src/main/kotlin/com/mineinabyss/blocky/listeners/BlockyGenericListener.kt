@@ -5,7 +5,7 @@ import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
+import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
@@ -51,7 +51,7 @@ class BlockyGenericListener : Listener {
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
             block.isBlockyFurniture ->
-                BlockyFurnitureDamageAbortEvent(block.blockyFurnitureEntity ?: return, this)
+                BlockyFurnitureDamageAbortEvent(block.baseFurniture ?: return, this)
 
             else -> return
         }.run { call(); this }
@@ -88,7 +88,7 @@ class BlockyGenericListener : Listener {
         isCancelled = true
         val damageEvent = when {
             block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
-            block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.blockyFurnitureEntity ?: return, player)
+            block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.baseFurniture ?: return, player)
             else -> return
         }.run { call(); this }
         if (damageEvent.isCancelled) return

@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
+import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
@@ -69,7 +69,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingHitbox() {
         if (!block.isFurnitureHitbox || player.gameMode != GameMode.CREATIVE) return
-        block.blockyFurnitureEntity?.let { removeFurniture(it, player) }
+        block.baseFurniture?.let { removeFurniture(it, player) }
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -133,7 +133,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun BlockExplodeEvent.onBlockExplode() {
         blockList().filter { it.isFurnitureHitbox && it.blockyFurniture != null }
-            .mapNotNull { it.blockyFurnitureEntity }.toSet()
+            .mapNotNull { it.baseFurniture }.toSet()
             .forEach { removeFurniture(it) }
     }
 
