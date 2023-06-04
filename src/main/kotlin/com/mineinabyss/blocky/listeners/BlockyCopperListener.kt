@@ -78,8 +78,9 @@ class BlockyCopperListener {
 
             val loc = if (relative.blockData == blockyData) relative.location else block.location
 
-            val blockyEvent = BlockyBlockPlaceEvent(loc.block, player).run { call(); this }
+            val blockyEvent = BlockyBlockPlaceEvent(loc.block, player, hand, item)
             if (!ProtectionLib.canBuild(player, loc)) blockyEvent.isCancelled = true
+            blockyEvent.call()
             if (blockyEvent.isCancelled) {
                 loc.block.blockData = oldData
                 return
@@ -194,8 +195,9 @@ class BlockyCopperListener {
             }
 
             val loc = if (relative.blockData == blockyData) relative.location else block.location
-            val blockyEvent = BlockyBlockPlaceEvent(loc.block, player).run { call(); this }
+            val blockyEvent = BlockyBlockPlaceEvent(loc.block, player, hand, item)
             if (!ProtectionLib.canBuild(player, loc)) blockyEvent.isCancelled = true
+            blockyEvent.call()
             if (blockyEvent.isCancelled) {
                 loc.block.blockData = oldData
                 return

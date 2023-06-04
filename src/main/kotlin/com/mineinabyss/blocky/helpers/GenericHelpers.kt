@@ -111,7 +111,7 @@ fun placeBlockyBlock(
         !BlockStateCorrection.correctAllBlockStates(targetBlock, player, face, item) -> blockPlaceEvent.isCancelled = true
     }
 
-    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player)
+    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player, hand, item)
     blockyEvent.callEvent()
     if (blockPlaceEvent.isCancelled || blockyEvent.isCancelled) {
         targetBlock.setBlockData(currentData, false) // false to cancel physic
@@ -141,9 +141,8 @@ fun placeBlockyBlock(
 
 internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Boolean {
     player?.let {
-        val breakEvent = BlockyBlockBreakEvent(block, player)
-        if (!ProtectionLib.canBreak(it, block.location)) breakEvent.isCancelled = true
-        breakEvent.callEvent() || return false
+        if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
+        if (!ProtectionLib.canBreak(it, block.location)) return false
         if (player.gameMode != GameMode.CREATIVE)
             player.inventory.itemInMainHand.damage(1, player)
     }

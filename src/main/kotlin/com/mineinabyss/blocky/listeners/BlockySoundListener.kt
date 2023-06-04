@@ -140,7 +140,7 @@ class BlockySoundListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyBlockBreakEvent.onBreakBlockyBlock() {
-        player?.toGeary()?.remove<PlayerIsMining>()
+        player.toGeary().remove<PlayerIsMining>()
         val sound = block.gearyEntity?.get<BlockySound>()?.breakSound ?: block.blockSoundGroup.breakSound.key.toString()
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_BREAK_VOLUME, DEFAULT_BREAK_PITCH)
     }

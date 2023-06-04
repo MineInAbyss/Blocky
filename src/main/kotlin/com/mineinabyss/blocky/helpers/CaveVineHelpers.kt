@@ -5,7 +5,7 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyLight
-import com.mineinabyss.idofront.events.call
+import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -20,16 +20,19 @@ fun BlockyBlock.getBlockyCaveVine() : BlockData {
 val Block.isBlockyCaveVine: Boolean get() =
     type == Material.CAVE_VINES && blockData in blockMap
 
-fun breakCaveVineBlock(block: Block, player: Player?) {
-    val gearyBlock = block.gearyEntity ?: return
-    if (!gearyBlock.has<BlockyBlock>()) return
+fun breakCaveVineBlock(block: Block, player: Player?): Boolean {
+    val gearyBlock = block.gearyEntity ?: return false
+    if (!gearyBlock.has<BlockyBlock>()) return false
 
-    val caveVineEvent = BlockyBlockBreakEvent(block, player).run { this.call(); this }
-    if (caveVineEvent.isCancelled) return
+    player?.let {
+        if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
+        if (!ProtectionLib.canBreak(player, block.location)) return false
+    }
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
     handleBlockyDrops(block, player)
     block.setType(Material.AIR, false)
     if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)
         breakCaveVineBlock(block.getRelative(BlockFace.DOWN), null)
+    return true
 }

@@ -102,7 +102,7 @@ class BlockyNoteBlockListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun PlayerInteractEvent.onInteractBlockyNoteBlock() {
+    fun PlayerInteractEvent.onPlaceAgainstBlockyBlock() {
         val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
         //TODO Figure out  why water replaces custom block
         if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return

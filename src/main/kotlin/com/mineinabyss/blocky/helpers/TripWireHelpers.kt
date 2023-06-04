@@ -9,7 +9,7 @@ import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
-import com.mineinabyss.idofront.events.call
+import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
 import org.bukkit.Location
 import org.bukkit.Material
@@ -40,12 +40,15 @@ fun Block.fixClientsideUpdate() {
     }
 }
 
-fun breakWireBlock(block: Block, player: Player?) {
-    val gearyBlock = block.gearyEntity ?: return
-    if (!gearyBlock.has<BlockyBlock>()) return
+fun breakWireBlock(block: Block, player: Player?): Boolean {
+    val gearyBlock = block.gearyEntity ?: return false
+    if (!gearyBlock.has<BlockyBlock>()) return false
 
-    val blockyEvent = BlockyBlockBreakEvent(block, player).run { this.call(); this }
-    if (blockyEvent.isCancelled) return
+    player?.let {
+        if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
+        if (!ProtectionLib.canBreak(player, block.location)) return false
+    }
+
 
     if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyTallWire>()) handleTallWire(block)
@@ -57,6 +60,7 @@ fun breakWireBlock(block: Block, player: Player?) {
     val aboveBlock = block.getRelative(BlockFace.UP)
     if (aboveBlock.type == Material.TRIPWIRE)
         breakWireBlock(aboveBlock, null)
+    return true
 }
 
 fun Player.isInBlock(block: Block): Boolean {

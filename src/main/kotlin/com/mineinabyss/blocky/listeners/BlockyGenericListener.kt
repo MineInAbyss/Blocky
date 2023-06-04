@@ -9,6 +9,7 @@ import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
@@ -248,5 +249,13 @@ class BlockyGenericListener : Listener {
 
         block.blockData = material.createBlockData()
         player.swingMainHand()
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    fun PlayerInteractEvent.onInteractBlockyBlock() {
+        val (block, hand, item) = (clickedBlock ?: return) to (hand ?: return) to (item ?: return)
+        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return
+        val event = BlockyBlockInteractEvent(block, player, hand, item, blockFace)
+        if (event.callEvent()) isCancelled = true
     }
 }

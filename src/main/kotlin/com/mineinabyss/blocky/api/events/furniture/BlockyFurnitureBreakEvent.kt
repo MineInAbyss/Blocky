@@ -1,7 +1,5 @@
 package com.mineinabyss.blocky.api.events.furniture
 
-import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
@@ -11,9 +9,6 @@ class BlockyFurnitureBreakEvent(
     entity: Entity,
     val player: Player
 ) : BlockyFurnitureEvent(entity), Cancellable {
-
-    override val furniture get() = entity.toGeary().get<BlockyFurniture>()!!
-
     private var cancelled = false
 
     override fun isCancelled() = cancelled

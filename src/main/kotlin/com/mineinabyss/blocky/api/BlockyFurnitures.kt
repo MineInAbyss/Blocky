@@ -17,6 +17,7 @@ import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Interaction
@@ -32,7 +33,7 @@ object BlockyFurnitures {
     val Entity.isModelEngineFurniture: Boolean get() = this.toGearyOrNull()?.isModelEngineFurniture ?: false
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
-    val Block.isFurnitureHitbox get() = this.persistentDataContainer.has<BlockyFurnitureHitbox>()
+    val Block.isFurnitureHitbox get() = this.type == Material.BARRIER && this.persistentDataContainer.has<BlockyFurnitureHitbox>()
     val Entity.isFurnitureHitbox: Boolean
         get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
 
