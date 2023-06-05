@@ -91,13 +91,13 @@ class BlockyFurnitureListener : Listener {
         isCancelled = true
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     fun PlayerInteractEntityEvent.onInteractFurniture() {
-        val (baseEntity, hand, item) = ((rightClicked as? Interaction)?.baseFurniture ?: return) to hand to (player.inventory.getItem(hand))
-        if (!ProtectionLib.canInteract(player, baseEntity.location)) return
-        if (!baseEntity.isFurnitureHitbox) return
+        val (interaction, hand, item) = ((rightClicked as? Interaction) ?: return) to hand to (player.inventory.getItem(hand))
+        if (!ProtectionLib.canInteract(player, interaction.location)) return
+        if (!interaction.isFurnitureHitbox) return
 
-        BlockyFurnitureInteractEvent(baseEntity, player, hand, item, null, null).callEvent()
+        BlockyFurnitureInteractEvent(interaction, player, hand, item, null, null).callEvent()
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
