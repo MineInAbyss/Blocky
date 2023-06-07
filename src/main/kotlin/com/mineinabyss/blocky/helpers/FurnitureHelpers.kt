@@ -160,7 +160,7 @@ private fun GearyEntity.placeFurnitureHitbox(baseEntity: ItemDisplay, yaw: Float
         loc.block.setType(Material.BARRIER, false)
         this.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
         this.get<BlockySeat>()?.let {
-            spawnFurnitureSeat(baseEntity, yaw, loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }.y)
+            spawnFurnitureSeat(baseEntity, yaw - 180, loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }.y)
         }
         loc.block.persistentDataContainer.encode(BlockyFurnitureHitbox(_baseEntity = baseEntity.uniqueId))
     }

@@ -3,6 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
@@ -105,8 +106,7 @@ class BlockyFurnitureListener : Listener {
         val (block, item, hand) = (clickedBlock ?: return) to (item ?: ItemStack(Material.AIR)) to (hand ?: return)
         val baseFurniture = block.baseFurniture ?: return
         if (action != Action.RIGHT_CLICK_BLOCK || useInteractedBlock() == Event.Result.DENY) return
-        if (!block.isFurnitureHitbox) return
-        if (!ProtectionLib.canInteract(player, block.location)) return
+        if (!block.isFurnitureHitbox || !ProtectionLib.canInteract(player, block.location)) return
 
         BlockyFurnitureInteractEvent(baseFurniture, player, hand, item, block, blockFace).callEvent()
     }
@@ -114,11 +114,10 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun BlockyFurnitureInteractEvent.onSitting() {
         if (!ProtectionLib.canInteract(player, entity.location)) return
-        if (!baseEntity.isFurnitureHitbox || player.isSneaking) return
+        if (!baseEntity.isBlockyFurniture || player.isSneaking) return
 
-        interactionEntity?.let { player.sitOnBlockySeat(interactionEntity) }
-            ?: clickedBlock?.let { player.sitOnBlockySeat(clickedBlock) }
-        isCancelled = true
+        clickedBlock?.let { player.sitOnBlockySeat(clickedBlock) }
+            ?: interactionEntity?.let { player.sitOnBlockySeat(interactionEntity) }
     }
 
     @EventHandler(ignoreCancelled = true)
