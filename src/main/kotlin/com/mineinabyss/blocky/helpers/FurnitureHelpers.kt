@@ -104,10 +104,10 @@ internal fun placeBlockyFurniture(
                 scale.set(p.scale ?: if (isFixed) Vector3f(0.5f, 0.5f, 0.5f) else Vector3f(1f, 1f, 1f))
             }
 
-            setRotation(getYaw(getRotation(yaw, furniture)), if (isFixed) 90f else 0f)
             if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE)
-                teleport(location.toCenterLocation())
-
+                teleportAsync(location.toCenterLocation())
+            if (isFixed) setRotation(getYaw(getRotation(yaw, furniture)) - 180, -90f)
+            else setRotation(getYaw(getRotation(yaw, furniture)), 0f)
         }
         this.itemStack = furnitureItem
     } ?: return null
