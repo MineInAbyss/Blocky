@@ -40,7 +40,7 @@ fun BlockyUIScope.BlockyMenu() {
 
 @Composable
 fun HandleMenuClicks(key: PrefabKey, player: Player) {
-    val block = itemTracking.provider.serializePrefabToItemStack(key)
+    val block = itemTracking.createItem(key)
     Item(block, Modifier.clickable {
         when (clickType) {
             ClickType.LEFT -> {

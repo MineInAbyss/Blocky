@@ -32,7 +32,7 @@ class BlockyWireListener : Listener {
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         blocks.filter { it.type == Material.TRIPWIRE }.forEach { wire ->
             val gearyEntity = wire.prefabKey ?: return@forEach
-            itemTracking.provider.serializePrefabToItemStack(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
+            itemTracking.createItem(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
             wire.type = Material.AIR
         }
     }

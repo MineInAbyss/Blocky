@@ -75,7 +75,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         player.error("No empty slots in inventory")
                         return@playerAction
                     }
-                    val item = itemTracking.provider.serializePrefabToItemStack(PrefabKey.of(type))
+                    val item = itemTracking.createItem(PrefabKey.of(type))
                     if (item == null) {
                         player.error("$type exists but is not a block.")
                         return@playerAction

@@ -71,7 +71,7 @@ class MoreCreativeTabsGeneration {
         }
     }
 
-    private val PrefabKey.lootyItem get() = itemTracking.provider.serializePrefabToItemStack(this)
+    private val PrefabKey.lootyItem get() = itemTracking.createItem(this)
     private val ItemStack.customModelData get() = if (this.itemMeta.hasCustomModelData()) this.itemMeta.customModelData else 0
 
 }

@@ -21,7 +21,7 @@ import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
-import com.mineinabyss.geary.papermc.tracking.items.toGeary
+import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib

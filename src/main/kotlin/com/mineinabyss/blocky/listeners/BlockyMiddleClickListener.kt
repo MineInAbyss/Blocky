@@ -37,7 +37,7 @@ class BlockyMiddleClickListener : Listener {
                     isCancelled = true
                     return
                 }
-                cursor = itemTracking.provider.serializePrefabToItemStack(lookingAtPrefab) ?: return
+                cursor = itemTracking.createItem(lookingAtPrefab) ?: return
             }
         }
     }
