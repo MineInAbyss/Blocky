@@ -7,7 +7,7 @@ import net.minecraft.core.registries.Registries
 import net.minecraft.network.protocol.game.ClientboundUpdateTagsPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.TagNetworkSerialization
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener

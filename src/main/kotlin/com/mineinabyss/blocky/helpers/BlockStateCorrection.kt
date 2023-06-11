@@ -19,7 +19,8 @@ import org.bukkit.block.data.type.*
 import org.bukkit.block.data.type.Bed
 import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Lectern
-import org.bukkit.craftbukkit.v1_19_R3.entity.CraftPlayer
+import org.bukkit.block.sign.Side
+import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
 import org.bukkit.entity.Player
 import org.bukkit.inventory.BlockInventoryHolder
 import org.bukkit.inventory.EquipmentSlot
@@ -115,7 +116,7 @@ object BlockStateCorrection {
             }
         }
 
-        if (state is Sign) player.openSign(state)
+        if (state is Sign) player.openSign(state, Side.FRONT)
 
         return true
     }
@@ -132,7 +133,7 @@ object BlockStateCorrection {
     }
 
     private fun Block.handleWallAttachable(player: Player, face: BlockFace) {
-        if (state is Sign) player.openSign(state as Sign)
+        if (state is Sign) player.openSign(state as Sign, Side.FRONT)
         type =
             if (MaterialTags.TORCHES.isTagged(this))
                 Material.valueOf(type.toString().replace("TORCH", "WALL_TORCH"))
