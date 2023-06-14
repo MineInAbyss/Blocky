@@ -1,10 +1,11 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.Note
@@ -16,7 +17,8 @@ import org.bukkit.entity.Player
 import org.bukkit.event.block.NotePlayEvent
 
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
-    return blockMap.filter { it.key is NoteBlock && it.value == GenericHelpers.getDirectionalId(this, face, player) }.keys.firstOrNull() ?: return Material.NOTE_BLOCK.createBlockData() as NoteBlock
+    val directional = GenericHelpers.getDirectionalId(this, face, player)
+    return gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]!![directional]
 }
 
 fun Block.updateNoteBlockAbove() {
@@ -28,11 +30,11 @@ fun Block.updateNoteBlockAbove() {
 }
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block
-val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in blockMap
-val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in blockMap
+val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in gearyBlocks.block2Prefab
+val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in gearyBlocks.block2Prefab
 
-val Block.isBlockyNoteBlock get() = blockData is NoteBlock && blockData in blockMap
-val BlockData.isBlockyNoteBlock get() = this is NoteBlock && this in blockMap
+val Block.isBlockyNoteBlock get() = blockData is NoteBlock && blockData in gearyBlocks.block2Prefab
+val BlockData.isBlockyNoteBlock get() = this is NoteBlock && this in gearyBlocks.block2Prefab
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {

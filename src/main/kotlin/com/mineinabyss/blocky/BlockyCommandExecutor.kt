@@ -8,7 +8,7 @@ import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
-import com.mineinabyss.geary.papermc.tracking.items.itemTracking
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.guiy.inventory.guiy
@@ -75,7 +75,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         player.error("No empty slots in inventory")
                         return@playerAction
                     }
-                    val item = itemTracking.createItem(PrefabKey.of(type))
+                    val item = gearyItems.createItem(PrefabKey.of(type))
                     if (item == null) {
                         player.error("$type exists but is not a block.")
                         return@playerAction

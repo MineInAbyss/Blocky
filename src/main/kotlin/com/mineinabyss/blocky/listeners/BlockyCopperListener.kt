@@ -2,11 +2,11 @@ package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.VanillaCopperBlock
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
@@ -37,9 +37,9 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_SLABS) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
+            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
 
-            if (blockyBlock.blockType != BlockyBlock.BlockType.SLAB) return
+            if (blockyBlock.blockType != SetBlock.BlockType.SLAB) return
             if (!player.isSneaking && block.isInteractable()) return
 
             val blockyData = BLOCKY_SLABS.elementAt(blockyBlock.blockId).createBlockData() as Slab
@@ -158,8 +158,8 @@ class BlockyCopperListener {
             if (hand != EquipmentSlot.HAND) return
             if (item.type in BLOCKY_STAIRS) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
-            if (blockyBlock.blockType != BlockyBlock.BlockType.STAIR) return
+            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
+            if (blockyBlock.blockType != SetBlock.BlockType.STAIR) return
             if (!player.isSneaking && block.isInteractable()) return
 
             val blockyData = BLOCKY_STAIRS.elementAt(blockyBlock.blockId).createBlockData() as Stairs

@@ -1,10 +1,9 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -79,9 +78,9 @@ class BlockyCaveVineListener : Listener {
         }
 
         val gearyVine = player.gearyInventory?.get(hand) ?: return
-        val blockyVine = gearyVine.get<BlockyBlock>() ?: return
+        val blockyVine = gearyVine.get<SetBlock>() ?: return
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
-        if (blockyVine.blockType != BlockType.CAVEVINE) return
+        if (blockyVine.blockType != SetBlock.BlockType.CAVEVINE) return
 
         val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, blockyVine.getBlockyCaveVine()) ?: return
         if (gearyVine.has<BlockyLight>())

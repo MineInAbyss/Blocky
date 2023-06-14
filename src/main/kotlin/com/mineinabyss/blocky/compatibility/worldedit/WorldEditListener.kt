@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
 import com.sk89q.worldedit.WorldEditException
 import com.sk89q.worldedit.bukkit.BukkitAdapter
 import com.sk89q.worldedit.event.extent.EditSessionEvent

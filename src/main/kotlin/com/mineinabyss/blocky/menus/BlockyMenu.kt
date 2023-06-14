@@ -2,7 +2,7 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import com.mineinabyss.blocky.helpers.gearyInventory
-import com.mineinabyss.geary.papermc.tracking.items.itemTracking
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
@@ -40,7 +40,7 @@ fun BlockyUIScope.BlockyMenu() {
 
 @Composable
 fun HandleMenuClicks(key: PrefabKey, player: Player) {
-    val block = itemTracking.createItem(key)
+    val block = gearyItems.createItem(key)
     Item(block, Modifier.clickable {
         when (clickType) {
             ClickType.LEFT -> {

@@ -1,11 +1,11 @@
 package com.mineinabyss.blocky.components.features
 
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.helpers.GenericHelpers
 import com.mineinabyss.blocky.helpers.gearyInventory
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.serialization.DurationSerializer
@@ -30,7 +30,7 @@ data class BlockyBreaking(
     fun calculateBreakTime(block: Block, player: Player, hand: EquipmentSlot, heldItem: ItemStack?): Duration {
         val itemInHand = heldItem ?: ItemStack(Material.AIR)
         var duration = baseDuration
-        if (block.gearyEntity?.get<BlockyInfo>()?.isUnbreakable == true) return Duration.INFINITE
+        if (block.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) return Duration.INFINITE
 
         if (modifiers.heldItems.isNotEmpty()) {
             val heldPrefab = player.gearyInventory?.get(hand)?.prefabs?.first()?.get<PrefabKey>()

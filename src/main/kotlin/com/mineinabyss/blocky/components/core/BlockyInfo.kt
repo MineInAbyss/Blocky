@@ -9,4 +9,7 @@ import kotlinx.serialization.UseSerializers
 
 @Serializable
 @SerialName("blocky:info")
-data class BlockyInfo(val isUnbreakable: Boolean = false)
+data class BlockyInfo(
+    val blockModel: String? = null,
+    val isUnbreakable: Boolean = false
+)

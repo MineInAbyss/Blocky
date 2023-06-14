@@ -1,13 +1,13 @@
 package com.mineinabyss.blocky.systems
 
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.block
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.family.family
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.accessors.TargetScope
@@ -19,7 +19,7 @@ object BlockyQuery : GearyQuery() {
     val TargetScope.isPrefab by family {
         has<Prefab>()
         or {
-            has<BlockyBlock>()
+            has<SetBlock>()
             has<BlockyFurniture>()
             has<BlockyModelEngine>()
         }
@@ -29,10 +29,10 @@ object BlockyQuery : GearyQuery() {
 object BlockyBlockQuery : GearyQuery() {
 
     val TargetScope.prefabKey by get<PrefabKey>()
-    val TargetScope.type by get<BlockyBlock>()
+    val TargetScope.block by get<SetBlock>()
     val TargetScope.isPrefab by family {
         has<Prefab>()
-        has<BlockyBlock>()
+        has<SetBlock>()
         not {
             has<BlockyFurniture>()
             has<BlockyModelEngine>()
@@ -42,13 +42,13 @@ object BlockyBlockQuery : GearyQuery() {
 
 val blockyBlockQuery get() =
     BlockyBlockQuery.filter {
-        it.type.blockType !in setOf(BlockyBlock.BlockType.WIRE, BlockyBlock.BlockType.CAVEVINE) &&
+        it.block.blockType !in setOf(SetBlock.BlockType.WIRE, SetBlock.BlockType.CAVEVINE) &&
                 it.entity.get<BlockyDirectional>()?.isParentBlock != false
     }.sortedBy { it.prefabKey.key }
 
 val blockyPlantQuery get() =
     BlockyBlockQuery.filter {
-        it.type.blockType in setOf(BlockyBlock.BlockType.WIRE, BlockyBlock.BlockType.CAVEVINE)
+        it.block.blockType in setOf(SetBlock.BlockType.WIRE, SetBlock.BlockType.CAVEVINE)
     }.sortedBy { it.prefabKey.key }
 
 object BlockyFurnitureQuery : GearyQuery() {
@@ -60,7 +60,7 @@ object BlockyFurnitureQuery : GearyQuery() {
             has<BlockyModelEngine>()
         }
         not {
-            has<BlockyBlock>()
+            has<SetBlock>()
         }
     }
 }

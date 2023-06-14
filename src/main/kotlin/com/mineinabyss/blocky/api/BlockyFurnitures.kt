@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.api
 
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureBreakEvent
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
@@ -10,6 +9,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.has
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -37,7 +37,8 @@ object BlockyFurnitures {
     val Entity.isFurnitureHitbox: Boolean
         get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
 
-    val Block.isBlockyFurniture get() = this.gearyEntity?.isBlockyFurniture ?: false
+    //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
+    val Block.isBlockyFurniture get() = this.toGearyOrNull()?.isBlockyFurniture ?: false
     val GearyEntity.isBlockyFurniture get() = has<BlockyFurniture>() || this.isModelEngineFurniture
     val Entity.isBlockyFurniture: Boolean
         get() = when (this) {
@@ -48,7 +49,8 @@ object BlockyFurnitures {
 
     val ItemStack.blockyFurniture get() = this.decode<BlockyFurniture>()
     val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
-    val Block.blockyFurniture get() = this.gearyEntity?.get<BlockyFurniture>()
+    //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
+    val Block.blockyFurniture get() = this.toGearyOrNull()?.get<BlockyFurniture>()
 
     val Interaction.baseFurniture: ItemDisplay?
         get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity

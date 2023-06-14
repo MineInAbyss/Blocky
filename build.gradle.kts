@@ -21,6 +21,7 @@ repositories {
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
     maven("https://www.asangarin.eu/repo/releases") // Breaker
     maven("https://jitpack.io")
+    mavenLocal()
 }
 
 dependencies {
@@ -66,4 +67,8 @@ tasks {
         relocate("com.jeff_media.customblockdata", "com.mineinabyss.shaded.customblockdata")
         relocate("com.jeff_media.morepersistentdatatypes", "com.mineinabyss.shaded.morepersistentdatatypes")
     }
+}
+
+configurations.all {
+    //resolutionStrategy.cacheChangingModulesFor( 0, "seconds")
 }

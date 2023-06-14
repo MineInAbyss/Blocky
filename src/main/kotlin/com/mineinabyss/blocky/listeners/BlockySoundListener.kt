@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
@@ -14,6 +13,7 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.BlockySound
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.time.ticks
@@ -36,7 +36,7 @@ class BlockySoundListener : Listener {
         if (player.gameMode == GameMode.CREATIVE) return
         val hitGroup = block.blockSoundGroup.hitSound
         if (hitGroup != Sound.BLOCK_WOOD_HIT && hitGroup != Sound.BLOCK_STONE_HIT) return
-        val sound = block.gearyEntity?.get<BlockySound>()?.hitSound
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.hitSound
             ?: if (hitGroup == Sound.BLOCK_WOOD_HIT) VANILLA_WOOD_BREAK else VANILLA_STONE_BREAK
 
         blocky.plugin.launch {
@@ -67,7 +67,7 @@ class BlockySoundListener : Listener {
     fun BlockyBlockDamageAbortEvent.onStopBreakingBlock() {
         player.toGeary().apply { if (has<PlayerIsMining>()) remove<PlayerIsMining>() }
         player.stopSound(
-            block.gearyEntity?.get<BlockySound>()?.hitSound
+            block.toGearyOrNull()?.get<BlockySound>()?.hitSound
                 ?: if (block.blockSoundGroup.hitSound == Sound.BLOCK_WOOD_HIT) VANILLA_WOOD_HIT else VANILLA_STONE_HIT
         )
     }
@@ -89,7 +89,7 @@ class BlockySoundListener : Listener {
         if (event != GameEvent.STEP && event != GameEvent.HIT_GROUND) return
         if (event == GameEvent.HIT_GROUND && (entity as LivingEntity).lastDamageCause?.cause != EntityDamageEvent.DamageCause.FALL) return
 
-        val blockySound = block.gearyEntity?.get<BlockySound>()
+        val blockySound = block.toGearyOrNull()?.get<BlockySound>()
         val currentBlock = entity?.location?.block ?: return
         if (!currentBlock.isReplaceable || currentBlock.type == Material.TRIPWIRE) return
 
@@ -118,7 +118,7 @@ class BlockySoundListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyBlockPlaceEvent.onPlaceBlockyBlock() {
-        val sound = block.gearyEntity?.get<BlockySound>()?.placeSound ?: block.blockSoundGroup.placeSound.key.toString()
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: block.blockSoundGroup.placeSound.key.toString()
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_PLACE_VOLUME, DEFAULT_PLACE_PITCH)
     }
 
@@ -132,7 +132,7 @@ class BlockySoundListener : Listener {
     fun BlockPlaceEvent.onPlace() {
         val placeGroup = block.blockSoundGroup.placeSound
         if (placeGroup != Sound.BLOCK_WOOD_PLACE && placeGroup != Sound.BLOCK_STONE_PLACE) return
-        if (block.gearyEntity?.has<BlockySound>() == true) return
+        if (block.toGearyOrNull()?.has<BlockySound>() == true) return
 
         val sound = if (placeGroup == Sound.BLOCK_WOOD_PLACE) VANILLA_WOOD_PLACE else VANILLA_STONE_PLACE
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_PLACE_VOLUME, DEFAULT_PLACE_PITCH)
@@ -141,7 +141,7 @@ class BlockySoundListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyBlockBreakEvent.onBreakBlockyBlock() {
         player.toGeary().remove<PlayerIsMining>()
-        val sound = block.gearyEntity?.get<BlockySound>()?.breakSound ?: block.blockSoundGroup.breakSound.key.toString()
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.breakSound ?: block.blockSoundGroup.breakSound.key.toString()
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_BREAK_VOLUME, DEFAULT_BREAK_PITCH)
     }
 
@@ -157,7 +157,7 @@ class BlockySoundListener : Listener {
         player.toGeary().remove<PlayerIsMining>()
         val breakGroup = block.blockSoundGroup.breakSound
         if (breakGroup != Sound.BLOCK_WOOD_BREAK && breakGroup != Sound.BLOCK_STONE_BREAK) return
-        if (block.gearyEntity?.has<BlockySound>() == true) return
+        if (block.toGearyOrNull()?.has<BlockySound>() == true) return
 
         val sound = if (breakGroup == Sound.BLOCK_WOOD_BREAK) VANILLA_WOOD_BREAK else VANILLA_STONE_BREAK
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_BREAK_VOLUME, DEFAULT_BREAK_PITCH)

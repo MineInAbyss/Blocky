@@ -1,16 +1,16 @@
 package com.mineinabyss.blocky
 
 import com.google.gson.JsonObject
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
+import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
-import com.mineinabyss.blocky.helpers.isCardinal
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
+import com.mineinabyss.blocky.systems.BlockyBlockQuery.block
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.type
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
 import okio.Path.Companion.toPath
 import org.bukkit.Instrument
@@ -18,7 +18,10 @@ import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.Bisected
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.*
+import org.bukkit.block.data.type.CaveVines
+import org.bukkit.block.data.type.NoteBlock
+import org.bukkit.block.data.type.Stairs
+import org.bukkit.block.data.type.Tripwire
 import java.io.File
 import java.nio.charset.Charset
 
@@ -37,8 +40,8 @@ class ResourcepackGeneration {
         noteBlockFile.writeJson(getNoteBlockBlockStates())
         tripwireFile.writeJson(getTripwireBlockStates())
         caveVineFile.writeJson(getCaveVineBlockStates())
-        slabFiles.forEach { it.writeJson(getSlabBlockStates()) }
-        stairFiles.forEach { it.writeJson(getStairBlockStates()) }
+        //slabFiles.forEach { it.writeJson(getSlabBlockStates()) }
+        //stairFiles.forEach { it.writeJson(getStairBlockStates()) }
 
         if (!blocky.config.noteBlocks.isEnabled) noteBlockFile.delete()
         if (!blocky.config.tripWires.isEnabled) tripwireFile.delete()
@@ -50,15 +53,17 @@ class ResourcepackGeneration {
     private fun getNoteBlockBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.NOTEBLOCK }
+            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.NOTEBLOCK }
             blockModel.add(
                 Material.NOTE_BLOCK.createBlockData().getNoteBlockData(),
                 "minecraft:block/note_block".getModelJson()
             )
 
-            blockMap.filter { it.key is NoteBlock }.forEach { block ->
-                val query = blockyQuery.firstOrNull { it.type.blockId == block.value } ?: return@forEach
-                query.prefabKey.getJsonProperties()?.let { blockModel.add(block.key.getNoteBlockData(), it) }
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.NOTEBLOCK }.values.forEach { blocks ->
+                blocks.forEachIndexed { index, block ->
+                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
+                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getNoteBlockData(), it) }
+                }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
@@ -69,7 +74,7 @@ class ResourcepackGeneration {
         return String.format(
             "instrument=%s,note=%s,powered=%s",
             getInstrument(this.instrument),
-            (blockMap[this]?.minus(1))?.mod(25) ?: 0,
+            (gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]?.indexOf(this)?.minus(1))?.mod(25) ?: 0,
             this.isPowered
         )
     }
@@ -77,14 +82,16 @@ class ResourcepackGeneration {
     private fun getTripwireBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.WIRE }.map { it.type }
+            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.WIRE }.map { it }
             blockModel.add(
                 Material.TRIPWIRE.createBlockData().getTripwireData(),
                 "minecraft:block/barrier".getModelJson()
             )
-            blockMap.filter { it.key is Tripwire }.forEach { block ->
-                val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
-                blockModel.add(block.key.getTripwireData(), modelID.getModelJson())
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.WIRE }.values.forEach { blocks ->
+                blocks.forEachIndexed { index, block ->
+                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
+                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getTripwireData(), it) }
+                }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
@@ -107,28 +114,30 @@ class ResourcepackGeneration {
     private fun getCaveVineBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.CAVEVINE }.map { it.type }
+            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.CAVEVINE }
             blockModel.add(
                 Material.CAVE_VINES.createBlockData().getCaveVineBlockStates(),
                 "minecraft:block/cave_vines".getModelJson()
             )
-            blockMap.filter { it.key is CaveVines }.forEach { block ->
-                val modelID = blockyQuery.firstOrNull { it.blockId == block.value }?.blockModel ?: return@forEach
-                blockModel.add(block.key.getCaveVineBlockStates(), modelID.getModelJson())
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.CAVEVINE }.values.forEach { blocks ->
+                blocks.forEachIndexed { index, block ->
+                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
+                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getCaveVineBlockStates(), it) }
+                }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
     }
 
     //TODO Make this not handle all materials
-    private fun getSlabBlockStates(): JsonObject {
+    /*private fun getSlabBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.SLAB }.map { it.type }
-            blockMap.filter { it.key is Slab }.forEach block@{ block ->
-                Slab.Type.values().map { it.name.lowercase() }.forEach {
-                    val modelID = blockyQuery.firstOrNull { b -> b.blockId == block.value }?.blockModel ?: return@block
-                    blockModel.add("type=$it", modelID.getModelJson())
+            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.SLAB }
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.SLAB }.values.forEach { blocks ->
+                blocks.forEachIndexed { index, block ->
+                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
+                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getNoteBlockData(), it) }
                 }
             }
             if (blockModel.keySet().isNotEmpty()) this.add("variants", blockModel)
@@ -138,12 +147,18 @@ class ResourcepackGeneration {
     private fun getStairBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.type.blockType == BlockType.STAIR }.map { it.type }
-            blockMap.filter { it.key is Stairs }.forEach block@{ block ->
+            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.STAIR }
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.STAIR }.values.forEach { blocks ->
+                blocks.forEachIndexed { index, block ->
+                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
+                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getNoteBlockData(), it) }
+                }
+            }
+            gearyBlocks.blockMap.filter { it.key is Stairs }.forEach block@{ block ->
                 for (facing in BlockFace.values().filter { it.isCardinal })
                     for (half in Bisected.Half.values())
                         for (shape in Stairs.Shape.values())
-                            blockyQuery.firstOrNull { b -> b.blockId == block.value }?.blockModel?.let { m ->
+                            blockyQuery.firstOrNull { it.block.blockId == block.value }?.entity?.get<BlockyInfo>()?.blockModel?.let { m ->
                                 blockModel.add(
                                     "facing=${facing.name.lowercase()},half=${half.name.lowercase()},shape=${shape.name.lowercase()}",
                                     m.getStairModelJson(facing, half, shape)
@@ -152,7 +167,7 @@ class ResourcepackGeneration {
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
-    }
+    }*/
 
     private fun BlockData.getCaveVineBlockStates(): String {
         this as CaveVines
@@ -161,7 +176,8 @@ class ResourcepackGeneration {
 
     private fun PrefabKey.getJsonProperties(): JsonObject? {
         val entity = this.toEntityOrNull() ?: return null
-        val blockyBlock = entity.get<BlockyBlock>() ?: return null
+        val blockyBlock = entity.get<SetBlock>() ?: return null
+        val blockyInfo = entity.get<BlockyInfo>()
         val directional = entity.get<BlockyDirectional>()
 
         return when {
@@ -169,7 +185,7 @@ class ResourcepackGeneration {
                 this.directionalJsonProperties(directional.parentBlock.toEntity())
 
             directional?.isParentBlock != false ->
-                JsonObject().apply { addProperty("model", blockyBlock.blockModel) }
+                JsonObject().apply { addProperty("model", blockyInfo?.blockModel) }
 
             else -> null
         }
@@ -177,8 +193,8 @@ class ResourcepackGeneration {
 
     private fun PrefabKey.directionalJsonProperties(parent: GearyEntity): JsonObject? {
         return JsonObject().apply {
-            val childModel = this@directionalJsonProperties.toEntityOrNull()?.get<BlockyBlock>()?.blockModel
-            val parentModel = parent.get<BlockyBlock>()?.blockModel
+            val childModel = this@directionalJsonProperties.toEntityOrNull()?.get<BlockyInfo>()?.blockModel
+            val parentModel = parent.get<BlockyInfo>()?.blockModel
             this.addProperty("model", childModel ?: parentModel ?: return null)
 
             // If using the parent model, we need to add the rotation depending on the childDirection

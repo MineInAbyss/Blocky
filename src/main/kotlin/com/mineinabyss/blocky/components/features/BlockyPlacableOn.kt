@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.components.features
 
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.helpers.prefabKey
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
 import com.mineinabyss.geary.prefabs.PrefabKey
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

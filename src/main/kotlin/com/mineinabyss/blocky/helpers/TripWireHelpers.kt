@@ -1,14 +1,14 @@
 package com.mineinabyss.blocky.helpers
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
-import com.mineinabyss.blocky.blockMap
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
 import org.bukkit.Location
@@ -16,12 +16,9 @@ import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.Tripwire
 import org.bukkit.entity.Player
 
-fun BlockyBlock.getBlockyTripWire(): BlockData {
-    return blockMap.filter { it.key is Tripwire && it.key.material == Material.TRIPWIRE && it.value == blockId }.keys.first() as Tripwire
-}
+fun SetBlock.getBlockyTripWire() = gearyBlocks.block2Prefab.blockMap[blockType]!![blockId]
 
 fun Block.fixClientsideUpdate() {
     if (!location.isWorldLoaded || !location.isChunkLoaded) return
@@ -41,8 +38,8 @@ fun Block.fixClientsideUpdate() {
 }
 
 fun breakWireBlock(block: Block, player: Player?): Boolean {
-    val gearyBlock = block.gearyEntity ?: return false
-    if (!gearyBlock.has<BlockyBlock>()) return false
+    val gearyBlock = block.toGearyOrNull() ?: return false
+    if (!gearyBlock.has<SetBlock>()) return false
 
     player?.let {
         if (!BlockyBlockBreakEvent(block, player).callEvent()) return false

@@ -1,53 +1,53 @@
 package com.mineinabyss.blocky.api
 
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.inventory.ItemStack
 
 object BlockyBlocks {
-    val Block.gearyEntity get() = prefabKey?.toEntityOrNull()
 
     //TODO This might not work due to the way PlayerInstancedItems work? test it
-    val ItemStack.isBlockyBlock get() = this.decode<BlockyBlock>() != null
-    val PrefabKey.isBlockyBlock get() = this.toEntityOrNull()?.has<BlockyBlock>() == true
-    val Location.isBlockyBlock get() = this.block.gearyEntity?.has<BlockyBlock>() == true
-    val Block.isBlockyBlock get() = this.gearyEntity?.has<BlockyBlock>() == true
+    val ItemStack.isBlockyBlock get() = this.decode<SetBlock>() != null
+    val PrefabKey.isBlockyBlock get() = this.toEntityOrNull()?.has<SetBlock>() == true
+    val Location.isBlockyBlock get() = block.toGearyOrNull()?.has<SetBlock>() == true
+    val Block.isBlockyBlock get() = this.toGearyOrNull()?.has<SetBlock>() == true
 
-    val ItemStack.isBlockyNoteBlock get() = this.decode<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
+    val ItemStack.isBlockyNoteBlock get() = this.decode<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK
     val PrefabKey.isBlockyNoteBlock
-        get() = this.toEntityOrNull()?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
-    val Location.isBlockyNoteBlock get() = this.block.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
-    val Block.isBlockyNoteBlock get() = this.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.NOTEBLOCK
+        get() = this.toEntityOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK
+    val Location.isBlockyNoteBlock get() = this.block.toGearyOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK
+    val Block.isBlockyNoteBlock get() = this.toGearyOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK
 
-    val ItemStack.isBlockyWire get() = this.decode<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
+    val ItemStack.isBlockyWire get() = this.decode<SetBlock>()?.blockType == SetBlock.BlockType.WIRE
     val PrefabKey.isBlockyWire
-        get() = this.toEntityOrNull()?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
-    val Location.isBlockyWire get() = this.block.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
-    val Block.isBlockyWire get() = this.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.WIRE
+        get() = this.toEntityOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.WIRE
+    val Location.isBlockyWire get() = this.block.toGearyOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.WIRE
+    val Block.isBlockyWire get() = this.toGearyOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.WIRE
 
-    val ItemStack.isBlockyCaveVine get() = this.decode<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
+    val ItemStack.isBlockyCaveVine get() = this.decode<SetBlock>()?.blockType == SetBlock.BlockType.CAVEVINE
     val PrefabKey.isBlockyCaveVine
-        get() = this.toEntityOrNull()?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
-    val Location.isBlockyCaveVine get() = this.block.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
-    val Block.isBlockyCaveVine get() = this.gearyEntity?.get<BlockyBlock>()?.blockType == BlockyBlock.BlockType.CAVEVINE
+        get() = this.toEntityOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.CAVEVINE
+    val Location.isBlockyCaveVine get() = this.block.toGearyOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.CAVEVINE
+    val Block.isBlockyCaveVine get() = this.toGearyOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.CAVEVINE
 
-    val ItemStack.blockyBlock get() = this.decode<BlockyBlock>()
-    val PrefabKey.blockyBlock get() = this.toEntityOrNull()?.get<BlockyBlock>()
-    val Location.blockyBlock get() = this.block.gearyEntity?.get<BlockyBlock>()
-    val Block.blockyBlock get() = this.gearyEntity?.get<BlockyBlock>()
+    val ItemStack.blockyBlock get() = this.decode<SetBlock>()
+    val PrefabKey.blockyBlock get() = this.toEntityOrNull()?.get<SetBlock>()
+    val Location.blockyBlock get() = this.block.toGearyOrNull()?.get<SetBlock>()
+    val Block.blockyBlock get() = this.toGearyOrNull()?.get<SetBlock>()
 
     fun placeBlockyBlock(location: Location, prefabKey: PrefabKey): Boolean {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return false
-        val blockyBlock = gearyEntity.get<BlockyBlock>() ?: return false
+        val blockyBlock = gearyEntity.get<SetBlock>() ?: return false
 
         location.block.blockData = when (blockyBlock.blockType) {
-            BlockyBlock.BlockType.NOTEBLOCK -> gearyEntity.getBlockyNoteBlock()
-            BlockyBlock.BlockType.WIRE -> blockyBlock.getBlockyTripWire()
-            BlockyBlock.BlockType.CAVEVINE -> blockyBlock.getBlockyCaveVine()
+            SetBlock.BlockType.NOTEBLOCK -> gearyEntity.getBlockyNoteBlock()
+            SetBlock.BlockType.WIRE -> blockyBlock.getBlockyTripWire()
+            SetBlock.BlockType.CAVEVINE -> blockyBlock.getBlockyCaveVine()
             else -> return false
         }
 

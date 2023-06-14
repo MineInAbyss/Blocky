@@ -1,11 +1,12 @@
 package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
+import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
 import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
 import com.mineinabyss.blocky.helpers.gearyInventory
-import com.mineinabyss.blocky.helpers.prefabKey
-import com.mineinabyss.geary.papermc.tracking.items.itemTracking
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
 import org.bukkit.FluidCollisionMode
@@ -23,21 +24,21 @@ class BlockyMiddleClickListener : Listener {
         if (click != ClickType.CREATIVE) return
         val player = inventory.holder as? Player ?: return
         when {
-            (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.ITEM_FRAME).apply { addAll(
-                BLOCKY_SLABS).apply { addAll(BLOCKY_STAIRS) } }) -> {
-                //TODO For some reason BARRIER returns null here over entity, when everywhere else it doesnt? no clue
-                val lookingAtPrefab =
-                    player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
+            (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER)
+                .apply { addAll(BLOCKY_SLABS).apply { addAll(BLOCKY_STAIRS) } }) -> {
+                val lookingAtPrefab = player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
                     player.getTargetEntity(5)?.prefabKey ?: return
+                val prefabKey = lookingAtPrefab.toEntityOrNull()?.get<BlockyDirectional>()?.parentBlock ?: lookingAtPrefab
+
                 val existingSlot = (0..8).firstOrNull {
-                    player.gearyInventory?.get(it)?.prefabs?.firstOrNull()?.get<PrefabKey>() == lookingAtPrefab
+                    player.gearyInventory?.get(it)?.prefabs?.firstOrNull()?.get<PrefabKey>() == prefabKey
                 }
                 if (existingSlot != null) {
                     player.inventory.heldItemSlot = existingSlot
                     isCancelled = true
                     return
                 }
-                cursor = itemTracking.createItem(lookingAtPrefab) ?: return
+                cursor = gearyItems.createItem(prefabKey) ?: return
             }
         }
     }

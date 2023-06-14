@@ -2,13 +2,11 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.BlockyDrops
@@ -17,10 +15,11 @@ import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
-import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
@@ -65,9 +64,6 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
-val Block.prefabKey get() = prefabMap[blockData]
-val BlockData.prefabKey get() = prefabMap[this]
-
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
@@ -88,7 +84,7 @@ fun placeBlockyBlock(
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
 
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
-    if (!against.isBlockyBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true) return null
+    if (!against.isBlockyBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() != true) return null
     if (player.isInBlock(targetBlock)) return null
     if (against.isVanillaNoteBlock) return null
 
@@ -103,7 +99,7 @@ fun placeBlockyBlock(
     blockPlaceEvent.callEvent()
 
     when {
-        targetBlock.gearyEntity?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
+        targetBlock.toGearyOrNull()?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
 
         !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() ->
             blockPlaceEvent.isCancelled = true
@@ -129,7 +125,7 @@ fun placeBlockyBlock(
         else item.subtract()
     }
 
-    targetBlock.gearyEntity?.let { entity ->
+    targetBlock.toGearyOrNull()?.let { entity ->
         if (entity.has<BlockyLight>())
             handleLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
     }
@@ -147,7 +143,7 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
             player.inventory.itemInMainHand.damage(1, player)
     }
 
-    val prefab = block.gearyEntity ?: return false
+    val prefab = block.toGearyOrNull() ?: return false
     if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
     handleBlockyDrops(block, player)
 
@@ -158,9 +154,9 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
 }
 
 fun handleBlockyDrops(block: Block, player: Player?) {
-    val gearyBlock = block.gearyEntity ?: return
+    val gearyBlock = block.toGearyOrNull() ?: return
     val drop = gearyBlock.get<BlockyDrops>() ?: return
-    if (!gearyBlock.has<BlockyBlock>()) return
+    if (!gearyBlock.has<SetBlock>()) return
 
     if (drop.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
     GenericHelpers.handleBlockDrop(drop, player, block.location)
@@ -190,7 +186,7 @@ object GenericHelpers {
                     BlockFace.NORTH, BlockFace.SOUTH -> directional.xBlock?.toEntityOrNull() ?: gearyEntity
                     BlockFace.WEST, BlockFace.EAST -> directional.zBlock?.toEntityOrNull() ?: gearyEntity
                     else -> gearyEntity
-                }.get<BlockyBlock>()?.blockId ?: 0
+                }.get<SetBlock>()?.blockId ?: 0
             } else {
                 return when ((player?.getDirectionalRelative(directional) ?: face)) {
                     BlockFace.NORTH -> directional.northBlock?.toEntityOrNull() ?: gearyEntity
@@ -200,9 +196,9 @@ object GenericHelpers {
                     BlockFace.UP -> directional.upBlock?.toEntityOrNull() ?: gearyEntity
                     BlockFace.DOWN -> directional.downBlock?.toEntityOrNull() ?: gearyEntity
                     else -> gearyEntity
-                }.get<BlockyBlock>()?.blockId ?: 0
+                }.get<SetBlock>()?.blockId ?: 0
             }
-        } ?: gearyEntity.get<BlockyBlock>()?.blockId ?: 0
+        } ?: gearyEntity.get<SetBlock>()?.blockId ?: 0
     }
 
     private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
@@ -291,7 +287,7 @@ object GenericHelpers {
     }
 
     fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
-        val acceptedToolTypes = block.gearyEntity?.get<BlockyDrops>()?.acceptedToolTypes ?: block.gearyEntity?.get<BlockyBreaking>()?.modifiers?.heldTypes?.map { it.toolType } ?: return false
+        val acceptedToolTypes = block.toGearyOrNull()?.let { geary -> geary.get<BlockyDrops>()?.acceptedToolTypes ?: geary.get<BlockyBreaking>()?.modifiers?.heldTypes?.map { it.toolType } } ?: return false
         val heldToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes
             ?: getVanillaToolTypes(player.inventory.getItem(hand))?.let { setOf(it) } ?: setOf()
 

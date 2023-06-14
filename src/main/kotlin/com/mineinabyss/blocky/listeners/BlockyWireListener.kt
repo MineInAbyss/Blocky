@@ -1,18 +1,18 @@
 package com.mineinabyss.blocky.listeners
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
-import com.mineinabyss.geary.papermc.tracking.items.itemTracking
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import io.papermc.paper.event.entity.EntityInsideBlockEvent
 import kotlinx.coroutines.delay
@@ -32,7 +32,7 @@ class BlockyWireListener : Listener {
     fun BlockPistonExtendEvent.cancelBlockyPiston() {
         blocks.filter { it.type == Material.TRIPWIRE }.forEach { wire ->
             val gearyEntity = wire.prefabKey ?: return@forEach
-            itemTracking.createItem(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
+            gearyItems.createItem(gearyEntity)?.let { wire.world.dropItemNaturally(wire.location, it) }
             wire.type = Material.AIR
         }
     }
@@ -67,7 +67,7 @@ class BlockyWireListener : Listener {
             block.state.update(true, false)
             blockAgainst.state.update(true, false)
 
-            if (player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true)
+            if (player.gearyInventory?.get(hand)?.has<SetBlock>() != true)
                 block.setBlockData(Material.TRIPWIRE.createBlockData(), false)
             block.fixClientsideUpdate()
         }
@@ -79,7 +79,7 @@ class BlockyWireListener : Listener {
             if (hand != EquipmentSlot.HAND) return
 
             val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<BlockyBlock>() ?: return
+            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
             var type = item.type
             if (type == Material.LAVA_BUCKET) type = Material.LAVA
             if (type == Material.WATER_BUCKET) type = Material.WATER
@@ -117,17 +117,17 @@ class BlockyWireListener : Listener {
         } else if (!player.isSneaking && block.isInteractable()) return
 
         // Fixes tripwire updating when placing blocks next to it
-        if (item.type.isBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() != true) {
+        if (item.type.isBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (block.getRelative(it).gearyEntity == null) return@forEach
+                if (block.getRelative(it).toGearyOrNull() == null) return@forEach
                 placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
                 block.fixClientsideUpdate()
             }
         }
 
         val blockyWire = player.gearyInventory?.get(hand) ?: return
-        val wireBlock = blockyWire.get<BlockyBlock>() ?: return
-        if (wireBlock.blockType != BlockType.WIRE) return
+        val wireBlock = blockyWire.get<SetBlock>() ?: return
+        if (wireBlock.blockType != SetBlock.BlockType.WIRE) return
 
         val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
@@ -139,8 +139,8 @@ class BlockyWireListener : Listener {
         val blockAbove = block.getRelative(BlockFace.UP)
 
         if (!blockAbove.isReplaceable) return
-        if (blockyBlock?.blockType != BlockType.WIRE) return
-        if (block.gearyEntity?.has<BlockyTallWire>() != true) return
+        if (blockyBlock?.blockType != SetBlock.BlockType.WIRE) return
+        if (block.toGearyOrNull()?.has<BlockyTallWire>() != true) return
 
         blockAbove.type = Material.TRIPWIRE
         blockAbove.persistentDataContainer.encode(BlockyTallWire(block.location))
@@ -150,11 +150,11 @@ class BlockyWireListener : Listener {
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakTallWire() {
         if (block.type != Material.TRIPWIRE) return
-        if (block.gearyEntity?.has<BlockyTallWire>() == true) return
+        if (block.toGearyOrNull()?.has<BlockyTallWire>() == true) return
 
         val mainWire = block.persistentDataContainer.decode<BlockyTallWire>()?.baseWire ?: return
         if (mainWire.type != Material.TRIPWIRE) return
-        if (mainWire.gearyEntity?.has<BlockyTallWire>() != true) return
+        if (mainWire.toGearyOrNull()?.has<BlockyTallWire>() != true) return
         breakWireBlock(mainWire, player)
         isDropItems = false
     }

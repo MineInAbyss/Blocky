@@ -3,11 +3,8 @@ package com.mineinabyss.blocky.listeners
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.blocks.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
@@ -15,6 +12,8 @@ import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.datastore.has
 import com.mineinabyss.geary.papermc.datastore.remove
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
@@ -58,7 +57,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyNoteBlock() {
         if (!block.isBlockyNoteBlock) return
-        if (block.gearyEntity?.has<BlockyBurnable>() != true) isCancelled = true
+        if (block.toGearyOrNull()?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
     // If not restoreFunctionality handle interaction if vanilla block otherwise return cuz vanilla handles it
@@ -121,11 +120,10 @@ class BlockyNoteBlockListener : Listener {
         val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
-
         val gearyItem = player.gearyInventory?.get(hand) ?: return
-        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
+        val blockyBlock = gearyItem.get<SetBlock>() ?: return
 
-        if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
+        if (blockyBlock.blockType != SetBlock.BlockType.NOTEBLOCK) return
         if (!player.isSneaking && block.isInteractable()) return
 
         placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))

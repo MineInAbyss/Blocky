@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.listeners
 //import com.mineinabyss.blocky.breaker
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
@@ -13,12 +12,13 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockyBlock
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
 import kotlinx.coroutines.delay
@@ -79,7 +79,7 @@ class BlockyGenericListener : Listener {
         //if (breaker?.database?.shouldHandle(block) == true) return
         if (!block.isBlockyBlock) return
 
-        val breaking = block.gearyEntity?.get<BlockyBreaking>() ?: BlockyBreaking()
+        val breaking = block.toGearyOrNull()?.get<BlockyBreaking>() ?: BlockyBreaking()
         val mining = player.toGeary().getOrSet { PlayerIsMining() }
         val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
 
@@ -231,7 +231,7 @@ class BlockyGenericListener : Listener {
 
         when {
             itemInHand.type !in materialSet -> return
-            blockPlaced.isBlockyBlock && player.gearyInventory?.get(hand)?.has<BlockyBlock>() == true -> return
+            blockPlaced.isBlockyBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() == true -> return
             // TODO Are these even needed?
             !blocky.config.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blocky.config.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
@@ -256,6 +256,6 @@ class BlockyGenericListener : Listener {
         val (block, hand, item) = (clickedBlock ?: return) to (hand ?: return) to (item ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return
         val event = BlockyBlockInteractEvent(block, player, hand, item, blockFace)
-        if (event.callEvent()) isCancelled = true
+        if (!event.callEvent()) isCancelled = true
     }
 }
