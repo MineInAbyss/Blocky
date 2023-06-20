@@ -176,7 +176,7 @@ class ResourcepackGeneration {
 
     private fun PrefabKey.getJsonProperties(): JsonObject? {
         val entity = this.toEntityOrNull() ?: return null
-        val blockyBlock = entity.get<SetBlock>() ?: return null
+        entity.has<SetBlock>() || return null
         val blockyInfo = entity.get<BlockyInfo>()
         val directional = entity.get<BlockyDirectional>()
 
