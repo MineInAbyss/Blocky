@@ -1,19 +1,13 @@
 [versions]
-geary = "0.21.2"
-gearyaddons = "0.9.0.50"
-looty = "0.9.1"
-guiy="0.8.0"
-deeperworld="0.7.0"
+gearyPaper = "0.24.1"
+guiy="0.9.0"
 
 [libraries]
-geary-papermc-core = { module = "com.mineinabyss:geary-papermc-core", version.ref = "geary" }
-geary-commons-papermc = { module = "com.mineinabyss:geary-commons-papermc", version.ref = "gearyaddons" }
-looty = { module = "com.mineinabyss:looty", version.ref = "looty" }
-deeperworld = { module = "com.mineinabyss:deeperworld", version.ref = "deeperworld" }
+geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "gearyPaper" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 
 minecraft-plugin-customblockdata = "com.jeff_media:CustomBlockData:2.2.0"
-minecraft-plugin-morepersistentdatatypes = "com.jeff_media:MorePersistentDataTypes:2.3.1"
 minecraft-plugin-lightapi = "com.github.BeYkeRYkt:LightAPI:5.3.0-Bukkit"
-minecraft-plugin-modelengine = "com.ticxo.modelengine:api:R3.1.3"
-minecraft-plugin-protectionlib = "com.github.oraxen:protectionlib:1.2.1"
+minecraft-plugin-protectionlib = "com.github.oraxen:protectionlib:1.2.7"
+minecraft-plugin-mythic = "io.lumine:Mythic-Dist:5.2.6"
+minecraft-plugin-breaker = "eu.asangarin:breaker:3.1.1"

@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
-import com.jeff_media.morepersistentdatatypes.DataType
+import com.mineinabyss.blocky.components.core.WaxedCopperBlock
+import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.idofront.util.toMCKey
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -12,8 +13,7 @@ var Block.isFakeWaxedCopper
     set(value) = when {
         !value -> persistentDataContainer.remove(WAXED_COPPER_KEY)
         type in COPPER_SLABS || type in COPPER_STAIRS ->
-            persistentDataContainer.set(WAXED_COPPER_KEY, DataType.BOOLEAN, true)
-
+            persistentDataContainer.encode(WaxedCopperBlock)
         else -> {}
     }
 val Block.isBlockyCopper: Boolean get() = type in blockyCopperMaterial

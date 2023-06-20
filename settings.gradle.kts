@@ -3,23 +3,16 @@ rootProject.name = "blocky"
 pluginManagement {
     repositories {
         gradlePluginPortal()
+
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.mineinabyss.com/snapshots")
         maven("https://repo.papermc.io/repository/maven-public/") //Paper
-    }
-    plugins {
-        val kotlinVersion: String by settings
-        val composeVersion: String by settings
-        kotlin("jvm") version kotlinVersion
-        kotlin("plugin.serialization") version kotlinVersion
-        id("org.jetbrains.compose") version composeVersion
+        mavenLocal()
     }
 
-    val idofrontVersion: String by settings
-    resolutionStrategy {
-        eachPlugin {
-            if (requested.id.id.startsWith("com.mineinabyss.conventions"))
-                useVersion(idofrontVersion)
-        }
+    val composeVersion: String by settings
+    plugins {
+        id("org.jetbrains.compose") version composeVersion
     }
 }
 
@@ -28,6 +21,8 @@ dependencyResolutionManagement {
 
     repositories {
         maven("https://repo.mineinabyss.com/releases")
+        maven("https://repo.mineinabyss.com/snapshots")
+        mavenLocal()
     }
 
     versionCatalogs {

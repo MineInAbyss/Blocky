@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.components.core
+package com.mineinabyss.blocky.components.features
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

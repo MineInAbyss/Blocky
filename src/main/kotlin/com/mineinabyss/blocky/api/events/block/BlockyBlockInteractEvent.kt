@@ -1,19 +1,20 @@
-package com.mineinabyss.blocky.api.events.furniture
+package com.mineinabyss.blocky.api.events.block
 
-import org.bukkit.entity.Entity
+import org.bukkit.block.Block
+import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
 import org.bukkit.event.HandlerList
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
-class BlockyFurniturePlaceEvent(
-    entity: Entity,
+class BlockyBlockInteractEvent(
+    block: Block,
     val player: Player,
     val hand: EquipmentSlot,
-    val itemInHand: ItemStack
-) : BlockyFurnitureEvent(entity), Cancellable {
-
+    val itemInHand: ItemStack,
+    val blockFace: BlockFace
+) : BlockyBlockEvent(block), Cancellable {
     private var cancelled = false
 
     override fun isCancelled() = cancelled

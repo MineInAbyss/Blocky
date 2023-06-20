@@ -1,27 +1,26 @@
 package com.mineinabyss.blocky.listeners
 
-import com.comphenix.protocol.PacketType
-import com.comphenix.protocol.ProtocolLibrary
+//import com.mineinabyss.blocky.breaker
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurnitureEntity
+import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
+import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
-import com.mineinabyss.blocky.blockyConfig
-import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.features.mining.BlockyMining
+import com.mineinabyss.blocky.blocky
+import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.geary.papermc.access.toGeary
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.time.inWholeTicks
-import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
@@ -44,15 +43,16 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
+import kotlin.time.Duration
 
 class BlockyGenericListener : Listener {
-    val protocolManager = ProtocolLibrary.getProtocolManager()
 
     private fun Player.resetCustomBreak(block: Block) {
+        //if (breaker?.database?.shouldHandle(block) == true) return
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
             block.isBlockyFurniture ->
-                BlockyFurnitureDamageAbortEvent(block.blockyFurnitureEntity ?: return, this)
+                BlockyFurnitureDamageAbortEvent(block.baseFurniture ?: return, this)
 
             else -> return
         }.run { call(); this }
@@ -61,11 +61,12 @@ class BlockyGenericListener : Listener {
         removePotionEffect(SLOW_DIGGING)
         block.location.getNearbyPlayers(16.0).forEach {
             it.sendBlockChange(block.location, block.blockData)
+            it.sendBlockDamage(block.location, 0f, block.location.hashCode())
         }
     }
 
     private fun Player.stopMiningJob() {
-        toGeary {
+        toGeary().apply {
             get<PlayerIsMining>()?.miningTask?.cancel() ?: return
             get<PlayerIsMining>()?.miningTask = null
             remove<PlayerIsMining>()
@@ -74,44 +75,48 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
-        val info = block.gearyEntity?.get<BlockyInfo>() ?: return
-        val mining = player.toGeary().getOrSet { PlayerIsMining() }
-        val itemInHand = player.inventory.itemInMainHand.toGearyOrNull(player)?.get<BlockyMining>()
-        val breakTime = info.blockBreakTime /
-                (if (itemInHand?.toolTypes?.any { it in info.acceptedToolTypes } == true) itemInHand.breakSpeedModifier else 1.0)
+        // If breaker is set to handle block, return
+        //if (breaker?.database?.shouldHandle(block) == true) return
+        if (!block.isBlockyBlock) return
 
-        if (player.gameMode == GameMode.CREATIVE || info.isUnbreakable) return
+        val breaking = block.toGearyOrNull()?.get<BlockyBreaking>() ?: BlockyBreaking()
+        val mining = player.toGeary().getOrSet { PlayerIsMining() }
+        val breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)
+
+        if (breakTime <= Duration.ZERO) return
+        if (player.gameMode == GameMode.CREATIVE) return
         if (mining.miningTask?.isActive == true) return
         isCancelled = true
-
         val damageEvent = when {
             block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
-            block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.blockyFurnitureEntity ?: return, player)
-
+            block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.baseFurniture ?: return, player)
             else -> return
         }.run { call(); this }
         if (damageEvent.isCancelled) return
 
-        blockyPlugin.launch {
+        blocky.plugin.launch {
             mining.miningTask = this.coroutineContext.job
             var stage = 0
-            val effectTime = (breakTime.inWholeTicks * 1.1).toInt()
-            player.addPotionEffect(PotionEffect(SLOW_DIGGING, effectTime, Int.MAX_VALUE, false, false, false))
+            player.addPotionEffect(PotionEffect(SLOW_DIGGING, -1, Int.MAX_VALUE, false, false, false))
 
-            do { //TODO Fix visual glitch for blockbreaker
+            do {
                 block.location.getNearbyPlayers(16.0).forEach { p ->
-                    p.sendBlockDamage(block.location, stage.toFloat() / 10, player.entityId)
+                    p.sendBlockDamage(block.location, stage.toFloat() / 10, block.location.hashCode())
                 }
-                //TODO Let client acknowledge block change?
-                val packet = protocolManager.createPacket(PacketType.Play.Server.BLOCK_CHANGED_ACK)
-                protocolManager.sendServerPacket(player, packet)
                 delay(breakTime / 10)
+                // Recalculate breaktime in case potion effects changed etc
+                //breakTime = breaking.calculateBreakTime(block, player, EquipmentSlot.HAND, player.inventory.itemInMainHand)  * (stage/10)
             } while (player.toGeary().has<PlayerIsMining>() && stage++ < 10)
         }
 
         mining.miningTask?.invokeOnCompletion {
-            if (player.toGeary().has(mining::class))
-                block.attemptBreakBlockyBlock(player)
+            if (player.toGeary().has(mining::class)) {
+                player.removePotionEffect(SLOW_DIGGING)
+                attemptBreakBlockyBlock(block, player)
+                block.location.getNearbyPlayers(16.0).forEach { p ->
+                    p.sendBlockDamage(block.location, 0f, block.location.hashCode())
+                }
+            }
         }
     }
 
@@ -135,13 +140,9 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakBlockyBlock() {
-        if (player.gameMode == GameMode.CREATIVE && block.isBlockyBlock) {
-            block.attemptBreakBlockyBlock(player)
-        }
-
-        if (block.getRelative(BlockFace.UP).isBlockyBlock) {
-            block.updateNoteBlockAbove()
-        }
+        if (!block.isBlockyBlock) return
+        attemptBreakBlockyBlock(block, player) || return
+        isDropItems = false
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -151,12 +152,12 @@ class BlockyGenericListener : Listener {
         val type = item?.clone()?.type ?: return
 
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         if (type.hasGravity() && relative.getRelative(BlockFace.DOWN).type.isAir) {
             val data = type.createBlockData()
             if (Tag.ANVIL.isTagged(type))
-                (data as Directional).facing = getAnvilFacing(blockFace)
+                (data as Directional).facing = GenericHelpers.getAnvilFacing(blockFace)
             block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
             isCancelled = true
         }
@@ -170,7 +171,7 @@ class BlockyGenericListener : Listener {
         val type = item.clone().type
 
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         if (Tag.SLABS.isTagged(type) && relative.type == type) {
             val sound = relative.blockSoundGroup
@@ -191,7 +192,7 @@ class BlockyGenericListener : Listener {
         var type = item.clone().type
 
         if (action != Action.RIGHT_CLICK_BLOCK || block.type != Material.NOTE_BLOCK || hand != EquipmentSlot.HAND) return
-        if (block.type.isInteractable && block.type != Material.NOTE_BLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
         if (item.type == Material.BUCKET && relative.isLiquid) {
             val sound =
@@ -230,14 +231,13 @@ class BlockyGenericListener : Listener {
 
         when {
             itemInHand.type !in materialSet -> return
-            itemInHand.isBlockyBlock(player) && blockPlaced.isBlockyBlock -> return
+            blockPlaced.isBlockyBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() == true -> return
             // TODO Are these even needed?
-            !blockyConfig.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
-            !blockyConfig.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
-            !blockyConfig.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
-            !blockyConfig.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
-            !blockyConfig.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
-            //!leafConfig.isEnabled && !leafList.contains(itemInHand.type) -> return
+            !blocky.config.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
+            !blocky.config.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
+            !blocky.config.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
+            !blocky.config.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
+            !blocky.config.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
         }
 
         val material = when (itemInHand.type) {
@@ -249,5 +249,13 @@ class BlockyGenericListener : Listener {
 
         block.blockData = material.createBlockData()
         player.swingMainHand()
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    fun PlayerInteractEvent.onInteractBlockyBlock() {
+        val (block, hand, item) = (clickedBlock ?: return) to (hand ?: return) to (item ?: return)
+        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return
+        val event = BlockyBlockInteractEvent(block, player, hand, item, blockFace)
+        if (!event.callEvent()) isCancelled = true
     }
 }

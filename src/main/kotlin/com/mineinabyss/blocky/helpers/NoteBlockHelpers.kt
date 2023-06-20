@@ -1,12 +1,13 @@
 package com.mineinabyss.blocky.helpers
 
-import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.blockMap
-import com.mineinabyss.blocky.blockyPlugin
+import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.papermc.datastore.decode
+import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import org.bukkit.Instrument
 import org.bukkit.Material
-import org.bukkit.NamespacedKey
 import org.bukkit.Note
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -15,36 +16,35 @@ import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.entity.Player
 import org.bukkit.event.block.NotePlayEvent
 
-val NOTE_KEY = NamespacedKey(blockyPlugin, "note")
-val VANILLA_NOTEBLOCK_KEY = NamespacedKey(blockyPlugin, "vanilla_note_block")
-
 fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
-    return blockMap.filter { it.key is NoteBlock && it.value == this.getDirectionalId(face, player) }.keys.firstOrNull() ?: return Material.NOTE_BLOCK.createBlockData() as NoteBlock
+    val directional = GenericHelpers.getDirectionalId(this, face, player)
+    return gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]!![directional]
 }
 
 fun Block.updateNoteBlockAbove() {
-    if (getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
-        getRelative(BlockFace.UP).state.update(true, false)
+    val blockAbove = getRelative(BlockFace.UP)
+    if (blockAbove.type == Material.NOTE_BLOCK)
+        blockAbove.state.update(true, true)
     if (getRelative(BlockFace.UP, 2).type == Material.NOTE_BLOCK)
-        getRelative(BlockFace.UP, 2).state.update(true, false)
+        blockAbove.updateNoteBlockAbove()
 }
 
 // If the blockmap doesn't contain data, it means it's a vanilla note block
-val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in blockMap
-val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in blockMap
+val Block.isVanillaNoteBlock get() = blockData is NoteBlock && blockData !in gearyBlocks.block2Prefab
+val BlockData.isVanillaNoteBlock get() = this is NoteBlock && this !in gearyBlocks.block2Prefab
 
-val Block.isBlockyNoteBlock get() = blockData is NoteBlock && blockData in blockMap
-val BlockData.isBlockyNoteBlock get() = this is NoteBlock && this in blockMap
+val Block.isBlockyNoteBlock get() = blockData is NoteBlock && blockData in gearyBlocks.block2Prefab
+val BlockData.isBlockyNoteBlock get() = this is NoteBlock && this in gearyBlocks.block2Prefab
 
 // Updates the note stored in the pdc by 1
 fun Block.updateBlockyNote(): Note {
-    val note = this.persistentDataContainer.getOrDefault(NOTE_KEY, DataType.INTEGER, 0) + 1
-    this.persistentDataContainer.set(NOTE_KEY, DataType.INTEGER, note)
+    val note = (this.persistentDataContainer.decode<VanillaNoteBlock>()?.note ?: 0) + 1
+    this.persistentDataContainer.encode(VanillaNoteBlock(note))
     return Note(note % 25)
 }
 
 fun Block.getBlockyNote(): Note {
-    val note = this.persistentDataContainer.get(NOTE_KEY, DataType.INTEGER) ?: 0
+    val note = this.persistentDataContainer.decode<VanillaNoteBlock>()?.note ?: 0
     return Note(note % 25)
 }
 

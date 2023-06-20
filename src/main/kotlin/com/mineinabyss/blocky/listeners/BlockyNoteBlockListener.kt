@@ -3,22 +3,23 @@ package com.mineinabyss.blocky.listeners
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
-import com.jeff_media.morepersistentdatatypes.DataType
-import com.mineinabyss.blocky.api.BlockyBlocks.gearyEntity
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.blockyConfig
-import com.mineinabyss.blocky.blockyPlugin
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
-import com.mineinabyss.blocky.components.core.BlockyInfo
-import com.mineinabyss.blocky.components.features.BlockyBurnable
+import com.mineinabyss.blocky.blocky
+import com.mineinabyss.blocky.components.core.VanillaNoteBlock
+import com.mineinabyss.blocky.components.features.blocks.BlockyBurnable
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.datastore.has
+import com.mineinabyss.geary.papermc.datastore.remove
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.looty.tracking.toGearyOrNull
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
 import org.bukkit.Material
+import org.bukkit.Tag
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.Event
@@ -37,7 +38,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
         if (!block.isVanillaNoteBlock) isCancelled = true
-        else if (block.isVanillaNoteBlock && !blockyConfig.noteBlocks.restoreFunctionality) {
+        else if (block.isVanillaNoteBlock && !blocky.config.noteBlocks.restoreFunctionality) {
             note = block.updateBlockyNote()
             instrument = block.getBlockyInstrument()
         } else return
@@ -56,7 +57,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyNoteBlock() {
         if (!block.isBlockyNoteBlock) return
-        if (block.gearyEntity?.has<BlockyBurnable>() != true) isCancelled = true
+        if (block.toGearyOrNull()?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
     // If not restoreFunctionality handle interaction if vanilla block otherwise return cuz vanilla handles it
@@ -64,7 +65,7 @@ class BlockyNoteBlockListener : Listener {
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
         if (block.type != Material.NOTE_BLOCK) return
-        if (blockyConfig.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
+        if (blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
 
         if (rightClicked) setUseInteractedBlock(Event.Result.DENY)
         if (block.isVanillaNoteBlock) {
@@ -73,64 +74,66 @@ class BlockyNoteBlockListener : Listener {
         }
     }
 
-    // Handle playing the sound. If BlockData isn't in map, it means this should be handled by vanilla
-    // AKA restoreFunctionality enabled and normal block
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockPhysicsEvent.onBlockPhysics() {
-        if (!block.isBlockyNoteBlock) return
-
-        isCancelled = true
-        if (block.isBlockFacePowered(block.getFace(sourceBlock)!!))
-            block.playBlockyNoteBlock()
-        if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK)
+        if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK) {
+            isCancelled = true
             block.updateNoteBlockAbove()
+        }
+
+        if (block.type == Material.NOTE_BLOCK) {
+            isCancelled = true
+            block.state.update(true, false)
+        }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
+    @EventHandler(priority = EventPriority.HIGHEST)
     fun GenericGameEvent.disableRedstone() {
         val block = location.block
         val data = block.blockData.clone() as? NoteBlock ?: return
 
         if (event != GameEvent.NOTE_BLOCK_PLAY) return
         isCancelled = true
-        blockyPlugin.launch {
+        blocky.plugin.launch {
             delay(1.ticks)
             block.setBlockData(data, false)
         }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun PlayerInteractEvent.onInteractBlockyNoteBlock() {
-        val block = clickedBlock ?: return
-        val item = item ?: return
-        val type = item.clone().type
+    fun PlayerInteractEvent.onPlaceAgainstBlockyBlock() {
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
+        //TODO Figure out  why water replaces custom block
+        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return
 
-        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock || hand != EquipmentSlot.HAND) return
         setUseInteractedBlock(Event.Result.DENY)
-        if (type.isBlock) placeBlockyBlock(player, hand!!, item, block, blockFace, type.createBlockData())
+        //TODO Might need old check if it is Blocky block?
+        if (item.type.isBlock)
+            if (Tag.STAIRS.isTagged(item.type) || Tag.SLABS.isTagged(item.type))
+                placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
+            else BlockStateCorrection.placeItemAsBlock(player, hand, item, block)
+            //placeBlockyBlock(player, hand, item, block, blockFace, type.createBlockData())
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK) return
         if (hand != EquipmentSlot.HAND) return
+        val gearyItem = player.gearyInventory?.get(hand) ?: return
+        val blockyBlock = gearyItem.get<SetBlock>() ?: return
 
-        val gearyItem = item?.toGearyOrNull(player) ?: return
-        val blockyBlock = gearyItem.get<BlockyBlock>() ?: return
-        val against = clickedBlock ?: return
+        if (blockyBlock.blockType != SetBlock.BlockType.NOTEBLOCK) return
+        if (!player.isSneaking && block.isInteractable()) return
 
-        if (blockyBlock.blockType != BlockType.NOTEBLOCK) return
-        if ((against.type.isInteractable && !against.isBlockyBlock) && !player.isSneaking) return
-
-        placeBlockyBlock(player, hand!!, item!!, against, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
+        placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
     }
 
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
         blockList().forEach { block ->
-            val prefab = block.gearyEntity ?: return@forEach
             if (!block.isBlockyNoteBlock) return@forEach
-            if (prefab.has<BlockyInfo>()) handleBlockyDrops(block, null)
+            handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)
         }
     }
@@ -140,47 +143,43 @@ class BlockyNoteBlockListener : Listener {
     fun BlockPlaceEvent.onPlaceNoteBlock() {
         if (!blockPlaced.isVanillaNoteBlock) return
 
-        if (!blockyConfig.noteBlocks.restoreFunctionality)
-            blockPlaced.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
-        else blockPlaced.customBlockData.set(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN, true)
+        if (!blocky.config.noteBlocks.restoreFunctionality)
+            blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
+        else blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
     }
 
+    //TODO Make sure this works
     // Convert vanilla blocks into custom note blocks if any after changing the value
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun ChunkLoadEvent.migrateOnChunkLoad() {
-        CustomBlockData.getBlocksWithCustomData(blockyPlugin, chunk)
-            .filter { it.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN) }.forEach { block ->
+        CustomBlockData.getBlocksWithCustomData(blocky.plugin, chunk)
+            .filter { it.persistentDataContainer.has<VanillaNoteBlock>() }.forEach { block ->
 
                 if (block.blockData !is NoteBlock) {
-                    block.customBlockData.remove(VANILLA_NOTEBLOCK_KEY)
+                    block.persistentDataContainer.remove<VanillaNoteBlock>()
                     return@forEach
                 }
 
                 // Convert any VANILLA_NOTEBLOCK_KEY blocks to custom if restoreFunctionality is disabled
-                if (!blockyConfig.noteBlocks.restoreFunctionality) {
+                if (!blocky.config.noteBlocks.restoreFunctionality) {
                     // If block doesn't have VANILLA_NOTEBLOCK_KEY or NOTE_KEY,
                     // assume it to be a vanilla and convert it to custom
                     if (block.customBlockData.isEmpty) {
-                        block.customBlockData.set(NOTE_KEY, DataType.INTEGER, 0)
+                        block.persistentDataContainer.encode(VanillaNoteBlock(0))
                         block.blockData = Material.NOTE_BLOCK.createBlockData()
                     }
                     // If block has NOTE_KEY, aka it was a custom vanilla block, convert to full vanilla
-                    else if (block.customBlockData.has(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN)) {
-                        block.customBlockData.set(
-                            NOTE_KEY,
-                            DataType.INTEGER,
-                            (block.blockData as NoteBlock).note.id.toInt()
-                        )
+                    else if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
+                        block.persistentDataContainer.encode(VanillaNoteBlock((block.blockData as NoteBlock).note.id.toInt()))
                         block.blockData = Material.NOTE_BLOCK.createBlockData()
-                        block.customBlockData.remove(VANILLA_NOTEBLOCK_KEY)
                     }
                 } else {
-                    if (block.customBlockData.has(NOTE_KEY, DataType.INTEGER)) {
-                        (block.blockData as NoteBlock).instrument = Instrument.PIANO
-                        (block.blockData as NoteBlock).note = block.getBlockyNote() // Set note from PDC data
+                    if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
+                        val noteblock = block.blockData as? NoteBlock ?: return@forEach
+                        noteblock.instrument = Instrument.PIANO
+                        noteblock.note = block.getBlockyNote() // Set note from PDC data
 
-                        block.customBlockData.remove(NOTE_KEY)
-                        block.customBlockData.set(VANILLA_NOTEBLOCK_KEY, DataType.BOOLEAN, true)
+                        block.persistentDataContainer.encode(VanillaNoteBlock(noteblock.note.id.toInt()))
                     }
                 }
             }

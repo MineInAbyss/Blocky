@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.components.features
+package com.mineinabyss.blocky.components.features.blocks
 
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.serializers.PrefabKeySerializer

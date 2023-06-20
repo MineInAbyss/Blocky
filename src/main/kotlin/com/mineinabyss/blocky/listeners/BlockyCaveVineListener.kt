@@ -1,11 +1,9 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.looty.tracking.toGearyOrNull
+import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -69,25 +67,22 @@ class BlockyCaveVineListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlaceBlockyCaveVine() {
-        val clickedBlock = clickedBlock ?: return
-        val item = item ?: return
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
 
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
-        if (clickedBlock.type.isInteractable && !clickedBlock.isBlockyCaveVine && !player.isSneaking) return
+        if (!player.isSneaking && block.isInteractable()) return
         if (item.type == Material.GLOW_BERRIES) return // Handled by [onGlowBerryPlace()]
-        if (blockFace == BlockFace.UP && player.world.getBlockData(clickedBlock.location) is CaveVines) {
+        if (blockFace == BlockFace.UP && player.world.getBlockData(block.location) is CaveVines) {
             isCancelled = true
             return
         }
 
-        val gearyVine = item.toGearyOrNull(player) ?: return
-        val blockyVine = gearyVine.get<BlockyBlock>() ?: return
+        val gearyVine = player.gearyInventory?.get(hand) ?: return
+        val blockyVine = gearyVine.get<SetBlock>() ?: return
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
-        if (blockyVine.blockType != BlockType.CAVEVINE) return
-        if (!gearyVine.has<BlockyInfo>()) return
+        if (blockyVine.blockType != SetBlock.BlockType.CAVEVINE) return
 
-        val placedWire =
-            placeBlockyBlock(player, hand!!, item, clickedBlock, blockFace, blockyVine.getBlockyCaveVine()) ?: return
+        val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, blockyVine.getBlockyCaveVine()) ?: return
         if (gearyVine.has<BlockyLight>())
             handleLight.createBlockLight(placedWire.location, lightLevel!!)
     }

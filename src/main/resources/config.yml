@@ -37,14 +37,6 @@ slabBlocks:
 stairBlocks:
   isEnabled: true
 
-# This is experimental and should not be used
-# A rework is planned to allow for a much better functionality
-leafBlocks:
-  isEnabled: false
-  disableBurnForBlockyLeaves: false
-  disableAllLeafDecay: false
-  shouldReserveOnePersistentLeafPerType: true
-
 # You will need to disable these in world-generation if you wanna use it
 # It aims to free up all CAVE_VINES except age = 0 and replaces its behaviour with CAVE_VINES_PLANT
 caveVineBlocks:

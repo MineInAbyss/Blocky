@@ -2,47 +2,47 @@ package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.blocky.components.features.BlockyDirectional
+import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
+import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.guiy.inventory.guiy
-import com.mineinabyss.idofront.commands.CommandHolder
 import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.idofront.plugin.actions
-import com.mineinabyss.looty.LootyFactory
-import com.mineinabyss.looty.LootySerializablePrefabItemService.prefabManager
-import com.mineinabyss.looty.tracking.toGearyOrNull
 import org.bukkit.Color
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.meta.LeatherArmorMeta
+import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
 
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
-    override val commands: CommandHolder = commands(blockyPlugin) {
+    override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
                 fun reloadConfig() {
-                    blockyPlugin.config = config("config") { blockyPlugin.fromPluginPath(loadDefault = true) }
-                    blockyPlugin.runStartupFunctions()
+                    blocky.plugin.createBlockyContext()
+                    blocky.plugin.runStartupFunctions()
                     sender.success("Blocky configs has been reloaded!")
                 }
                 fun reloadItems() {
-                    blockyPlugin.launch {
+                    blocky.plugin.launch {
                         BlockyQuery.forEach {
-                            prefabManager.reread(it.entity)
+                            prefabs.loader.reread(it.entity)
                         }
                         sender.success("Blocky items have been reloaded!")
                     }
@@ -75,7 +75,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                         player.error("No empty slots in inventory")
                         return@playerAction
                     }
-                    val item = LootyFactory.createFromPrefab(PrefabKey.of(type))
+                    val item = gearyItems.createItem(PrefabKey.of(type))
                     if (item == null) {
                         player.error("$type exists but is not a block.")
                         return@playerAction
@@ -89,7 +89,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 playerAction {
                     val player = sender as? Player ?: return@playerAction
                     val item = player.inventory.itemInMainHand
-                    val furniture = item.toGearyOrNull(player)?.get<BlockyFurniture>()
+                    val furniture = player.gearyInventory?.get(EquipmentSlot.HAND)?.get<BlockyFurniture>()
 
                     if (furniture == null) {
                         player.error("This command only supports furniture.")
@@ -97,8 +97,9 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     item.editItemMeta {
-                        ((this as? LeatherArmorMeta)?.setColor(color.toColor)
-                            ?: (this as? PotionMeta)?.setColor(color.toColor)) ?: return@playerAction
+                        (this as? LeatherArmorMeta)?.setColor(color.toColor)
+                            ?: (this as? PotionMeta)?.setColor(color.toColor)
+                            ?: (this as? MapMeta)?.setColor(color.toColor) ?: return@playerAction
                     }
                     player.success("Dyed item to <$color>$color")
                 }

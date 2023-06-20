@@ -1,9 +1,8 @@
-package com.mineinabyss.blocky.compatibility
+package com.mineinabyss.blocky.compatibility.worldedit
 
-import com.mineinabyss.blocky.components.core.BlockyBlock
-import com.mineinabyss.blocky.components.core.BlockyBlock.BlockType
 import com.mineinabyss.blocky.helpers.getBlockyNoteBlock
 import com.mineinabyss.blocky.helpers.getBlockyTripWire
+import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.sk89q.worldedit.WorldEdit
 import com.sk89q.worldedit.bukkit.BukkitAdapter
@@ -25,9 +24,9 @@ class WorldEditSupport {
             }
 
             val gearyEntity = PrefabKey.ofOrNull(input.replaceDirectionText())?.toEntityOrNull() ?: return null
-            val type = gearyEntity.get<BlockyBlock>()?.blockType ?: return null
+            val type = gearyEntity.get<SetBlock>()?.blockType ?: return null
             val blockData =
-                if (type == BlockType.WIRE) gearyEntity.get<BlockyBlock>()!!.getBlockyTripWire()
+                if (type == SetBlock.BlockType.WIRE) gearyEntity.get<SetBlock>()!!.getBlockyTripWire()
                 else gearyEntity.getBlockyNoteBlock(
                     BlockFace.valueOf(
                         input.substringAfter("[direction=", "up]").substringBefore("]", "UP").uppercase()
