@@ -25,7 +25,7 @@ fun breakWireBlock(block: Block, player: Player?): Boolean {
     }
 
 
-    if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
+    if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyTallWire>()) handleTallWire(block)
     handleBlockyDrops(block, player)
 

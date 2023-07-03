@@ -12,25 +12,28 @@ import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
 
-fun SetBlock.getBlockyCaveVine() : BlockData {
-    return gearyBlocks.block2Prefab.blockMap[blockType]!![blockId]
-}
-
-val Block.isBlockyCaveVine: Boolean get() = type == Material.CAVE_VINES && blockData in gearyBlocks.block2Prefab
-
-fun breakCaveVineBlock(block: Block, player: Player?): Boolean {
-    val gearyBlock = block.toGearyOrNull() ?: return false
-    if (!gearyBlock.has<SetBlock>()) return false
-
-    player?.let {
-        if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
-        if (!ProtectionLib.canBreak(player, block.location)) return false
+object CaveVineHelpers {
+    fun getBlockyCaveVine(setBlock: SetBlock) : BlockData {
+        return gearyBlocks.block2Prefab.blockMap[setBlock.blockType]!![setBlock.blockId]
     }
 
-    if (gearyBlock.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
-    handleBlockyDrops(block, player)
-    block.setType(Material.AIR, false)
-    if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)
-        breakCaveVineBlock(block.getRelative(BlockFace.DOWN), null)
-    return true
+    fun isBlockyCaveVine(block: Block) = block.type == Material.CAVE_VINES && block.blockData in gearyBlocks.block2Prefab
+
+    fun breakCaveVineBlock(block: Block, player: Player?): Boolean {
+        val gearyBlock = block.toGearyOrNull() ?: return false
+        if (!gearyBlock.has<SetBlock>()) return false
+
+        player?.let {
+            if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
+            if (!ProtectionLib.canBreak(player, block.location)) return false
+        }
+
+        if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
+        handleBlockyDrops(block, player)
+        block.setType(Material.AIR, false)
+        if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)
+            breakCaveVineBlock(block.getRelative(BlockFace.DOWN), null)
+        return true
+    }
+
 }

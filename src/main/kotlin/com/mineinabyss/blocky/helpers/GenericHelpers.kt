@@ -127,7 +127,7 @@ fun placeBlockyBlock(
 
     targetBlock.toGearyOrNull()?.let { entity ->
         if (entity.has<BlockyLight>())
-            handleLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
+            BlockLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
     }
 
     targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
@@ -144,7 +144,7 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
     }
 
     val prefab = block.toGearyOrNull() ?: return false
-    if (prefab.has<BlockyLight>()) handleLight.removeBlockLight(block.location)
+    if (prefab.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
     handleBlockyDrops(block, player)
 
 
@@ -171,7 +171,7 @@ object GenericHelpers {
 
     fun Block.isInteractable(): Boolean {
         return when {
-            isBlockyBlock || isBlockyFurniture || isBlockyCaveVine -> false
+            isBlockyBlock || isBlockyFurniture || CaveVineHelpers.isBlockyCaveVine(this) -> false
             blockData is Stairs || blockData is Fence -> false
             !type.isInteractable || type in setOf(Material.PUMPKIN, Material.MOVING_PISTON, Material.REDSTONE_ORE, Material.REDSTONE_WIRE) -> false
             else -> true

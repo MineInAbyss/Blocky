@@ -6,6 +6,7 @@ import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
+import com.soywiz.kds.toFastList
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.Note
@@ -54,38 +55,29 @@ fun Block.playBlockyNoteBlock() {
 
 fun Block.getBlockyInstrument(): Instrument {
     return instrumentList.firstOrNull {
-        it.type in getRelative(BlockFace.DOWN).type.toString().lowercase()
+        getRelative(BlockFace.DOWN).type.toString().lowercase() in it.types
     }?.instrument ?: Instrument.PIANO
 }
 
-private class InstrumentMap(val type: String, val instrument: Instrument)
+private class InstrumentMap(val instrument: Instrument, vararg types: String) {
+    val types: List<String> = types.toList()
+}
+
 private val instrumentList = listOf(
-    InstrumentMap("gold_block", Instrument.BELL),
-    InstrumentMap("clay", Instrument.FLUTE),
-    InstrumentMap("packed_ice", Instrument.CHIME),
-    InstrumentMap("wool", Instrument.GUITAR),
-    InstrumentMap("bone_block", Instrument.XYLOPHONE),
-    InstrumentMap("iron_block", Instrument.IRON_XYLOPHONE),
-    InstrumentMap("soul_sand", Instrument.COW_BELL),
-    InstrumentMap("pumpkin", Instrument.DIDGERIDOO),
-    InstrumentMap("emerald_block", Instrument.BIT),
-    InstrumentMap("hay_bale", Instrument.BANJO),
-    InstrumentMap("glowstone", Instrument.PLING),
-    InstrumentMap("gold_block", Instrument.BELL),
-    InstrumentMap("stone", Instrument.BASS_DRUM),
-    InstrumentMap("netherrack", Instrument.BASS_DRUM),
-    InstrumentMap("bedrock", Instrument.BASS_DRUM),
-    InstrumentMap("observer", Instrument.BASS_DRUM),
-    InstrumentMap("coral", Instrument.BASS_DRUM),
-    InstrumentMap("obsidian", Instrument.BASS_DRUM),
-    InstrumentMap("anchor", Instrument.BASS_DRUM),
-    InstrumentMap("quartz", Instrument.BASS_DRUM),
-    InstrumentMap("wood", Instrument.BASS_GUITAR),
-    InstrumentMap("sand", Instrument.SNARE_DRUM),
-    InstrumentMap("gravel", Instrument.SNARE_DRUM),
-    InstrumentMap("concrete_powder", Instrument.SNARE_DRUM),
-    InstrumentMap("soul_soil", Instrument.SNARE_DRUM),
-    InstrumentMap("glass", Instrument.STICKS),
-    InstrumentMap("sea_lantern", Instrument.STICKS),
-    InstrumentMap("beacon", Instrument.STICKS)
+    InstrumentMap(Instrument.BELL, "gold_block"),
+    InstrumentMap(Instrument.FLUTE, "clay"),
+    InstrumentMap(Instrument.CHIME, "packed_ice"),
+    InstrumentMap(Instrument.GUITAR, "wool"),
+    InstrumentMap(Instrument.XYLOPHONE, "bone_block"),
+    InstrumentMap(Instrument.IRON_XYLOPHONE, "iron_block"),
+    InstrumentMap(Instrument.COW_BELL, "soul_sand"),
+    InstrumentMap(Instrument.DIDGERIDOO, "pumpkin"),
+    InstrumentMap(Instrument.BIT, "emerald_block"),
+    InstrumentMap(Instrument.BANJO, "hay_bale"),
+    InstrumentMap(Instrument.PLING, "glowstone"),
+    InstrumentMap(Instrument.BELL, "gold_block"),
+    InstrumentMap(Instrument.BASS_DRUM, "stone", "netherrack", "bedrock", "observer", "coral", "obsidian", "anchor", "quartz"),
+    InstrumentMap(Instrument.BASS_GUITAR, "wood"),
+    InstrumentMap(Instrument.SNARE_DRUM, "sand", "gravel", "concrete_powder", "soul_soil"),
+    InstrumentMap(Instrument.STICKS, "glass","sea_lantern", "beacon"),
 )

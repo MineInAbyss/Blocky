@@ -38,14 +38,14 @@ class WorldEditListener : Listener {
                     ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
 
                 if (oldEntity.has<BlockyLight>())
-                    handleLight.removeBlockLight(loc)
+                    BlockLight.removeBlockLight(loc)
 
                 // Get the BlockyType of the new block
                 val gearyEntity = prefabMap[blockData]?.toEntityOrNull() ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
 
                 // TODO Add more checks here as noteworthy stuff is added
                 if (gearyEntity.has<BlockyLight>())
-                    handleLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()?.lightLevel!!)
+                    BlockLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()?.lightLevel!!)
 
                 return extent.setBlock(pos.blockX, pos.blockY, pos.blockZ, block)
             }

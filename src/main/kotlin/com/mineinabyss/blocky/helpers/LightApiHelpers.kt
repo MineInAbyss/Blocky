@@ -4,8 +4,7 @@ import org.bukkit.Bukkit
 import org.bukkit.Location
 import ru.beykerykt.minecraft.lightapi.common.LightAPI
 
-val handleLight = BlockLight()
-class BlockLight {
+object BlockLight {
     private val lightApiLoaded = Bukkit.getPluginManager().isPluginEnabled("LightAPI")
 
 

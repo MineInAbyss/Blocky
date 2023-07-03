@@ -225,8 +225,8 @@ class BlockyGenericListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         val materialSet = mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).apply {
-            this.addAll(BLOCKY_SLABS)
-            this.addAll(BLOCKY_STAIRS)
+            this.addAll(CopperHelpers.BLOCKY_SLABS)
+            this.addAll(CopperHelpers.BLOCKY_STAIRS)
         }
 
         when {
@@ -236,14 +236,14 @@ class BlockyGenericListener : Listener {
             !blocky.config.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
             !blocky.config.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
             !blocky.config.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
-            !blocky.config.slabBlocks.isEnabled && itemInHand.type in BLOCKY_SLABS -> return
-            !blocky.config.stairBlocks.isEnabled && itemInHand.type in BLOCKY_STAIRS -> return
+            !blocky.config.slabBlocks.isEnabled && itemInHand.type in CopperHelpers.BLOCKY_SLABS -> return
+            !blocky.config.stairBlocks.isEnabled && itemInHand.type in CopperHelpers.BLOCKY_STAIRS -> return
         }
 
         val material = when (itemInHand.type) {
             Material.STRING -> Material.TRIPWIRE
-            in BLOCKY_SLABS -> COPPER_SLABS.elementAt(BLOCKY_SLABS.indexOf(itemInHand.type))
-            in BLOCKY_STAIRS -> COPPER_STAIRS.elementAt(BLOCKY_STAIRS.indexOf(itemInHand.type))
+            in CopperHelpers.BLOCKY_SLABS -> CopperHelpers.COPPER_SLABS.elementAt(CopperHelpers.BLOCKY_SLABS.indexOf(itemInHand.type))
+            in CopperHelpers.BLOCKY_STAIRS -> CopperHelpers.COPPER_STAIRS.elementAt(CopperHelpers.BLOCKY_STAIRS.indexOf(itemInHand.type))
             else -> itemInHand.type
         }
 

@@ -22,7 +22,7 @@ class BlockyCaveVineListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockGrowEvent.onCaveVineGrow() {
-        if (block.type == Material.CAVE_VINES_PLANT || block.isBlockyCaveVine) isCancelled = true
+        if (block.type == Material.CAVE_VINES_PLANT || CaveVineHelpers.isBlockyCaveVine(block)) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -31,7 +31,7 @@ class BlockyCaveVineListener : Listener {
             blockPlaced.setBlockData(Material.CAVE_VINES.createBlockData(), false)
 
         // If the block above is cave vine with age 0, replicate vanilla behaviour
-        if (block.isBlockyCaveVine) isCancelled = true
+        if (CaveVineHelpers.isBlockyCaveVine(block)) isCancelled = true
         else if (blockAgainst.type == Material.CAVE_VINES) blockAgainst.setType(Material.CAVE_VINES_PLANT, false)
     }
 
@@ -47,21 +47,21 @@ class BlockyCaveVineListener : Listener {
         val item = item ?: return
 
         if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-        if (block.isBlockyCaveVine && item.type == Material.BONE_MEAL)
+        if (CaveVineHelpers.isBlockyCaveVine(block) && item.type == Material.BONE_MEAL)
             isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyCaveVine() {
-        if (!block.isBlockyCaveVine) return
+        if (!CaveVineHelpers.isBlockyCaveVine(block)) return
         isDropItems = false
-        breakCaveVineBlock(block, player)
+        CaveVineHelpers.breakCaveVineBlock(block, player)
     }
 
     @EventHandler(ignoreCancelled = true)
     fun BlockBreakBlockEvent.onWaterCollide() {
-        if (!block.isBlockyCaveVine) return
-        breakCaveVineBlock(block, null)
+        if (!CaveVineHelpers.isBlockyCaveVine(block)) return
+        CaveVineHelpers.breakCaveVineBlock(block, null)
         drops.removeIf { it.type == Material.GLOW_BERRIES }
     }
 
@@ -82,8 +82,8 @@ class BlockyCaveVineListener : Listener {
         val lightLevel = gearyVine.get<BlockyLight>()?.lightLevel
         if (blockyVine.blockType != SetBlock.BlockType.CAVEVINE) return
 
-        val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, blockyVine.getBlockyCaveVine()) ?: return
+        val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, CaveVineHelpers.getBlockyCaveVine(blockyVine)) ?: return
         if (gearyVine.has<BlockyLight>())
-            handleLight.createBlockLight(placedWire.location, lightLevel!!)
+            BlockLight.createBlockLight(placedWire.location, lightLevel!!)
     }
 }

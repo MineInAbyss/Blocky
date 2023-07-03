@@ -42,22 +42,21 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
         val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
-        val targetBlock = getTargetBlock(block, blockFace) ?: return
+        val targetBlock = FurnitureHelpers.getTargetBlock(block, blockFace) ?: return
         val gearyEntity = player.gearyInventory?.get(hand) ?: return
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return
-        val yaw = if (furniture.hasStrictRotation) getYaw(getRotation(player.location.yaw, furniture)) else player.location.yaw
+        val yaw = if (furniture.hasStrictRotation) FurnitureHelpers.getYaw(FurnitureHelpers.getRotation(player.location.yaw, furniture)) else player.location.yaw
 
-        if (action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE) return
-        if (!furniture.hasEnoughSpace(targetBlock.location, yaw)) return
         when {
-            !furniture.hasEnoughSpace(targetBlock.location, yaw) -> return
+            action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE -> return
+            !FurnitureHelpers.hasEnoughSpace(furniture, targetBlock.location, yaw) -> return
             !ProtectionLib.canBuild(player, targetBlock.location) -> return
             gearyEntity.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, blockFace) == false -> return
             targetBlock.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> return
         }
 
         val prefabKey = gearyEntity.prefabs.firstOrNull()?.get<PrefabKey>() ?: gearyEntity.get<PrefabKey>() ?: return
-        val newFurniture = placeBlockyFurniture(prefabKey, targetBlock.location, yaw, item) ?: return
+        val newFurniture = FurnitureHelpers.placeBlockyFurniture(prefabKey, targetBlock.location, yaw, item) ?: return
 
         if (!BlockyFurniturePlaceEvent(newFurniture, player, hand, item).callEvent()) {
             removeFurniture(newFurniture)

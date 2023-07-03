@@ -47,7 +47,7 @@ object BlockyBlocks {
         location.block.blockData = when (blockyBlock.blockType) {
             SetBlock.BlockType.NOTEBLOCK -> gearyEntity.getBlockyNoteBlock()
             SetBlock.BlockType.WIRE -> blockyBlock.getBlockyTripWire()
-            SetBlock.BlockType.CAVEVINE -> blockyBlock.getBlockyCaveVine()
+            SetBlock.BlockType.CAVEVINE -> CaveVineHelpers.getBlockyCaveVine(blockyBlock)
             else -> return false
         }
 
@@ -55,7 +55,7 @@ object BlockyBlocks {
             block.persistentDataContainer.encode(VanillaNoteBlock(0))*/
 
         if (gearyEntity.has<BlockyLight>())
-            handleLight.createBlockLight(location, gearyEntity.get<BlockyLight>()!!.lightLevel)
+            BlockLight.createBlockLight(location, gearyEntity.get<BlockyLight>()!!.lightLevel)
         return true
     }
 

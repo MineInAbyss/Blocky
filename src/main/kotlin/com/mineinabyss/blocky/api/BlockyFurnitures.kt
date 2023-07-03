@@ -68,11 +68,11 @@ object BlockyFurnitures {
         get() = this.baseFurniture?.seats?.minByOrNull { it.location.distanceSquared(this.location) }
 
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
-        placeBlockyFurniture(prefabKey, location, yaw, itemStack)
+        FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)
 
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float): ItemDisplay? {
         val itemStack = prefabKey.toEntityOrNull()?.get<SetItem>()?.item?.toItemStackOrNull() ?: return null
-        return placeBlockyFurniture(prefabKey, location, yaw, itemStack)
+        return FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)
     }
 
     fun removeFurniture(location: Location) {
@@ -90,9 +90,9 @@ object BlockyFurnitures {
 
         furniture.interactionEntity?.remove()
         furniture.seats.forEach(Entity::remove)
-        furniture.clearAssosiatedHitboxChunkEntries()
-        furniture.handleFurnitureDrops(player)
-        handleLight.removeBlockLight(furniture.location)
+        FurnitureHelpers.clearAssosiatedHitboxChunkEntries(furniture)
+        FurnitureHelpers.handleFurnitureDrops(furniture, player)
+        BlockLight.removeBlockLight(furniture.location)
         furniture.remove()
         return true
     }

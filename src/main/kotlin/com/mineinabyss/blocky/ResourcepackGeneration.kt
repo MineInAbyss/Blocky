@@ -3,8 +3,7 @@ package com.mineinabyss.blocky
 import com.google.gson.JsonObject
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
-import com.mineinabyss.blocky.helpers.BLOCKY_SLABS
-import com.mineinabyss.blocky.helpers.BLOCKY_STAIRS
+import com.mineinabyss.blocky.helpers.CopperHelpers
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.block
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
@@ -34,8 +33,8 @@ class ResourcepackGeneration {
         val noteBlockFile = "${root}/note_block.json".toPath().toFile()
         val tripwireFile = "${root}/tripwire.json".toPath().toFile()
         val caveVineFile = "${root}/cave_vine.json".toPath().toFile()
-        val slabFiles = BLOCKY_SLABS.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
-        val stairFiles = BLOCKY_STAIRS.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
+        val slabFiles = CopperHelpers.BLOCKY_SLABS.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
+        val stairFiles = CopperHelpers.BLOCKY_STAIRS.map { "${root}/${it.toString().lowercase()}.json".toPath().toFile() }
 
         noteBlockFile.writeJson(getNoteBlockBlockStates())
         tripwireFile.writeJson(getTripwireBlockStates())

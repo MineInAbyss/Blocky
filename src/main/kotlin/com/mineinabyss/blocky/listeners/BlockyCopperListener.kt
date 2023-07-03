@@ -35,14 +35,14 @@ class BlockyCopperListener {
             val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
             if (action != Action.RIGHT_CLICK_BLOCK) return
             if (hand != EquipmentSlot.HAND) return
-            if (item.type in BLOCKY_SLABS) return
+            if (item.type in CopperHelpers.BLOCKY_SLABS) return
 
             val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
 
             if (blockyBlock.blockType != SetBlock.BlockType.SLAB) return
             if (!player.isSneaking && block.isInteractable()) return
 
-            val blockyData = BLOCKY_SLABS.elementAt(blockyBlock.blockId).createBlockData() as Slab
+            val blockyData = CopperHelpers.BLOCKY_SLABS.elementAt(blockyBlock.blockId).createBlockData() as Slab
             val relative = block.getRelative(blockFace)
             val oldData: BlockData
 
@@ -116,11 +116,11 @@ class BlockyCopperListener {
         fun PlayerInteractEvent.onWaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type !in COPPER_SLABS || item?.type != Material.HONEYCOMB) return
+            if (block.type !in CopperHelpers.COPPER_SLABS || item?.type != Material.HONEYCOMB) return
 
             isCancelled = true
-            if (!block.isFakeWaxedCopper)
-                block.isFakeWaxedCopper = true
+            if (!CopperHelpers.isFakeWaxedCopper(block))
+                CopperHelpers.setFakeWaxedCopper(block, true)
         }
 
 
@@ -128,21 +128,21 @@ class BlockyCopperListener {
         fun PlayerInteractEvent.onUnwaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type !in COPPER_SLABS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
+            if (block.type !in CopperHelpers.COPPER_SLABS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
 
-            if (block.isFakeWaxedCopper)
-                block.isFakeWaxedCopper = false
+            if (CopperHelpers.isFakeWaxedCopper(block))
+                CopperHelpers.setFakeWaxedCopper(block, false)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxBlockySlab() {
-            if (clickedBlock?.type in BLOCKY_SLABS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
+            if (clickedBlock?.type in CopperHelpers.BLOCKY_SLABS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
                 isCancelled = true
         }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
         fun BlockFormEvent.onOxidizedCopperSlab() {
-            if (newState.type in BLOCKY_SLABS || block.isFakeWaxedCopper)
+            if (newState.type in CopperHelpers.BLOCKY_SLABS || CopperHelpers.isFakeWaxedCopper(block))
                 isCancelled = true
         }
 
@@ -156,13 +156,13 @@ class BlockyCopperListener {
             val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
             if (action != Action.RIGHT_CLICK_BLOCK) return
             if (hand != EquipmentSlot.HAND) return
-            if (item.type in BLOCKY_STAIRS) return
+            if (item.type in CopperHelpers.BLOCKY_STAIRS) return
 
             val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
             if (blockyBlock.blockType != SetBlock.BlockType.STAIR) return
             if (!player.isSneaking && block.isInteractable()) return
 
-            val blockyData = BLOCKY_STAIRS.elementAt(blockyBlock.blockId).createBlockData() as Stairs
+            val blockyData = CopperHelpers.BLOCKY_STAIRS.elementAt(blockyBlock.blockId).createBlockData() as Stairs
             val relative = block.getRelative(blockFace)
             val oldData: BlockData
 
@@ -212,11 +212,11 @@ class BlockyCopperListener {
         fun PlayerInteractEvent.onWaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type !in COPPER_STAIRS || item?.type != Material.HONEYCOMB) return
+            if (block.type !in CopperHelpers.COPPER_STAIRS || item?.type != Material.HONEYCOMB) return
 
             isCancelled = true
-            if (!block.isFakeWaxedCopper)
-                block.isFakeWaxedCopper = true
+            if (!CopperHelpers.isFakeWaxedCopper(block))
+                CopperHelpers.setFakeWaxedCopper(block, true)
         }
 
 
@@ -224,21 +224,21 @@ class BlockyCopperListener {
         fun PlayerInteractEvent.onUnwaxCopperStair() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
-            if (block.type !in COPPER_STAIRS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
+            if (block.type !in CopperHelpers.COPPER_STAIRS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
 
-            if (block.isFakeWaxedCopper)
-                block.isFakeWaxedCopper = false
+            if (CopperHelpers.isFakeWaxedCopper(block))
+                CopperHelpers.setFakeWaxedCopper(block, false)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxBlockyStair() {
-            if (clickedBlock?.type in BLOCKY_STAIRS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
+            if (clickedBlock?.type in CopperHelpers.BLOCKY_STAIRS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
                 isCancelled = true
         }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
         fun BlockFormEvent.onOxidizedCopperStair() {
-            if (newState.type in BLOCKY_STAIRS || block.isFakeWaxedCopper)
+            if (newState.type in CopperHelpers.BLOCKY_STAIRS || CopperHelpers.isFakeWaxedCopper(block))
                 isCancelled = true
         }
 
