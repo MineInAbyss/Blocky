@@ -37,73 +37,35 @@ class BlockyWireListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.LOWEST)
-    fun BlockPhysicsEvent.cancelTripwirePhysics() {
-        if (changedType == Material.TRIPWIRE) {
-            isCancelled = true
-            block.state.update(true, false)
-        }
-
-        BlockFace.values().filter { it.isCardinal }.forEach { f ->
-            val changed = block.getRelative(f)
-            if (changed.type != Material.TRIPWIRE) return@forEach
-
-            blocky.plugin.launch {
-                val data = changed.blockData.clone()
-                delay(1)
-                changed.setBlockData(data, false)
-            }
-        }
-    }
-
-    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    fun EntityInsideBlockEvent.onEnterTripwire() {
-        if (block.type == Material.TRIPWIRE) isCancelled = true
-    }
-
-    @EventHandler(priority = EventPriority.HIGH)
-    fun BlockPlaceEvent.onPlacingTripwire() {
-        if (blockPlaced.type == Material.TRIPWIRE) {
-            block.state.update(true, false)
-            blockAgainst.state.update(true, false)
-
-            if (player.gearyInventory?.get(hand)?.has<SetBlock>() != true)
-                block.setBlockData(Material.TRIPWIRE.createBlockData(), false)
-            block.fixClientsideUpdate()
-        }
-    }
-
     @EventHandler(priority = EventPriority.NORMAL)
     fun PlayerInteractEvent.onInteract() {
-        if (action == Action.RIGHT_CLICK_BLOCK && clickedBlock?.type == Material.TRIPWIRE) {
-            if (hand != EquipmentSlot.HAND) return
+        if (action != Action.RIGHT_CLICK_BLOCK || clickedBlock?.type != Material.TRIPWIRE) return
+        if (hand != EquipmentSlot.HAND) return
 
-            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
-            var type = item.type
-            if (type == Material.LAVA_BUCKET) type = Material.LAVA
-            if (type == Material.WATER_BUCKET) type = Material.WATER
-            if (type == Material.TRIPWIRE || type == Material.STRING || type.isBlock) {
-                placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.getBlockyTripWire()) ?: return
-            }
-            player.swingMainHand()
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
+        val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
+        var type = item.type
+
+        if (type == Material.LAVA_BUCKET) type = Material.LAVA
+        if (type == Material.WATER_BUCKET) type = Material.WATER
+        if (type == Material.STRING || type.isBlock) {
+            placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.getBlockyTripWire()) ?: return
         }
+        player.swingMainHand()
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakingBlockyTripwire() {
         if (block.type != Material.TRIPWIRE || !block.isBlockyBlock) return
-
         breakWireBlock(block, player)
         isDropItems = false
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun BlockBreakBlockEvent.onWaterCollide() {
-        if (block.type == Material.TRIPWIRE) {
-            breakWireBlock(block, null)
-            drops.removeIf { it.type == Material.STRING }
-        }
+        if (block.type != Material.TRIPWIRE) return
+        breakWireBlock(block, null)
+        drops.removeIf { it.type == Material.STRING }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -120,8 +82,8 @@ class BlockyWireListener : Listener {
         if (item.type.isBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() != true) {
             BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
                 if (block.getRelative(it).toGearyOrNull() == null) return@forEach
+                //TODO Extract this logic from the placeBlockyBlock method
                 placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
-                block.fixClientsideUpdate()
             }
         }
 
@@ -129,9 +91,8 @@ class BlockyWireListener : Listener {
         val wireBlock = blockyWire.get<SetBlock>() ?: return
         if (wireBlock.blockType != SetBlock.BlockType.WIRE) return
 
-        val placedWire = placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire()) ?: return
+        placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire()) ?: return
 
-        placedWire.fixClientsideUpdate()
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -157,5 +118,43 @@ class BlockyWireListener : Listener {
         if (mainWire.toGearyOrNull()?.has<BlockyTallWire>() != true) return
         breakWireBlock(mainWire, player)
         isDropItems = false
+    }
+
+    class BlockyWirePhysicsListener : Listener {
+
+        @EventHandler(priority = EventPriority.LOWEST)
+        fun BlockPhysicsEvent.cancelTripwirePhysics() {
+            if (changedType == Material.TRIPWIRE) {
+                isCancelled = true
+                block.state.update(true, false)
+            }
+
+            BlockFace.values().filter { it.isCardinal }.forEach { f ->
+                val changed = block.getRelative(f)
+                if (changed.type != Material.TRIPWIRE) return@forEach
+
+                blocky.plugin.launch {
+                    val data = changed.blockData.clone()
+                    delay(1)
+                    changed.setBlockData(data, false)
+                }
+            }
+        }
+
+        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+        fun EntityInsideBlockEvent.onEnterTripwire() {
+            if (block.type == Material.TRIPWIRE) isCancelled = true
+        }
+
+        @EventHandler(priority = EventPriority.HIGH)
+        fun BlockPlaceEvent.onPlacingTripwire() {
+            if (blockPlaced.type != Material.TRIPWIRE) return
+
+            block.state.update(true, false)
+            blockAgainst.state.update(true, false)
+
+            if (player.gearyInventory?.get(hand)?.has<SetBlock>() == true) return
+            block.blockData = Material.TRIPWIRE.createBlockData()
+        }
     }
 }

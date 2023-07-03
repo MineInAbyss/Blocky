@@ -38,20 +38,10 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
         if (!block.isVanillaNoteBlock) isCancelled = true
-        else if (block.isVanillaNoteBlock && !blocky.config.noteBlocks.restoreFunctionality) {
+        else if (!blocky.config.noteBlocks.restoreFunctionality) {
             note = block.updateBlockyNote()
             instrument = block.getBlockyInstrument()
         } else return
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockPistonExtendEvent.cancelBlockyPiston() {
-        if (blocks.any { it.isBlockyNoteBlock }) isCancelled = true
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockPistonRetractEvent.cancelBlockyPiston() {
-        if (blocks.any { it.isBlockyNoteBlock }) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -71,32 +61,6 @@ class BlockyNoteBlockListener : Listener {
         if (block.isVanillaNoteBlock) {
             if (rightClicked) block.updateBlockyNote()
             block.playBlockyNoteBlock()
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    fun BlockPhysicsEvent.onBlockPhysics() {
-        if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK) {
-            isCancelled = true
-            block.updateNoteBlockAbove()
-        }
-
-        if (block.type == Material.NOTE_BLOCK) {
-            isCancelled = true
-            block.state.update(true, false)
-        }
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST)
-    fun GenericGameEvent.disableRedstone() {
-        val block = location.block
-        val data = block.blockData.clone() as? NoteBlock ?: return
-
-        if (event != GameEvent.NOTE_BLOCK_PLAY) return
-        isCancelled = true
-        blocky.plugin.launch {
-            delay(1.ticks)
-            block.setBlockData(data, false)
         }
     }
 
@@ -131,8 +95,7 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
-        blockList().forEach { block ->
-            if (!block.isBlockyNoteBlock) return@forEach
+        blockList().filter { it.isBlockyNoteBlock }.forEach { block ->
             handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)
         }
@@ -142,10 +105,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {
         if (!blockPlaced.isVanillaNoteBlock) return
-
-        if (!blocky.config.noteBlocks.restoreFunctionality)
-            blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
-        else blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
+        blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
     }
 
     //TODO Make sure this works
@@ -183,5 +143,43 @@ class BlockyNoteBlockListener : Listener {
                     }
                 }
             }
+    }
+
+    class BlockyNoteBlockPhysicsListener : Listener {
+
+        @EventHandler(priority = EventPriority.HIGHEST)
+        fun BlockPhysicsEvent.onBlockPhysics() {
+            if (block.getRelative(BlockFace.UP).type == Material.NOTE_BLOCK) {
+                isCancelled = true
+                block.updateNoteBlockAbove()
+            }
+            if (block.type == Material.NOTE_BLOCK) {
+                isCancelled = true
+                block.state.update(true, false)
+            }
+        }
+
+        @EventHandler(priority = EventPriority.HIGHEST)
+        fun GenericGameEvent.disableRedstone() {
+            val block = location.block
+            val data = block.blockData.clone() as? NoteBlock ?: return
+
+            if (event != GameEvent.NOTE_BLOCK_PLAY) return
+            isCancelled = true
+            blocky.plugin.launch {
+                delay(1.ticks)
+                block.setBlockData(data, false)
+            }
+        }
+
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        fun BlockPistonExtendEvent.cancelBlockyPiston() {
+            if (blocks.any { it.isBlockyNoteBlock }) isCancelled = true
+        }
+
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        fun BlockPistonRetractEvent.cancelBlockyPiston() {
+            if (blocks.any { it.isBlockyNoteBlock }) isCancelled = true
+        }
     }
 }

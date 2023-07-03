@@ -9,7 +9,6 @@ import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeat
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
-import com.mineinabyss.blocky.systems.BlockLocation
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -43,13 +42,14 @@ fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
     }
 }
 
-fun getLocations(rotation: Float, center: Location, relativeCoordinates: List<BlockLocation>): MutableList<Location> {
-    return mutableListOf<Location>().apply {
-        relativeCoordinates.forEach { blockLoc ->
-            add(blockLoc.groundRotate(rotation).add(center))
-        }
+fun getLocations(
+    rotation: Float,
+    center: Location,
+    hitbox: List<BlockyFurniture.CollisionHitbox>
+): Map<BlockyFurniture.CollisionHitboxType, List<Location>> =
+    BlockyFurniture.CollisionHitboxType.values().associateWith {
+        hitbox.filter { c -> c.type == it }.map { c -> c.location.groundRotate(rotation).add(center) }
     }
-}
 
 fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
     val furniture = nullFurniture ?: BlockyFurniture()
@@ -64,9 +64,10 @@ fun getYaw(rotation: Rotation) = listOf(*Rotation.values()).indexOf(rotation) * 
 
 fun BlockyFurniture.hasEnoughSpace(loc: Location, yaw: Float): Boolean {
     return if (collisionHitbox.isEmpty()) true
-    else collisionHitbox.let { getLocations(yaw, loc, it).stream().allMatch { adjacent -> adjacent.block.type.isAir } }
+    else collisionHitbox.let {
+        getLocations(yaw, loc, it).values.flatten().stream().allMatch { adjacent -> adjacent.block.type.isAir }
+    }
 }
-
 
 
 internal fun placeBlockyFurniture(
@@ -155,17 +156,19 @@ private fun GearyEntity.placeFurnitureHitbox(baseEntity: ItemDisplay, yaw: Float
     val furniture = get<BlockyFurniture>() ?: return
     val locations = getLocations(yaw, baseEntity.location, furniture.collisionHitbox)
 
-    locations.forEach { loc ->
-        loc.block.setType(Material.BARRIER, false)
-        this.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
-        this.get<BlockySeat>()?.let {
-            spawnFurnitureSeat(baseEntity, yaw - 180, loc.toBlockCenterLocation().apply { y += max(0.0, it.heightOffset) }.y)
+    locations.forEach { (type, locs) ->
+        locs.forEach { loc ->
+            loc.block.setBlockData(type.toBlockData(loc), false)
+            loc.block.persistentDataContainer.encode(BlockyFurnitureHitbox(_baseEntity = baseEntity.uniqueId))
+            this.get<BlockyLight>()?.lightLevel?.let { handleLight.createBlockLight(loc, it) }
+            this.get<BlockySeat>()?.let {
+                spawnFurnitureSeat(baseEntity, yaw - 180, it.heightOffset)
+            }
         }
-        loc.block.persistentDataContainer.encode(BlockyFurnitureHitbox(_baseEntity = baseEntity.uniqueId))
     }
 
     if (locations.isNotEmpty()) {
-        this.getOrSetPersisting { BlockyFurnitureHitbox() }.hitbox.addAll(locations)
+        this.getOrSetPersisting { BlockyFurnitureHitbox() }.hitbox.addAll(locations.values.flatten())
     }
 }
 

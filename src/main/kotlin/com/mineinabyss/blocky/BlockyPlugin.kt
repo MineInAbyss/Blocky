@@ -12,9 +12,11 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
+import io.papermc.paper.configuration.GlobalConfiguration
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.resources.ResourceLocation
@@ -53,8 +55,22 @@ class BlockyPlugin : JavaPlugin() {
         )
 
         blocky.config.run {
-            if (noteBlocks.isEnabled) listeners(BlockyNoteBlockListener())
-            if (tripWires.isEnabled) listeners(BlockyWireListener())
+            if (noteBlocks.isEnabled) {
+                listeners(BlockyNoteBlockListener())
+                if (!GlobalConfiguration.get().blockUpdates.disableNoteblockUpdates) {
+                    listeners(BlockyNoteBlockListener.BlockyNoteBlockPhysicsListener())
+                    logError("It is recommended to toggle the disable-noteblock-updates setting in paper-global.yml.")
+                    logError("Otherwise Blocky will listen to some events that fire alot and might degrade server performance.")
+                }
+            }
+            if (tripWires.isEnabled) {
+                listeners(BlockyWireListener())
+                if (!GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) {
+                    listeners(BlockyWireListener.BlockyWirePhysicsListener())
+                    logError("It is recommended to toggle the disable-tripwire-updates setting in paper-global.yml.")
+                    logError("Otherwise Blocky will listen to some events that fire alot and might degrade server performance.")
+                }
+            }
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
             if (slabBlocks.isEnabled) listeners(BlockyCopperListener.BlockySlabListener())
             if (stairBlocks.isEnabled) listeners(BlockyCopperListener.BlockyStairListener())
@@ -84,12 +100,20 @@ class BlockyPlugin : JavaPlugin() {
 
         return BuiltInRegistries.BLOCK.tags.map { pair ->
             pair.first.location to IntArrayList(pair.second.size()).apply {
-                // If the tag is MINEABLE_WITH_AXE, don't add noteblock
-                if (pair.first.location == BlockTags.MINEABLE_WITH_AXE.location) {
-                    pair.second.filter {
-                        Item.BY_BLOCK[it.value()].toString() != "note_block"
-                    }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
-                } else pair.second.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
+                // If the tag is MINEABLE_WITH_AXE, don't add noteblock, if it's MINEABLE_WITH_PICKAXE, don't add petrified oak slab
+                when (pair.first.location) {
+                    BlockTags.MINEABLE_WITH_AXE.location -> {
+                        pair.second.filter {
+                            Item.BY_BLOCK[it.value()].toString() != "note_block"
+                        }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
+                    }
+                    BlockTags.MINEABLE_WITH_PICKAXE.location -> {
+                        pair.second.filter {
+                            Item.BY_BLOCK[it.value()].toString() != "petrified_oak_slab"
+                        }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
+                    }
+                    else -> pair.second.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
+                }
             }
         }.toList().toMap()
     }

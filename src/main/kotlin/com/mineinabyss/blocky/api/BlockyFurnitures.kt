@@ -33,7 +33,7 @@ object BlockyFurnitures {
     val Entity.isModelEngineFurniture: Boolean get() = this.toGearyOrNull()?.isModelEngineFurniture ?: false
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
-    val Block.isFurnitureHitbox get() = this.type == Material.BARRIER && this.persistentDataContainer.has<BlockyFurnitureHitbox>()
+    val Block.isFurnitureHitbox get() = (this.type in setOf(Material.BARRIER, Material.PETRIFIED_OAK_SLAB)) && this.persistentDataContainer.has<BlockyFurnitureHitbox>()
     val Entity.isFurnitureHitbox: Boolean
         get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
 
