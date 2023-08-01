@@ -40,7 +40,7 @@ object BlockStateCorrection {
 
         if (Tag.STAIRS.isTagged(itemStack.type) || Tag.SLABS.isTagged(itemStack.type))
             handleHalfBlocks(itemStack.type.createBlockData(), player)
-        else itemStack.toNMS()?.useOn(UseOnContext(player.toNMS(), hand, blockHitResult), hand)
+        else itemStack.toNMS()?.useOn(UseOnContext(player.toNMS(), hand, blockHitResult))
     }
 
     private fun getBlockHitResult(player: Player, block: Block): BlockHitResult? {
