@@ -5,7 +5,10 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
 import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
-import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.BlockLight
+import com.mineinabyss.blocky.helpers.FurnitureHelpers
+import com.mineinabyss.blocky.helpers.decode
+import com.mineinabyss.blocky.helpers.persistentDataContainer
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.has
@@ -46,6 +49,8 @@ object BlockyFurnitures {
             is Interaction -> isFurnitureHitbox && this.baseFurniture?.toGearyOrNull()?.isBlockyFurniture == true
             else -> false
         } || isModelEngineFurniture
+    val String.isBlockyFurniture get() = PrefabKey.of(this).toEntityOrNull()?.isBlockyFurniture ?: false
+    val PrefabKey.isBlockyFurniture get() = this.toEntityOrNull()?.isBlockyFurniture ?: false
 
     val ItemStack.blockyFurniture get() = this.decode<BlockyFurniture>()
     val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
