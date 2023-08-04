@@ -127,9 +127,9 @@ object FurnitureHelpers {
 
         newFurniture.toGeary().apply {
             addPrefab(gearyEntity)
-            interaction?.let { setPersisting(BlockyFurnitureHitbox(_interactionHitbox = interaction.uniqueId)) }
+            interaction?.let { setPersisting(BlockyFurnitureHitbox(interactionHitbox = interaction.uniqueId)) }
         }
-        interaction?.toGeary()?.setPersisting(BlockyFurnitureHitbox(_baseEntity = newFurniture.uniqueId))
+        interaction?.toGeary()?.setPersisting(BlockyFurnitureHitbox(baseEntity = newFurniture.uniqueId))
 
         gearyEntity.get<BlockyModelEngine>()?.let { meg ->
             if (!Plugins.isEnabled<ModelEngineAPI>()) return@let
@@ -160,7 +160,7 @@ object FurnitureHelpers {
         locations.forEach { (type, locs) ->
             locs.forEach { loc ->
                 loc.block.setBlockData(type.toBlockData(loc), false)
-                loc.block.persistentDataContainer.encode(BlockyFurnitureHitbox(_baseEntity = baseEntity.uniqueId))
+                loc.block.persistentDataContainer.encode(BlockyFurnitureHitbox(baseEntity = baseEntity.uniqueId))
                 this.get<BlockyLight>()?.lightLevel?.let { BlockLight.createBlockLight(loc, it) }
                 this.get<BlockySeat>()?.let {
                     spawnFurnitureSeat(baseEntity, yaw - 180, it.heightOffset)
@@ -168,9 +168,7 @@ object FurnitureHelpers {
             }
         }
 
-        if (locations.isNotEmpty()) {
-            this.getOrSetPersisting { BlockyFurnitureHitbox() }.hitbox.addAll(locations.values.flatten())
-        }
+        this.getOrSetPersisting { BlockyFurnitureHitbox() }.hitbox += locations.values.flatten()
     }
 
     internal fun clearAssosiatedHitboxChunkEntries(entity: Entity) {
@@ -196,7 +194,7 @@ object FurnitureHelpers {
             setRotation(yaw, 0F)
         }?.let { seat ->
             furniture.toGeary().getOrSetPersisting { BlockyAssociatedSeats() }._seats.add(seat.uniqueId)
-            seat.toGeary().setPersisting(BlockyFurnitureHitbox(_baseEntity = furniture.uniqueId))
+            seat.toGeary().setPersisting(BlockyFurnitureHitbox(baseEntity = furniture.uniqueId))
             seat
         }
     }

@@ -4,10 +4,7 @@ import com.mineinabyss.idofront.serialization.LocationSerializer
 import com.mineinabyss.idofront.serialization.UUIDSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import org.bukkit.Bukkit
 import org.bukkit.Location
-import org.bukkit.entity.Interaction
-import org.bukkit.entity.ItemDisplay
 import java.util.*
 
 /**
@@ -20,9 +17,6 @@ import java.util.*
 @SerialName("blocky:furniture_hitbox")
 data class BlockyFurnitureHitbox(
     val hitbox: MutableList<@Serializable(with = LocationSerializer::class) Location> = mutableListOf(),
-    val _baseEntity: @Serializable(UUIDSerializer::class) UUID? = null,
-    val _interactionHitbox: @Serializable(UUIDSerializer::class) UUID? = null
-) {
-    val baseEntity: ItemDisplay? = _baseEntity?.let { Bukkit.getEntity(it) } as? ItemDisplay
-    val interactionHitbox: Interaction? get() = _interactionHitbox?.let { Bukkit.getEntity(it) } as? Interaction
-}
+    val baseEntity: @Serializable(UUIDSerializer::class) UUID? = null,
+    val interactionHitbox: @Serializable(UUIDSerializer::class) UUID? = null
+)

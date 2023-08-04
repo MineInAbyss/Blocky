@@ -7,6 +7,7 @@ import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeat
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.BlockLight
 import com.mineinabyss.blocky.helpers.FurnitureHelpers
+import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.blocky.helpers.decode
 import com.mineinabyss.blocky.helpers.persistentDataContainer
 import com.mineinabyss.geary.datatypes.GearyEntity
@@ -38,7 +39,7 @@ object BlockyFurnitures {
 
     val Block.isFurnitureHitbox get() = (this.type in setOf(Material.BARRIER, Material.PETRIFIED_OAK_SLAB)) && this.persistentDataContainer.has<BlockyFurnitureHitbox>()
     val Entity.isFurnitureHitbox: Boolean
-        get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity != null
+        get() = this is Interaction && this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity?.toEntity() is ItemDisplay
 
     //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
     val Block.isBlockyFurniture get() = this.toGearyOrNull()?.isBlockyFurniture ?: false
@@ -58,12 +59,12 @@ object BlockyFurnitures {
     val Block.blockyFurniture get() = this.toGearyOrNull()?.get<BlockyFurniture>()
 
     val Interaction.baseFurniture: ItemDisplay?
-        get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity
+        get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.baseEntity?.toEntity() as? ItemDisplay
     val Block.baseFurniture: ItemDisplay?
-        get() = this.persistentDataContainer.decode<BlockyFurnitureHitbox>()?.baseEntity
+        get() = this.persistentDataContainer.decode<BlockyFurnitureHitbox>()?.baseEntity?.toEntity() as? ItemDisplay
 
     val ItemDisplay.interactionEntity: Interaction?
-        get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.interactionHitbox
+        get() = this.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.interactionHitbox?.toEntity() as? Interaction
     val ItemDisplay.seats: List<Entity>
         get() = this.toGearyOrNull()?.get<BlockyAssociatedSeats>()?.seats ?: emptyList()
 
