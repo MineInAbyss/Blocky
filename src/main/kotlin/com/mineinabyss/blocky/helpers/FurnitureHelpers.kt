@@ -168,7 +168,9 @@ object FurnitureHelpers {
             }
         }
 
-        this.getOrSetPersisting { BlockyFurnitureHitbox() }.hitbox += locations.values.flatten()
+        this.setPersisting((this.get<BlockyFurnitureHitbox>() ?: BlockyFurnitureHitbox()).let {
+            it.copy(hitbox = it.hitbox.toMutableList().apply { addAll(locations.values.flatten()) })
+        })
     }
 
     internal fun clearAssosiatedHitboxChunkEntries(entity: Entity) {

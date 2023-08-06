@@ -1,8 +1,8 @@
 package com.mineinabyss.blocky
 
-//import com.mineinabyss.blocky.compatibility.breaker.BlockyBlockProvider
-//import eu.asangarin.breaker.Breaker
 import com.jeff_media.customblockdata.CustomBlockData
+import com.mineinabyss.blocky.assets_generation.MoreCreativeTabsGeneration
+import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.listeners.*
@@ -28,7 +28,6 @@ import org.bukkit.plugin.java.JavaPlugin
 
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
-//val breaker by lazy { Bukkit.getPluginManager().getPlugin("Breaker") as? Breaker }
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
         Platforms.load(this, "mineinabyss")
@@ -83,9 +82,6 @@ class BlockyPlugin : JavaPlugin() {
             }
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
-                /*if (Bukkit.getPluginManager().isPluginEnabled("Breaker")) {
-                    breaker?.blockProviders?.register(BlockyBlockProvider)
-                }*/
             }
         }
     }

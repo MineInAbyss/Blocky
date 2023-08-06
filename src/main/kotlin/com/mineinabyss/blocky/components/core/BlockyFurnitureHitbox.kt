@@ -16,7 +16,7 @@ import java.util.*
 @Serializable
 @SerialName("blocky:furniture_hitbox")
 data class BlockyFurnitureHitbox(
-    val hitbox: MutableList<@Serializable(with = LocationSerializer::class) Location> = mutableListOf(),
+    val hitbox: List<@Serializable(with = LocationSerializer::class) Location> = listOf(),
     val baseEntity: @Serializable(UUIDSerializer::class) UUID? = null,
     val interactionHitbox: @Serializable(UUIDSerializer::class) UUID? = null
 )

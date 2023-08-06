@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.listeners
 
-//import com.mineinabyss.blocky.breaker
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
@@ -48,7 +47,6 @@ import kotlin.time.Duration
 class BlockyGenericListener : Listener {
 
     private fun Player.resetCustomBreak(block: Block) {
-        //if (breaker?.database?.shouldHandle(block) == true) return
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
             block.isBlockyFurniture ->
@@ -75,8 +73,6 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
-        // If breaker is set to handle block, return
-        //if (breaker?.database?.shouldHandle(block) == true) return
         if (!block.isBlockyBlock) return
 
         val breaking = block.toGearyOrNull()?.get<BlockyBreaking>() ?: BlockyBreaking()

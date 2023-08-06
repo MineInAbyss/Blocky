@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.components.core
 
 import com.mineinabyss.blocky.serializers.BrightnessSerializer
-import com.mineinabyss.blocky.serializers.Vector3fSerializer
+import com.mineinabyss.idofront.serialization.Vector3fSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location

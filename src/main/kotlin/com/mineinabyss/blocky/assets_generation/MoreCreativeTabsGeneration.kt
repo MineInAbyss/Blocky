@@ -1,9 +1,10 @@
-package com.mineinabyss.blocky
+package com.mineinabyss.blocky.assets_generation
 
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.block
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.blockyBlockQuery

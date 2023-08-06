@@ -19,7 +19,6 @@ repositories {
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
-    maven("https://www.asangarin.eu/repo/releases") // Breaker
     maven("https://jitpack.io")
     mavenLocal()
 }
@@ -42,8 +41,6 @@ dependencies {
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(libs.minecraft.anvilgui)
     compileOnly(blockyLibs.minecraft.plugin.lightapi)
-    //compileOnly(blockyLibs.minecraft.plugin.breaker)
-    //compileOnly(blockyLibs.minecraft.plugin.mythic)
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)

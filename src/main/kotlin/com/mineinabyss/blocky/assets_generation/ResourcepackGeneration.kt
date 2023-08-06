@@ -1,6 +1,7 @@
-package com.mineinabyss.blocky
+package com.mineinabyss.blocky.assets_generation
 
 import com.google.gson.JsonObject
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.CopperHelpers
@@ -58,9 +59,9 @@ class ResourcepackGeneration {
                 "minecraft:block/note_block".getModelJson()
             )
 
-            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.NOTEBLOCK }.values.forEach { blocks ->
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.NOTEBLOCK }.values.toSet().forEach { blocks ->
                 blocks.forEachIndexed { index, block ->
-                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
+                    val query = blockyQuery.firstOrNull { it.block.blockId == index + 1 } ?: return@forEachIndexed
                     query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getNoteBlockData(), it) }
                 }
             }
@@ -229,18 +230,14 @@ class ResourcepackGeneration {
         }
     }
 
-    private fun String.getModelJson(): JsonObject {
-        return JsonObject().apply {
-            addProperty("model", this@getModelJson)
-        }
-    }
+    private fun String.getModelJson() = JsonObject().apply { addProperty("model", this@getModelJson) }
 
     private fun String.getStairModelJson(facing: BlockFace, half: Bisected.Half, shape: Stairs.Shape): JsonObject {
         return JsonObject().apply {
             addProperty("model", this@getStairModelJson)
             addProperty("uvlock", true)
             when (shape) {
-                in setOf(Stairs.Shape.INNER_LEFT, Stairs.Shape.OUTER_LEFT) -> {
+                Stairs.Shape.INNER_LEFT, Stairs.Shape.OUTER_LEFT -> {
                     when (facing) {
                         BlockFace.EAST -> {
                             if (half == Bisected.Half.BOTTOM) addProperty("y", 270)
@@ -274,7 +271,7 @@ class ResourcepackGeneration {
                     }
                 }
 
-                in setOf(Stairs.Shape.INNER_RIGHT, Stairs.Shape.OUTER_RIGHT) -> {
+                Stairs.Shape.INNER_RIGHT, Stairs.Shape.OUTER_RIGHT -> {
                     when (facing) {
                         BlockFace.EAST -> {
                             if (half == Bisected.Half.TOP) {
@@ -310,10 +307,11 @@ class ResourcepackGeneration {
 
                 Stairs.Shape.STRAIGHT -> {
                     when (facing) {
-                        BlockFace.EAST ->
+                        BlockFace.EAST, BlockFace.WEST -> {
                             if (half == Bisected.Half.TOP) addProperty("x", 180)
                             else remove("uvlock")
-
+                            if (facing == BlockFace.WEST) addProperty("y", 180)
+                        }
                         BlockFace.NORTH -> {
                             if (half == Bisected.Half.BOTTOM) addProperty("x", 270)
                             else {
@@ -329,12 +327,6 @@ class ResourcepackGeneration {
                                 addProperty("y", 90)
                             }
                         }
-
-                        BlockFace.WEST -> {
-                            addProperty("y", 180)
-                            if (half == Bisected.Half.TOP) addProperty("x", 180)
-                        }
-
                         else -> remove("uvlock")
                     }
                 }
