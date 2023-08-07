@@ -78,7 +78,7 @@ class BlockyFurnitureListener : Listener {
     fun EntityDamageByEntityEvent.onBreakingFurniture() {
         val furniture = (entity as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return
         if (furniture.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
-        else (damager as? Player)?.let { removeFurniture(furniture, it) } ?: removeFurniture(furniture)
+        else removeFurniture(furniture, damager as? Player)
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)

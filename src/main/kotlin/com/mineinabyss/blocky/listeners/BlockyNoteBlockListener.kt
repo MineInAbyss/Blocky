@@ -96,7 +96,6 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
         blockList().filter { it.isBlockyNoteBlock }.forEach { block ->
-            handleBlockyDrops(block, null)
             block.setType(Material.AIR, false)
         }
     }

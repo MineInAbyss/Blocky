@@ -92,12 +92,12 @@ object BlockyFurnitures {
             if (!ProtectionLib.canBreak(player, furniture.location)) furnitureBreakEvent.isCancelled = true
             furnitureBreakEvent.call()
             if (furnitureBreakEvent.isCancelled) return false
+            FurnitureHelpers.handleFurnitureDrops(furniture, player)
         }
 
         furniture.interactionEntity?.remove()
         furniture.seats.forEach(Entity::remove)
         FurnitureHelpers.clearAssosiatedHitboxChunkEntries(furniture)
-        FurnitureHelpers.handleFurnitureDrops(furniture, player)
         BlockLight.removeBlockLight(furniture.location)
         furniture.remove()
         return true

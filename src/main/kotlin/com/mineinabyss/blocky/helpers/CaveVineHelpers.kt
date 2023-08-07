@@ -26,10 +26,10 @@ object CaveVineHelpers {
         player?.let {
             if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
             if (!ProtectionLib.canBreak(player, block.location)) return false
+            handleBlockyDrops(block, player)
         }
 
         if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
-        handleBlockyDrops(block, player)
         block.setType(Material.AIR, false)
         if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)
             breakCaveVineBlock(block.getRelative(BlockFace.DOWN), null)

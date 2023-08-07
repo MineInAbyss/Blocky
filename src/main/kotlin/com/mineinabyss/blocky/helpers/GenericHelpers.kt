@@ -100,12 +100,14 @@ fun placeBlockyBlock(
     blockPlaceEvent.callEvent()
 
     when {
-        targetBlock.toGearyOrNull()?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
+        targetBlock.toGearyOrNull()?.get<BlockyPlacableOn>()
+            ?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
 
         !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() ->
             blockPlaceEvent.isCancelled = true
 
-        !BlockStateCorrection.correctAllBlockStates(targetBlock, player, face, item) -> blockPlaceEvent.isCancelled = true
+        !BlockStateCorrection.correctAllBlockStates(targetBlock, player, face, item) -> blockPlaceEvent.isCancelled =
+            true
     }
 
     val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player, hand, item)
@@ -142,11 +144,11 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
         if (!ProtectionLib.canBreak(it, block.location)) return false
         if (player.gameMode != GameMode.CREATIVE)
             player.inventory.itemInMainHand.damage(1, player)
+        handleBlockyDrops(block, player)
     }
 
     val prefab = block.toGearyOrNull() ?: return false
     if (prefab.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
-    handleBlockyDrops(block, player)
 
 
     block.customBlockData.clear()
@@ -154,12 +156,12 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
     return true
 }
 
-fun handleBlockyDrops(block: Block, player: Player?) {
+fun handleBlockyDrops(block: Block, player: Player) {
     val gearyBlock = block.toGearyOrNull() ?: return
     val drop = gearyBlock.get<BlockyDrops>() ?: return
     if (!gearyBlock.has<SetBlock>()) return
 
-    if (drop.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player ?: return, block, EquipmentSlot.HAND)) return
+    if (drop.onlyDropWithCorrectTool && !GenericHelpers.isCorrectTool(player, block, EquipmentSlot.HAND)) return
     GenericHelpers.handleBlockDrop(drop, player, block.location)
 }
 
@@ -167,14 +169,21 @@ object GenericHelpers {
 
     fun ItemStack.isSimilarNoDurab(other: ItemStack): Boolean {
         if (other === this) return true
-        return type == other.type && hasItemMeta() == other.hasItemMeta() && if (hasItemMeta()) Bukkit.getItemFactory().equals(itemMeta, other.itemMeta) else true
+        return type == other.type && hasItemMeta() == other.hasItemMeta() && if (hasItemMeta()) Bukkit.getItemFactory()
+            .equals(itemMeta, other.itemMeta) else true
     }
 
     fun Block.isInteractable(): Boolean {
         return when {
             isBlockyBlock || isBlockyFurniture || CaveVineHelpers.isBlockyCaveVine(this) -> false
             blockData is Stairs || blockData is Fence -> false
-            !type.isInteractable || type in setOf(Material.PUMPKIN, Material.MOVING_PISTON, Material.REDSTONE_ORE, Material.REDSTONE_WIRE) -> false
+            !type.isInteractable || type in setOf(
+                Material.PUMPKIN,
+                Material.MOVING_PISTON,
+                Material.REDSTONE_ORE,
+                Material.REDSTONE_WIRE
+            ) -> false
+
             else -> true
         }
     }
@@ -288,7 +297,10 @@ object GenericHelpers {
     }
 
     fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
-        val acceptedToolTypes = block.toGearyOrNull()?.let { geary -> geary.get<BlockyDrops>()?.acceptedToolTypes ?: geary.get<BlockyBreaking>()?.modifiers?.heldTypes?.map { it.toolType } } ?: return false
+        val acceptedToolTypes = block.toGearyOrNull()?.let { geary ->
+            geary.get<BlockyDrops>()?.acceptedToolTypes
+                ?: geary.get<BlockyBreaking>()?.modifiers?.heldTypes?.map { it.toolType }
+        } ?: return false
         val heldToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes
             ?: getVanillaToolTypes(player.inventory.getItem(hand))?.let { setOf(it) } ?: setOf()
 
@@ -307,22 +319,21 @@ object GenericHelpers {
         }
     }
 
-    fun handleBlockDrop(blockyDrop: BlockyDrops, player: Player?, location: Location) {
-        blockyDrop.drops.forEach { drop ->
-            val hand = player?.inventory?.itemInMainHand ?: ItemStack(Material.AIR)
-            val item =
-                if (Enchantment.SILK_TOUCH in hand.enchantments)
-                    drop.silkTouchedDrop?.toItemStack()
-                else drop.item?.toItemStack()
-            val amount =
-                if (drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments)
-                    drop.amount.randomOrMin() * Random.nextInt(
-                        1,
-                        hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1
-                    )
-                else drop.amount.randomOrMin()
+    fun handleBlockDrop(blockyDrop: BlockyDrops, player: Player, location: Location) {
+        if (player.gameMode == GameMode.CREATIVE) return
 
-            if (player?.gameMode == GameMode.CREATIVE) return
+        blockyDrop.drops.forEach { drop ->
+            val hand = player.inventory.itemInMainHand
+            val item = when (Enchantment.SILK_TOUCH) {
+                in hand.enchantments -> drop.silkTouchedDrop?.toItemStack()
+                else -> drop.item?.toItemStack()
+            }
+            val amount = when {
+                drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments ->
+                    drop.amount.randomOrMin() * Random.nextInt(1,
+                        hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
+                else -> drop.amount.randomOrMin()
+            }
 
             if (drop.exp > 0) location.spawn<ExperienceOrb> { experience = drop.exp }
             item?.let {

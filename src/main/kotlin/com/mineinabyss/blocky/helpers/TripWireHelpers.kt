@@ -22,12 +22,12 @@ fun breakWireBlock(block: Block, player: Player?): Boolean {
     player?.let {
         if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
         if (!ProtectionLib.canBreak(player, block.location)) return false
+        handleBlockyDrops(block, player)
     }
 
 
     if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyTallWire>()) handleTallWire(block)
-    handleBlockyDrops(block, player)
 
     block.type = Material.AIR
 

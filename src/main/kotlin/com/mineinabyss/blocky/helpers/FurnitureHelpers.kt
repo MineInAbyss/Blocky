@@ -181,7 +181,7 @@ object FurnitureHelpers {
         }
     }
 
-    internal fun handleFurnitureDrops(entity: Entity, player: Player?) {
+    internal fun handleFurnitureDrops(entity: Entity, player: Player) {
         entity.toGearyOrNull()?.get<BlockyDrops>()?.let { GenericHelpers.handleBlockDrop(it, player, entity.location) }
     }
 
