@@ -16,6 +16,7 @@ import com.mineinabyss.geary.papermc.datastore.has
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
@@ -76,19 +77,16 @@ object BlockyFurnitures {
     fun placeFurniture(prefabKey: PrefabKey, location: Location) =
         placeFurniture(prefabKey, location, 0f)
 
+    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) =
+        gearyItems.createItem(prefabKey)?.let { FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, it) }
+
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
         FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)
 
-    fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float): ItemDisplay? {
-        val itemStack = prefabKey.toEntityOrNull()?.get<SetItem>()?.item?.toItemStackOrNull() ?: return null
-        return FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)
-    }
-
     fun removeFurniture(location: Location) = location.block.baseFurniture?.let { removeFurniture(it) }
 
-    fun removeFurniture(location: Location, player: Player) {
+    fun removeFurniture(location: Location, player: Player) =
         location.block.baseFurniture?.let { removeFurniture(it, player) }
-    }
 
     fun removeFurniture(furniture: ItemDisplay, player: Player? = null): Boolean {
         if (!furniture.isBlockyFurniture) return false
