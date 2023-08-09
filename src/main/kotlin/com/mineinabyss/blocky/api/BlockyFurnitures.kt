@@ -73,6 +73,9 @@ object BlockyFurnitures {
     val Interaction.blockySeat
         get() = this.baseFurniture?.seats?.minByOrNull { it.location.distanceSquared(this.location) }
 
+    fun placeFurniture(prefabKey: PrefabKey, location: Location) =
+        placeFurniture(prefabKey, location, 0f)
+
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
         FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)
 
@@ -81,12 +84,15 @@ object BlockyFurnitures {
         return FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)
     }
 
-    fun removeFurniture(location: Location) {
-        location.block.baseFurniture?.let { removeFurniture(it) }
+    fun removeFurniture(location: Location) = location.block.baseFurniture?.let { removeFurniture(it) }
+
+    fun removeFurniture(location: Location, player: Player) {
+        location.block.baseFurniture?.let { removeFurniture(it, player) }
     }
 
     fun removeFurniture(furniture: ItemDisplay, player: Player? = null): Boolean {
         if (!furniture.isBlockyFurniture) return false
+
         player?.let {
             val furnitureBreakEvent = BlockyFurnitureBreakEvent(furniture, player)
             if (!ProtectionLib.canBreak(player, furniture.location)) furnitureBreakEvent.isCancelled = true
@@ -94,6 +100,12 @@ object BlockyFurnitures {
             if (furnitureBreakEvent.isCancelled) return false
             FurnitureHelpers.handleFurnitureDrops(furniture, player)
         }
+
+        return removeFurniture(furniture)
+    }
+
+    fun removeFurniture(furniture: ItemDisplay): Boolean {
+        if (!furniture.isBlockyFurniture) return false
 
         furniture.interactionEntity?.remove()
         furniture.seats.forEach(Entity::remove)
