@@ -15,7 +15,6 @@ import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.has
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
@@ -105,11 +104,11 @@ object BlockyFurnitures {
     fun removeFurniture(furniture: ItemDisplay): Boolean {
         if (!furniture.isBlockyFurniture) return false
 
-        furniture.interactionEntity?.remove()
-        furniture.seats.forEach(Entity::remove)
+        furniture.interactionEntity?.let { if (!it.isDead) it.remove() }
+        furniture.seats.filter { !it.isDead }.forEach(Entity::remove)
         FurnitureHelpers.clearAssosiatedHitboxChunkEntries(furniture)
         BlockLight.removeBlockLight(furniture.location)
-        furniture.remove()
+        if (!furniture.isDead) furniture.remove()
         return true
     }
 }
