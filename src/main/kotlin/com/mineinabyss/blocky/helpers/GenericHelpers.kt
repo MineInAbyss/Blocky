@@ -152,7 +152,8 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
 
 
     block.customBlockData.clear()
-    block.setType(Material.AIR, true)
+    block.type = Material.AIR
+    block.world.playEffect(block.location, Effect.STEP_SOUND, block.blockData)
     return true
 }
 
