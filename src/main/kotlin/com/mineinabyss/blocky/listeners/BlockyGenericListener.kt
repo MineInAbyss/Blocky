@@ -3,13 +3,9 @@ package com.mineinabyss.blocky.listeners
 import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
-import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
-import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageAbortEvent
-import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureDamageEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
@@ -49,9 +45,6 @@ class BlockyGenericListener : Listener {
     private fun Player.resetCustomBreak(block: Block) {
         when {
             block.isBlockyBlock -> BlockyBlockDamageAbortEvent(block, this)
-            block.isBlockyFurniture ->
-                BlockyFurnitureDamageAbortEvent(block.baseFurniture ?: return, this)
-
             else -> return
         }.run { call(); this }
         this.stopMiningJob()
@@ -85,7 +78,6 @@ class BlockyGenericListener : Listener {
         isCancelled = true
         val damageEvent = when {
             block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
-            block.isBlockyFurniture -> BlockyFurnitureDamageEvent(block.baseFurniture ?: return, player)
             else -> return
         }.run { call(); this }
         if (damageEvent.isCancelled) return

@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.compatibility.worldedit
 
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
-import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
@@ -34,18 +33,9 @@ class WorldEditListener : Listener {
                 val loc = Location(world, pos.x.toDouble(), pos.y.toDouble(), pos.z.toDouble())
 
                 // Handle removing old entities before setting new
-                val oldEntity = loc.block.prefabKey?.toEntityOrNull()
-                    ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
-
-                if (oldEntity.has<BlockyLight>())
-                    BlockLight.removeBlockLight(loc)
-
+                loc.block.prefabKey?.toEntityOrNull() ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
                 // Get the BlockyType of the new block
-                val gearyEntity = prefabMap[blockData]?.toEntityOrNull() ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
-
-                // TODO Add more checks here as noteworthy stuff is added
-                if (gearyEntity.has<BlockyLight>())
-                    BlockLight.createBlockLight(loc, gearyEntity.get<BlockyLight>()?.lightLevel!!)
+                prefabMap[blockData]?.toEntityOrNull() ?: return extent.setBlock(pos.x, pos.y, pos.z, block)
 
                 return extent.setBlock(pos.blockX, pos.blockY, pos.blockZ, block)
             }

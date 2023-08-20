@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
-import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
@@ -26,7 +26,7 @@ fun breakWireBlock(block: Block, player: Player?): Boolean {
     }
 
 
-    if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
+    //if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
     if (gearyBlock.has<BlockyTallWire>()) handleTallWire(block)
 
     block.type = Material.AIR

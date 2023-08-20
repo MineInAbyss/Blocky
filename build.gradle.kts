@@ -33,6 +33,7 @@ dependencies {
     // Geary platform
     compileOnly(blockyLibs.geary.papermc)
     compileOnly(blockyLibs.guiy)
+    compileOnly(blockyLibs.protocolburrito)
 
     // Other plugins
     compileOnly(libs.minecraft.plugin.modelengine)
@@ -40,11 +41,9 @@ dependencies {
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(libs.minecraft.anvilgui)
-    compileOnly(blockyLibs.minecraft.plugin.lightapi)
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)
-
     implementation(libs.bundles.idofront.core)
     implementation(libs.idofront.nms)
 }

@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.assets_generation.MoreCreativeTabsGeneration
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
+import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
@@ -36,8 +37,6 @@ class BlockyPlugin : JavaPlugin() {
     override fun onEnable() {
 
         createBlockyContext()
-
-        CustomBlockData.registerListener(blocky.plugin)
 
         if (Bukkit.getPluginManager().isPluginEnabled("WorldEdit")) {
             WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
@@ -90,6 +89,7 @@ class BlockyPlugin : JavaPlugin() {
         registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
         MoreCreativeTabsGeneration().generateModAssets()
+        FurniturePacketHelpers.registerPacketListeners()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {

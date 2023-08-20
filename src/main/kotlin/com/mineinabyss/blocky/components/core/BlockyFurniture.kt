@@ -20,7 +20,7 @@ data class BlockyFurniture(
     val properties: FurnitureProperties = FurnitureProperties(),
     val rotationType: RotationType = RotationType.VERY_STRICT,
     val collisionHitbox: List<CollisionHitbox> = emptyList(),
-    val interactionHitbox: InteractionHitbox? = null,
+    val interactionHitbox: InteractionHitbox = InteractionHitbox(1f, 1f),
 ) {
     @Serializable
     @SerialName("blocky:interaction_hitbox")

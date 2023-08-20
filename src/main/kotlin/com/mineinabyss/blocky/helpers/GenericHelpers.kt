@@ -10,7 +10,6 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.BlockyDrops
-import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
@@ -24,6 +23,7 @@ import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
+import net.minecraft.core.BlockPos
 import org.bukkit.*
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -68,6 +68,8 @@ const val DEFAULT_FALL_PITCH = 0.75f
 val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
+fun Block.toBlockPos() = BlockPos(this.x, this.y, this.z)
+fun Location.toBlockPos() = BlockPos(this.blockX, this.blockY, this.blockZ)
 
 internal fun minOf(duration: Duration, duration2: Duration) = if (duration < duration2) duration else duration2
 internal infix fun <A, B, C> Pair<A, B>.to(that: C): Triple<A, B, C> = Triple(this.first, this.second, that)
@@ -128,11 +130,6 @@ fun placeBlockyBlock(
         else item.subtract()
     }
 
-    targetBlock.toGearyOrNull()?.let { entity ->
-        if (entity.has<BlockyLight>())
-            BlockLight.createBlockLight(against.getRelative(face).location, entity.get<BlockyLight>()!!.lightLevel)
-    }
-
     targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
     player.swingMainHand()
     return targetBlock
@@ -147,9 +144,7 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
         handleBlockyDrops(block, player)
     }
 
-    val prefab = block.toGearyOrNull() ?: return false
-    if (prefab.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
-
+    block.toGearyOrNull() ?: return false
 
     block.customBlockData.clear()
     block.type = Material.AIR
@@ -260,7 +255,7 @@ object GenericHelpers {
     fun Player.getRelativeFacing(): BlockFace {
         val yaw = location.yaw.toDouble()
         return when {
-            (yaw >= 348.75 || yaw in 0.0..11.25 || yaw >= -11.25 && yaw <= 0.0 || yaw <= -348.75 && yaw <= 0.0) -> BlockFace.SOUTH
+            (yaw >= 348.75 || yaw in 0.0..11.25 || yaw >= -11.25 && yaw <= 0.0 || yaw <= -348.75 || yaw <= 0.0) -> BlockFace.SOUTH
             (yaw in 11.25..33.75 || yaw in -348.75..-326.25) -> BlockFace.SOUTH_SOUTH_WEST
             (yaw in 33.75..56.25 || yaw in -326.25..-303.75) -> BlockFace.SOUTH_WEST
             (yaw in 56.25..78.75 || yaw in -303.75..-281.25) -> BlockFace.WEST_SOUTH_WEST

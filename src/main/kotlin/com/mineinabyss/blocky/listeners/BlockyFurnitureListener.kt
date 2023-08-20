@@ -1,43 +1,70 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.api.BlockyFurnitures.baseFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockyFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.blockySeat
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
+import com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent
+import com.github.shynixn.mccoroutine.bukkit.launch
+import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
+import com.mineinabyss.blocky.api.BlockyFurnitures.getBlockySeat
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.isFurnitureHitbox
 import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.blocky.components.core.BlockyFurnitureHitbox
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
+import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.th0rgal.protectionlib.ProtectionLib
+import kotlinx.coroutines.delay
 import org.bukkit.GameMode
-import org.bukkit.Material
-import org.bukkit.block.Block
+import org.bukkit.Location
 import org.bukkit.block.BlockFace
-import org.bukkit.entity.*
+import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
-import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.block.BlockExplodeEvent
-import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.entity.ProjectileHitEvent
-import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.inventory.ItemStack
+import org.bukkit.inventory.EquipmentSlot
 
 class BlockyFurnitureListener : Listener {
+
+    @EventHandler(priority = EventPriority.HIGH)
+    fun PlayerChunkLoadEvent.onLoadChunk() {
+        chunk.entities.filterIsInstance<ItemDisplay>().forEach {
+            FurniturePacketHelpers.sendInteractionEntityPacket(it, player)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH)
+    fun EntityAddToWorldEvent.onAddFurniture() {
+        val entity = entity as? ItemDisplay ?: return
+        blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
+            delay(1)
+            if (!entity.isBlockyFurniture) return@launch
+            FurniturePacketHelpers.sendInteractionEntityPacket(entity)
+            FurniturePacketHelpers.sendCollisionHitboxPacket(entity)
+            FurniturePacketHelpers.sendLightPacket(entity)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun EntityRemoveFromWorldEvent.onRemoveFurniture() {
+        val entity = entity as? ItemDisplay ?: return
+        if (!entity.isBlockyFurniture) return
+        FurniturePacketHelpers.removeInteractionHitboxPacket(entity)
+        FurniturePacketHelpers.removeCollisionHitboxPacket(entity)
+        FurniturePacketHelpers.removeLightPacket(entity)
+    }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.prePlacingFurniture() {
@@ -68,110 +95,36 @@ class BlockyFurnitureListener : Listener {
         setUseInteractedBlock(Event.Result.DENY)
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakingHitbox() {
-        if (!block.isFurnitureHitbox || player.gameMode != GameMode.CREATIVE) return
-        block.baseFurniture?.let { removeFurniture(it, player) }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun EntityDamageByEntityEvent.onBreakingFurniture() {
-        val furniture = (entity as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return
-        if (furniture.toGearyOrNull()?.get<BlockyInfo>()?.isUnbreakable == true) isCancelled = true
-        else removeFurniture(furniture, damager as? Player)
-    }
-
-    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
-    fun PlayerInteractEntityEvent.onSitting() {
-        val entity = rightClicked as? Interaction ?: return
-        if (!ProtectionLib.canInteract(player, entity.location)) return
-        if (!entity.isFurnitureHitbox || player.isSneaking) return
-
-        player.sitOnBlockySeat(entity)
-        isCancelled = true
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    fun PlayerInteractEntityEvent.onInteractFurniture() {
-        val (interaction, hand, item) = ((rightClicked as? Interaction) ?: return) to hand to (player.inventory.getItem(hand))
-        if (!ProtectionLib.canInteract(player, interaction.location)) return
-        if (!interaction.isFurnitureHitbox) return
-
-        BlockyFurnitureInteractEvent(interaction, player, hand, item, null, null).callEvent()
-    }
-
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    fun PlayerInteractEvent.onInteractFurniture() {
-        val (block, item, hand) = (clickedBlock ?: return) to (item ?: ItemStack(Material.AIR)) to (hand ?: return)
-        val baseFurniture = block.baseFurniture ?: return
-        if (action != Action.RIGHT_CLICK_BLOCK || useInteractedBlock() == Event.Result.DENY) return
-        if (!block.isFurnitureHitbox || !ProtectionLib.canInteract(player, block.location)) return
-
-        BlockyFurnitureInteractEvent(baseFurniture, player, hand, item, block, blockFace).callEvent()
+    @EventHandler
+    fun PlayerUseUnknownEntityEvent.onInteract() {
+        if (hand != EquipmentSlot.HAND) return
+        val baseFurniture = FurniturePacketHelpers.getBaseFurnitureFromInteractionEntity(entityId) ?: return
+        blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
+            when {
+                isAttack -> removeFurniture(baseFurniture, player)
+                else ->  BlockyFurnitureInteractEvent(
+                    baseFurniture, player,
+                    EquipmentSlot.HAND, player.inventory.itemInMainHand,
+                    null, null
+                ).callEvent()
+            }
+        }
     }
 
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     fun BlockyFurnitureInteractEvent.onSitting() {
-        if (!ProtectionLib.canInteract(player, entity.location)) return
-        if (!baseEntity.isBlockyFurniture || player.isSneaking) return
+        if (!ProtectionLib.canInteract(player, entity.location) || player.isSneaking) return
 
-        clickedBlock?.let { player.sitOnBlockySeat(clickedBlock) }
-            ?: interactionEntity?.let { player.sitOnBlockySeat(interactionEntity) }
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun ProjectileHitEvent.onProjectileHit() {
-        if (hitBlock?.isFurnitureHitbox != true) return
-        val furniture = hitEntity?.let { (hitEntity as? Interaction)?.baseFurniture ?: this as? ItemDisplay ?: return }
-
-        (entity.shooter as? Player).let { player ->
-            (hitBlock?.location ?: hitEntity?.location)?.let { loc ->
-                when {
-                    player?.let { ProtectionLib.canBuild(it, loc) } == true ->
-                        isCancelled = true
-                    entity is Explosive -> {
-                        isCancelled = true
-                        attemptBreakBlockyBlock(loc.block, player)
-                        Unit
-                    }
-                    //TODO Fix this
-                    furniture != null -> {
-                        isCancelled = true
-                        if (furniture.toGearyOrNull()?.get<BlockyFurnitureHitbox>()?.hitbox?.isNotEmpty() == true)
-                            removeFurniture(furniture)
-                    }
-                    else -> {}
-                }
-            }
-        }
-
-        if (entity is Explosive) furniture?.let { removeFurniture(furniture) }
-        else isCancelled = true
-    }
-
-    @EventHandler(ignoreCancelled = true)
-    fun BlockExplodeEvent.onBlockExplode() {
-        blockList().filter { it.isFurnitureHitbox && it.blockyFurniture != null }
-            .mapNotNull { it.baseFurniture }.toSet()
-            .forEach { removeFurniture(it) }
+        player.sitOnBlockySeat(baseEntity, clickedBlock?.location ?: baseEntity.location)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun PlayerQuitEvent.onQuit() {
-        val seat = player.vehicle as? ArmorStand ?: return
-        seat.toGearyOrNull()?.has<BlockySeat>() ?: return || return
+        (player.vehicle as? ArmorStand)?.toGearyOrNull()?.get<BlockySeat>() ?: return
         player.leaveVehicle()
     }
 
-    private fun Player.sitOnBlockySeat(block: Block) {
-        block.blockySeat?.let {
-            if (this.passengers.isEmpty()) it.addPassenger(this)
-        }
-    }
-
-    private fun Player.sitOnBlockySeat(entity: Interaction) {
-        entity.blockySeat?.let {
-            if (this.passengers.isEmpty()) it.addPassenger(this)
-        }
+    private fun Player.sitOnBlockySeat(entity: ItemDisplay, location: Location = entity.location) {
+        if (this.passengers.isEmpty()) getBlockySeat(entity, location)?.addPassenger(this)
     }
 }

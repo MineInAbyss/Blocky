@@ -3,7 +3,6 @@ package com.mineinabyss.blocky.helpers
 import com.destroystokyo.paper.MaterialTags
 import com.mineinabyss.blocky.helpers.GenericHelpers.getRelativeFacing
 import com.mineinabyss.idofront.nms.aliases.toNMS
-import net.minecraft.core.BlockPos
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.phys.BlockHitResult
@@ -46,7 +45,7 @@ object BlockStateCorrection {
     private fun getBlockHitResult(player: Player, block: Block): BlockHitResult? {
         val human = (player as? CraftPlayer)?.handle ?: return null
         val loc = player.eyeLocation
-        return BlockHitResult(Vec3(loc.x, loc.y, loc.z), human.direction.opposite, BlockPos(block.x, block.y, block.z), false)
+        return BlockHitResult(Vec3(loc.x, loc.y, loc.z), human.direction.opposite, block.toBlockPos(), false)
     }
 
     //TODO This might be better to call via an event or something instead of this god awful method

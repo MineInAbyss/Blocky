@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.api
 
-import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
@@ -54,8 +53,7 @@ object BlockyBlocks {
         /*if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
             block.persistentDataContainer.encode(VanillaNoteBlock(0))*/
 
-        if (gearyEntity.has<BlockyLight>())
-            BlockLight.createBlockLight(location, gearyEntity.get<BlockyLight>()!!.lightLevel)
+        //TODO Handle light via packets for blocks
         return true
     }
 

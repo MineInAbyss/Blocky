@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
-import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
@@ -29,7 +28,6 @@ object CaveVineHelpers {
             handleBlockyDrops(block, player)
         }
 
-        if (gearyBlock.has<BlockyLight>()) BlockLight.removeBlockLight(block.location)
         block.setType(Material.AIR, false)
         if (block.getRelative(BlockFace.DOWN).type == Material.CAVE_VINES)
             breakCaveVineBlock(block.getRelative(BlockFace.DOWN), null)
