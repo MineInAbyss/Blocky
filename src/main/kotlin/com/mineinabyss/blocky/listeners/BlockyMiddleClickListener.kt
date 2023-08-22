@@ -22,9 +22,9 @@ import org.bukkit.event.inventory.InventoryCreativeEvent
 class BlockyMiddleClickListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun InventoryCreativeEvent.middleClickBlockyItem() {
-        if (click != ClickType.CREATIVE) return
         val player = inventory.holder as? Player ?: return
         when {
+            click != ClickType.CREATIVE -> return
             (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.PETRIFIED_OAK_SLAB)
                 .apply { addAll(CopperHelpers.BLOCKY_SLABS).apply { addAll(CopperHelpers.BLOCKY_STAIRS) } }) -> {
                 val lookingAtPrefab = player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:

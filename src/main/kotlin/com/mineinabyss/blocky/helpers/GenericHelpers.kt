@@ -208,14 +208,12 @@ object GenericHelpers {
     }
 
     private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
-        val yaw = location.yaw.toInt()
-        val pitch = location.pitch.toInt()
 
         return when {
             directional.isLogType -> null
             directional.isDropperType && pitch >= 45 -> BlockFace.UP
             directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
-            else -> GenericHelpers.getRelativeBlockFace(yaw)
+            else -> GenericHelpers.getRelativeBlockFace(yaw.toInt())
         }
     }
 
@@ -253,7 +251,6 @@ object GenericHelpers {
     }
 
     fun Player.getRelativeFacing(): BlockFace {
-        val yaw = location.yaw.toDouble()
         return when {
             (yaw >= 348.75 || yaw in 0.0..11.25 || yaw >= -11.25 && yaw <= 0.0 || yaw <= -348.75 || yaw <= 0.0) -> BlockFace.SOUTH
             (yaw in 11.25..33.75 || yaw in -348.75..-326.25) -> BlockFace.SOUTH_SOUTH_WEST

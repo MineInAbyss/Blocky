@@ -72,7 +72,7 @@ class BlockyFurnitureListener : Listener {
         val targetBlock = FurnitureHelpers.getTargetBlock(block, blockFace) ?: return
         val gearyEntity = player.gearyInventory?.get(hand) ?: return
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return
-        val yaw = if (furniture.hasStrictRotation) FurnitureHelpers.getYaw(FurnitureHelpers.getRotation(player.location.yaw, furniture)) else player.location.yaw
+        val yaw = if (furniture.hasStrictRotation) FurnitureHelpers.getYaw(FurnitureHelpers.getRotation(player.yaw, furniture)) else player.yaw
 
         when {
             action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE -> return

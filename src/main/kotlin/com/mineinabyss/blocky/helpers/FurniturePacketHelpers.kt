@@ -1,3 +1,5 @@
+@file:Suppress("UnstableApiUsage")
+
 package com.mineinabyss.blocky.helpers
 
 import com.comphenix.protocol.events.PacketContainer
@@ -15,7 +17,10 @@ import com.mineinabyss.protocolburrito.packets.ServerboundPlayerActionPacketWrap
 import com.mineinabyss.protocolburrito.packets.ServerboundUseItemOnPacketWrap
 import io.papermc.paper.math.Position
 import net.minecraft.core.BlockPos
-import net.minecraft.network.protocol.game.*
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
+import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.Entity
@@ -73,7 +78,7 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to show the interaction hitbox of.
      */
     internal fun sendInteractionEntityPacket(furniture: ItemDisplay) {
-        furniture.location.world!!.players.forEach {
+        furniture.world.players.forEach {
             sendInteractionEntityPacket(furniture, it)
         }
     }
@@ -109,7 +114,7 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to remove the interaction hitbox of.
      */
     internal fun removeInteractionHitboxPacket(furniture: ItemDisplay) {
-        furniture.location.world!!.players.forEach {
+        furniture.world.players.forEach {
             removeInteractionHitboxPacket(furniture, it)
         }
     }
@@ -127,22 +132,22 @@ object FurniturePacketHelpers {
 
     /**
      * Sends a packet to show the collision hitbox of the given furniture to all players in the world.
-     * @param furniture The furniture to show the collision hitbox of.
+     * @param baseEntity The furniture to show the collision hitbox of.
      */
     internal fun sendCollisionHitboxPacket(baseEntity: ItemDisplay) {
-        baseEntity.location.world!!.players.forEach {
+        baseEntity.world.players.forEach {
             sendCollisionHitboxPacket(baseEntity, it)
         }
     }
 
     /**
      * Sends a packet to show the collision hitbox of the given furniture to the given player.
-     * @param furniture The furniture to show the collision hitbox of.
+     * @param baseEntity The furniture to show the collision hitbox of.
      */
     internal fun sendCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val positions = getLocations(
-            baseEntity.location.yaw,
+            baseEntity.yaw,
             baseEntity.location,
             furniture.collisionHitbox
         ).values.flatten().map { Position.block(it) }.associateWith { Material.BARRIER.createBlockData() }.toMutableMap()
@@ -157,21 +162,21 @@ object FurniturePacketHelpers {
 
     /**
      * Sends a packet to remove the collision hitbox of the given furniture to all players in the world.
-     * @param furniture The furniture to remove the collision hitbox of.
+     * @param baseEntity The furniture to remove the collision hitbox of.
      */
     internal fun removeCollisionHitboxPacket(baseEntity: ItemDisplay) {
-        baseEntity.location.world!!.players.forEach {
+        baseEntity.world.players.forEach {
             removeCollisionHitboxPacket(baseEntity, it)
         }
     }
 
     /**
      * Sends a packet to remove the collision hitbox of the given furniture to the given player.
-     * @param furniture The furniture to remove the collision hitbox of.
+     * @param baseEntity The furniture to remove the collision hitbox of.
      */
-    internal fun removeCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
+    private fun removeCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
-        val positions = getLocations(baseEntity.location.yaw, baseEntity.location, furniture.collisionHitbox)
+        val positions = getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
             .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
         positions.forEach {
@@ -184,7 +189,7 @@ object FurniturePacketHelpers {
      * @param baseEntity The furniture to send the light packets for
      */
     internal fun sendLightPacket(baseEntity: ItemDisplay) {
-        baseEntity.location.world!!.players.forEach {
+        baseEntity.world.players.forEach {
             sendLightPacket(baseEntity, it)
         }
     }
@@ -198,7 +203,7 @@ object FurniturePacketHelpers {
         val light = baseEntity.toGeary().get<BlockyLight>() ?: return
 
         val collisionHitboxPositions = getLocations(
-            baseEntity.location.yaw, baseEntity.location, furniture.collisionHitbox
+            baseEntity.yaw, baseEntity.location, furniture.collisionHitbox
         ).values.flatten().map { Position.block(it) }.associateWith {
             Material.LIGHT.createBlockData {
                 (it as Light).level = light.lightLevel
@@ -213,7 +218,7 @@ object FurniturePacketHelpers {
      * @param baseEntity The furniture to remove the light packets for
      */
     internal fun removeLightPacket(baseEntity: ItemDisplay) {
-        baseEntity.location.world!!.players.forEach {
+        baseEntity.world.players.forEach {
             removeLightPacket(baseEntity, it)
         }
     }
@@ -222,10 +227,10 @@ object FurniturePacketHelpers {
      * Removes the light packets for this furniture to a specific player
      * @param baseEntity The furniture to remove the light packets for
      */
-    internal fun removeLightPacket(baseEntity: ItemDisplay, player: Player) {
+    private fun removeLightPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val collisionHitboxPositions =
-            getLocations(baseEntity.location.yaw, baseEntity.location, furniture.collisionHitbox)
+            getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
                 .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
 
         player.sendMultiBlockChange(collisionHitboxPositions)
