@@ -59,6 +59,7 @@ object FurniturePacketHelpers {
                         Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
                             BlockyFurnitures.removeFurniture(baseFurniture, player)
                         }
+
                     else -> {}
                 }
             }
@@ -67,11 +68,13 @@ object FurniturePacketHelpers {
             onReceive<ServerboundUseItemOnPacketWrap> { wrap ->
                 val baseFurniture = getBaseFurnitureFromCollisionHitbox(wrap.blockHit.blockPos) ?: return@onReceive
                 isCancelled = true
-                BlockyFurnitureInteractEvent(
-                    baseFurniture, player,
-                    EquipmentSlot.HAND, player.inventory.itemInMainHand,
-                    null, null
-                ).callEvent()
+                Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
+                    BlockyFurnitureInteractEvent(
+                        baseFurniture, player,
+                        EquipmentSlot.HAND, player.inventory.itemInMainHand,
+                        null, null
+                    ).callEvent()
+                }
             }
         }
     }
@@ -153,7 +156,8 @@ object FurniturePacketHelpers {
             baseEntity.yaw,
             baseEntity.location,
             furniture.collisionHitbox
-        ).values.flatten().map { Position.block(it) }.associateWith { Material.BARRIER.createBlockData() }.toMutableMap()
+        ).values.flatten().map { Position.block(it) }.associateWith { Material.BARRIER.createBlockData() }
+            .toMutableMap()
         player.sendMultiBlockChange(positions)
         positions.map { it.key.toBlock() }.forEach {
             collisionHitboxPosMap.compute(baseEntity) { _, blockPos ->
@@ -234,7 +238,8 @@ object FurniturePacketHelpers {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val collisionHitboxPositions =
             getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
-                .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
+                .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }
+                .toMutableMap()
 
         player.sendMultiBlockChange(collisionHitboxPositions)
     }
