@@ -53,7 +53,7 @@ class ResourcepackGeneration {
     private fun getNoteBlockBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.NOTEBLOCK }
+            val blockyQuery = BlockyBlockQuery.toList { it }.filter { it.block.blockType == SetBlock.BlockType.NOTEBLOCK }
             blockModel.add(
                 Material.NOTE_BLOCK.createBlockData().getNoteBlockData(),
                 "minecraft:block/note_block".getModelJson()
@@ -82,7 +82,7 @@ class ResourcepackGeneration {
     private fun getTripwireBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.WIRE }.map { it }
+            val blockyQuery = BlockyBlockQuery.toList { it }.filter { it.block.blockType == SetBlock.BlockType.WIRE }.map { it }
             blockModel.add(
                 Material.TRIPWIRE.createBlockData().getTripwireData(),
                 "minecraft:block/barrier".getModelJson()
@@ -114,7 +114,7 @@ class ResourcepackGeneration {
     private fun getCaveVineBlockStates(): JsonObject {
         return JsonObject().apply {
             val blockModel = JsonObject()
-            val blockyQuery = BlockyBlockQuery.filter { it.block.blockType == SetBlock.BlockType.CAVEVINE }
+            val blockyQuery = BlockyBlockQuery.toList { it }.filter { it.block.blockType == SetBlock.BlockType.CAVEVINE }
             blockModel.add(
                 Material.CAVE_VINES.createBlockData().getCaveVineBlockStates(),
                 "minecraft:block/cave_vines".getModelJson()

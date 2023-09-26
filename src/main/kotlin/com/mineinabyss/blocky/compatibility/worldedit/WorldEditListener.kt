@@ -47,7 +47,7 @@ class WorldEditListener : Listener {
         if (!buffer.startsWith("//") || !isCommand) return
         val arg = buffer.substringAfterLast(" ").lowercase()
 
-        completions.addAll(BlockyBlockQuery.filter {
+        completions.addAll(BlockyBlockQuery.toList { it }.filter {
             it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
         }.map { it.prefabKey.toString() })
     }

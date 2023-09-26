@@ -13,7 +13,7 @@ import com.mineinabyss.guiy.modifiers.size
 fun BlockyUIScope.BlockyFurnitureMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
-            BlockyFurnitureQuery
+            BlockyFurnitureQuery.toList { it }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }
     BackButton(Modifier.at(4, 5))
