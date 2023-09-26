@@ -26,6 +26,7 @@ import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.data.type.Light
 import org.bukkit.entity.ItemDisplay
@@ -55,7 +56,9 @@ object FurniturePacketHelpers {
                 val baseFurniture = getBaseFurnitureFromCollisionHitbox(wrap.pos) ?: return@onReceive
                 when ((wrap.handle as ServerboundPlayerActionPacket).action) {
                     ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK ->
-                        BlockyFurnitures.removeFurniture(baseFurniture, player)
+                        Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
+                            BlockyFurnitures.removeFurniture(baseFurniture, player)
+                        }
                     else -> {}
                 }
             }
