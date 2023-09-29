@@ -101,11 +101,13 @@ object FurnitureHelpers {
                     scale.set(properties.scale ?: if (isFixed) Vector3f(0.5f, 0.5f, 0.5f) else Vector3f(1f, 1f, 1f))
                 }
 
-                if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE) teleportAsync(loc.toCenterLocation())
                 when {
-                    isFixed -> setRotation(getYaw(getRotation(yaw, furniture)) - 180, -90f)
-                    else -> setRotation(getYaw(getRotation(yaw, furniture)), 0f)
+                    isFixed -> loc.yaw = getYaw(getRotation(yaw, furniture))
+                    else -> loc.yaw = getYaw(getRotation(yaw, furniture)) - 180
                 }
+
+                if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE) teleportAsync(loc.toCenterLocation())
+
             }
             this.itemStack = furnitureItem
         } ?: return null
