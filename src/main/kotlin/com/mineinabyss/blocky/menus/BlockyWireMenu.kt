@@ -15,7 +15,7 @@ import com.mineinabyss.guiy.modifiers.size
 fun BlockyUIScope.BlockyWireMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
-            BlockyBlockQuery.filter { it.block.blockType in setOf(SetBlock.BlockType.WIRE, SetBlock.BlockType.CAVEVINE) }
+            BlockyBlockQuery.toList { it }.filter { it.block.blockType in setOf(SetBlock.BlockType.WIRE, SetBlock.BlockType.CAVEVINE) }
         }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
     }
     BackButton(Modifier.at(4, 5))

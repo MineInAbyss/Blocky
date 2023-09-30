@@ -48,10 +48,9 @@ class BlockyWireListener : Listener {
 
         if (type == Material.LAVA_BUCKET) type = Material.LAVA
         if (type == Material.WATER_BUCKET) type = Material.WATER
-        if (type == Material.STRING || type.isBlock) {
-            placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.getBlockyTripWire()) ?: return
-        }
-        player.swingMainHand()
+        if (type != Material.STRING && !type.isBlock) return
+
+        placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.getBlockyTripWire())
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -78,21 +77,11 @@ class BlockyWireListener : Listener {
             return
         } else if (!player.isSneaking && block.isInteractable()) return
 
-        // Fixes tripwire updating when placing blocks next to it
-        if (item.type.isBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() != true) {
-            BlockFace.values().filter { !it.isCartesian && it.modZ == 0 }.forEach {
-                if (block.getRelative(it).toGearyOrNull() == null) return@forEach
-                //TODO Extract this logic from the placeBlockyBlock method
-                placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
-            }
-        }
-
         val blockyWire = player.gearyInventory?.get(hand) ?: return
         val wireBlock = blockyWire.get<SetBlock>() ?: return
         if (wireBlock.blockType != SetBlock.BlockType.WIRE) return
 
-        placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire()) ?: return
-
+        placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire())
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

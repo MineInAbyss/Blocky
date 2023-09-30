@@ -26,6 +26,7 @@ import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.data.type.Light
 import org.bukkit.entity.ItemDisplay
@@ -55,7 +56,10 @@ object FurniturePacketHelpers {
                 val baseFurniture = getBaseFurnitureFromCollisionHitbox(wrap.pos) ?: return@onReceive
                 when ((wrap.handle as ServerboundPlayerActionPacket).action) {
                     ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK ->
-                        BlockyFurnitures.removeFurniture(baseFurniture, player)
+                        Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
+                            BlockyFurnitures.removeFurniture(baseFurniture, player)
+                        }
+
                     else -> {}
                 }
             }
@@ -64,11 +68,13 @@ object FurniturePacketHelpers {
             onReceive<ServerboundUseItemOnPacketWrap> { wrap ->
                 val baseFurniture = getBaseFurnitureFromCollisionHitbox(wrap.blockHit.blockPos) ?: return@onReceive
                 isCancelled = true
-                BlockyFurnitureInteractEvent(
-                    baseFurniture, player,
-                    EquipmentSlot.HAND, player.inventory.itemInMainHand,
-                    null, null
-                ).callEvent()
+                Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
+                    BlockyFurnitureInteractEvent(
+                        baseFurniture, player,
+                        EquipmentSlot.HAND, player.inventory.itemInMainHand,
+                        null, null
+                    ).callEvent()
+                }
             }
         }
     }
@@ -150,7 +156,8 @@ object FurniturePacketHelpers {
             baseEntity.yaw,
             baseEntity.location,
             furniture.collisionHitbox
-        ).values.flatten().map { Position.block(it) }.associateWith { Material.BARRIER.createBlockData() }.toMutableMap()
+        ).values.flatten().map { Position.block(it) }.associateWith { Material.BARRIER.createBlockData() }
+            .toMutableMap()
         player.sendMultiBlockChange(positions)
         positions.map { it.key.toBlock() }.forEach {
             collisionHitboxPosMap.compute(baseEntity) { _, blockPos ->
@@ -231,7 +238,8 @@ object FurniturePacketHelpers {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val collisionHitboxPositions =
             getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
-                .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
+                .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }
+                .toMutableMap()
 
         player.sendMultiBlockChange(collisionHitboxPositions)
     }

@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
+import com.mineinabyss.blocky.api.BlockyBlocks
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
@@ -20,6 +21,7 @@ import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
+import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
@@ -83,56 +85,30 @@ fun placeBlockyBlock(
     against: Block,
     face: BlockFace,
     newData: BlockData
-): Block? {
+) {
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
-
-    if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return null
-    if (!against.isBlockyBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() != true) return null
-    if (player.isInBlock(targetBlock)) return null
-    if (against.isVanillaNoteBlock) return null
+    if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return
+    if (!against.isBlockyBlock && !newData.isBlockyBlock) return
+    if (player.isInBlock(targetBlock) || against.isVanillaNoteBlock) return
 
     if (!blocky.config.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
         targetBlock.persistentDataContainer.encode(VanillaNoteBlock(0))
 
-    val currentData = targetBlock.blockData
-    val isFlowing = newData.material == Material.WATER || newData.material == Material.LAVA
-    targetBlock.setBlockData(newData, isFlowing)
-
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)
-    blockPlaceEvent.callEvent()
 
     when {
-        targetBlock.toGearyOrNull()?.get<BlockyPlacableOn>()
-            ?.isPlacableOn(targetBlock, face) == true -> blockPlaceEvent.isCancelled = true
-
-        !ProtectionLib.canBuild(player, targetBlock.location) || !blockPlaceEvent.canBuild() ->
+        newData.toGearyOrNull()?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true ->
             blockPlaceEvent.isCancelled = true
-
-        !BlockStateCorrection.correctAllBlockStates(targetBlock, player, face, item) -> blockPlaceEvent.isCancelled =
-            true
+        !ProtectionLib.canBuild(player, targetBlock.location) ->
+            blockPlaceEvent.isCancelled = true
     }
+    blockPlaceEvent.callEvent()
 
-    val blockyEvent = BlockyBlockPlaceEvent(targetBlock, player, hand, item)
-    blockyEvent.callEvent()
-    if (blockPlaceEvent.isCancelled || blockyEvent.isCancelled) {
-        targetBlock.setBlockData(currentData, false) // false to cancel physic
-        return null
-    }
+    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled || !BlockyBlockPlaceEvent(targetBlock, player, hand, item).callEvent()) return
 
-    val sound =
-        if (isFlowing) {
-            if (newData.material == Material.WATER) Sound.ITEM_BUCKET_EMPTY
-            else Sound.valueOf("ITEM_BUCKET_EMPTY_" + newData.material)
-        } else newData.soundGroup.placeSound
-
-    if (player.gameMode != GameMode.CREATIVE) {
-        if (MaterialTags.BUCKETS.isTagged(item)) item.type = Material.BUCKET
-        else item.subtract()
-    }
-
-    targetBlock.world.playSound(targetBlock.location, sound, 1.0f, 1.0f)
-    player.swingMainHand()
-    return targetBlock
+    if (newData.toGearyOrNull()?.has<SetBlock>() == true) {
+        newData.toGearyOrNull()?.get<PrefabKey>()?.let { BlockyBlocks.placeBlockyBlock(targetBlock.location, it) }
+    } else BlockStateCorrection.placeItemAsBlock(player, hand, item, targetBlock, face)
 }
 
 internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Boolean {
@@ -213,7 +189,7 @@ object GenericHelpers {
             directional.isLogType -> null
             directional.isDropperType && pitch >= 45 -> BlockFace.UP
             directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
-            else -> GenericHelpers.getRelativeBlockFace(yaw.toInt())
+            else -> getRelativeBlockFace(yaw.toInt())
         }
     }
 

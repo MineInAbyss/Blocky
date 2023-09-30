@@ -8,6 +8,7 @@ import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
@@ -30,6 +31,7 @@ import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
 
+@OptIn(UnsafeAccessors::class)
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
@@ -66,7 +68,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 }
             }
             "give" {
-                val type by optionArg(options = BlockyQuery.filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
+                val type by optionArg(options = BlockyQuery.toList { it }.filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
                     .map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
@@ -126,7 +128,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     when (args[0]) {
                         "reload" -> listOf("all", "config", "items").filter { it.startsWith(args[1]) }
                         "give" ->
-                            BlockyQuery.filter {
+                            BlockyQuery.toList { it }.filter {
                                 val arg = args[1].lowercase()
                                 (it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)) &&
                                         it.entity.get<BlockyDirectional>()?.isParentBlock != false

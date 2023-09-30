@@ -1,9 +1,11 @@
 package com.mineinabyss.blocky.listeners
 
+import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
+import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.blocks.BlockyBurnable
@@ -19,7 +21,6 @@ import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
 import org.bukkit.Material
-import org.bukkit.Tag
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.Event
@@ -66,29 +67,36 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onPlaceAgainstBlockyBlock() {
-        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
+        val (placedAgainst, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
         //TODO Figure out  why water replaces custom block
-        if (action != Action.RIGHT_CLICK_BLOCK || !block.isBlockyBlock) return
+        if (action != Action.RIGHT_CLICK_BLOCK || !placedAgainst.isBlockyBlock || !item.type.isBlock) return
 
+        if (!BlockyBlockInteractEvent(placedAgainst, player, hand, item, blockFace).callEvent()) isCancelled = true
         setUseInteractedBlock(Event.Result.DENY)
-        //TODO Might need old check if it is Blocky block?
-        if (item.type.isBlock)
-            if (Tag.STAIRS.isTagged(item.type) || Tag.SLABS.isTagged(item.type))
-                placeBlockyBlock(player, hand, item, block, blockFace, item.type.createBlockData())
-            else BlockStateCorrection.placeItemAsBlock(player, hand, item, block)
-            //placeBlockyBlock(player, hand, item, block, blockFace, type.createBlockData())
+
+        val type = when {
+            item.type == Material.MILK_BUCKET -> return
+            item.type == Material.LAVA_BUCKET -> Material.LAVA
+            MaterialTags.BUCKETS.isTagged(item.type) -> Material.WATER
+            else -> null
+        }
+
+        val newData = when {
+            type != null && type.isBlock -> type.createBlockData()
+            else -> null
+        }
+        BlockStateCorrection.placeItemAsBlock(player, hand, item, placedAgainst, blockFace)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
         val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
-        if (action != Action.RIGHT_CLICK_BLOCK) return
-        if (hand != EquipmentSlot.HAND) return
+        if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
         val gearyItem = player.gearyInventory?.get(hand) ?: return
-        val blockyBlock = gearyItem.get<SetBlock>() ?: return
-
-        if (blockyBlock.blockType != SetBlock.BlockType.NOTEBLOCK) return
+        if (gearyItem.get<SetBlock>()?.blockType != SetBlock.BlockType.NOTEBLOCK) return
         if (!player.isSneaking && block.isInteractable()) return
+
+        setUseInteractedBlock(Event.Result.DENY)
 
         placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
     }
@@ -103,8 +111,7 @@ class BlockyNoteBlockListener : Listener {
     // Set default note of normal noteblock only if not restoreFunctionality is enabled
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlaceNoteBlock() {
-        if (!blockPlaced.isVanillaNoteBlock) return
-        blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
+        if (blockPlaced.isVanillaNoteBlock) blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
     }
 
     //TODO Make sure this works

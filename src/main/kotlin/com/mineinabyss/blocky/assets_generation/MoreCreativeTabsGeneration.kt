@@ -1,3 +1,5 @@
+@file:OptIn(UnsafeAccessors::class)
+
 package com.mineinabyss.blocky.assets_generation
 
 import com.google.gson.JsonArray
@@ -10,9 +12,10 @@ import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.blockyBlockQuery
 import com.mineinabyss.blocky.systems.blockyFurnitureQuery
 import com.mineinabyss.blocky.systems.blockyPlantQuery
+import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.systems.accessors.TargetScope
+import com.mineinabyss.geary.systems.accessors.Pointer
 import okio.Path.Companion.toPath
 import org.bukkit.inventory.ItemStack
 import java.io.File
@@ -46,7 +49,7 @@ class MoreCreativeTabsGeneration {
         else this.writeText(content.toString(), Charset.defaultCharset())
     }
 
-    private fun getBlockyTabFile(tabName: String, query: List<TargetScope>, secondQuery: List<TargetScope>? = null): JsonObject {
+    private fun getBlockyTabFile(tabName: String, query: List<Pointer>, secondQuery: List<Pointer>? = null): JsonObject {
         return JsonObject().apply {
             val tabStack = JsonObject().apply tabStack@{
                 val firstBlock = query.minByOrNull { (if (it.entity.isBlockyFurniture) it.prefabKey.lootyItem?.customModelData else it.block.blockId) ?: 1 }?.prefabKey?.lootyItem ?: return@apply
