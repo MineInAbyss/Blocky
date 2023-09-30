@@ -120,7 +120,7 @@ object FurnitureHelpers {
             ModelEngineAPI.getOrCreateModeledEntity(newFurniture).apply {
                 addModel(activeModel, false)
                 isBaseEntityVisible = false
-                isModelRotationLock = true
+                isModelRotationLocked = true
             }
         }
 
