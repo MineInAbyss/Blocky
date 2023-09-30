@@ -6,6 +6,7 @@ import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.Location
 import org.bukkit.block.Block
+import org.bukkit.block.data.BlockData
 import org.bukkit.inventory.ItemStack
 
 object BlockyBlocks {
@@ -15,6 +16,7 @@ object BlockyBlocks {
     val PrefabKey.isBlockyBlock get() = this.toEntityOrNull()?.has<SetBlock>() == true
     val Location.isBlockyBlock get() = block.toGearyOrNull()?.has<SetBlock>() == true
     val Block.isBlockyBlock get() = this.toGearyOrNull()?.has<SetBlock>() == true
+    val BlockData.isBlockyBlock get() = this.toGearyOrNull()?.has<SetBlock>() == true
 
     val String.isBlockyNoteBlock get() = PrefabKey.ofOrNull(this)?.toEntityOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK
     val PrefabKey.isBlockyNoteBlock get() = this.toEntityOrNull()?.get<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK
