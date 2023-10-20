@@ -118,7 +118,7 @@ class BlockyWireListener : Listener {
                 block.state.update(true, false)
             }
 
-            BlockFace.values().filter { it.isCardinal }.forEach { f ->
+            BlockFace.entries.filter { it.isCardinal }.forEach { f ->
                 val changed = block.getRelative(f)
                 if (changed.type != Material.TRIPWIRE) return@forEach
 

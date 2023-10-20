@@ -58,7 +58,7 @@ object BlockStateCorrection {
 
     private fun getBlockHitResult(player: Player, block: Block, blockFace: BlockFace): BlockHitResult? {
         val vec3 = player.eyeLocation.let { Vec3(it.x, it.y, it.z) }
-        val direction = Direction.values().find { it.name == blockFace.name } ?: return null
+        val direction = Direction.entries.find { it.name == blockFace.name } ?: return null
         return BlockHitResult(vec3, direction.opposite, block.toBlockPos().relative(direction), false)
     }
 }

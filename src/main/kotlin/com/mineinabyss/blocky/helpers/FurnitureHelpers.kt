@@ -46,7 +46,7 @@ object FurnitureHelpers {
         center: Location,
         hitbox: List<BlockyFurniture.CollisionHitbox>
     ): Map<BlockyFurniture.CollisionHitboxType, List<Location>> =
-        BlockyFurniture.CollisionHitboxType.values().associateWith {
+        BlockyFurniture.CollisionHitboxType.entries.associateWith {
             hitbox.filter { c -> c.type == it }.map { c -> c.location.groundRotate(rotation).add(center) }
         }
 
@@ -56,10 +56,10 @@ object FurnitureHelpers {
         val id = (((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8).apply {
             if (furniture.hasStrictRotation && this % 2 != 0) this - rotationDegree
         }
-        return Rotation.values()[id]
+        return Rotation.entries[id].rotateClockwise().rotateClockwise()
     }
 
-    fun getYaw(rotation: Rotation) = listOf(*Rotation.values()).indexOf(rotation) * 360f / 8f
+    fun getYaw(rotation: Rotation) = Rotation.entries.indexOf(rotation) * 360f / 8f
 
     fun hasEnoughSpace(blockyFurniture: BlockyFurniture, loc: Location, yaw: Float): Boolean {
         return if (blockyFurniture.collisionHitbox.isEmpty()) true
@@ -85,7 +85,13 @@ object FurnitureHelpers {
                 ?: (this as? MapMeta)?.setColor((itemStack.itemMeta as? MapMeta)?.color) ?: return@editItemMeta
         }
 
-        val newFurniture = loc.toBlockCenterLocation().spawn<ItemDisplay> {
+        val spawnLoc = loc.clone().toBlockCenterLocation().apply {
+            if (furniture.properties.displayTransform == NONE) this.y += 0.5 * furniture.properties.scale.y
+            this.yaw = getYaw(getRotation(yaw, furniture))
+            this.pitch = if (furniture.properties.displayTransform == FIXED) 90f else 0f
+        }
+
+        val newFurniture = spawnLoc.spawn<ItemDisplay> {
             isPersistent = true
 
             furniture.properties.let { properties ->
@@ -97,21 +103,7 @@ object FurnitureHelpers {
                 properties.viewRange?.let { viewRange = it }
                 properties.shadowRadius?.let { shadowRadius = it }
                 properties.shadowStrength?.let { shadowStrength = it }
-
-                val isFixed = itemDisplayTransform == FIXED
-                transformation = transformation.apply {
-                    scale.set(properties.scale ?: if (isFixed) Vector3f(0.5f, 0.5f, 0.5f) else Vector3f(1f, 1f, 1f))
-                }
-
-                val (newYaw, newPitch) = when {
-                    isFixed -> getYaw(getRotation(yaw, furniture)) - 180 to -90f
-                    else -> yaw to 0f
-                }
-
-                // NONE spawns into the ground, so we teleport it up
-                // Rotation therefore doesn't always apply due to teleportAsync, so apply yaw/pitch to loc
-                if (itemDisplayTransform == NONE) teleportAsync(loc.toCenterLocation().apply { this.yaw = newYaw; this.pitch = newPitch })
-                else setRotation(newYaw, newPitch)
+                transformation = transformation.apply { scale.set(properties.scale) }
             }
             this.itemStack = furnitureItem
         } ?: return null
