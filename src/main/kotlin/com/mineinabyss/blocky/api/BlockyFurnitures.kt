@@ -103,4 +103,22 @@ object BlockyFurnitures {
         if (!furniture.isDead) furniture.remove()
         return true
     }
+
+    /**
+     * Updates the hitbox & light packets of a furniture entity.
+     */
+    fun updateFurniturePackets(furniture: ItemDisplay) {
+        FurniturePacketHelpers.sendInteractionEntityPacket(furniture)
+        FurniturePacketHelpers.sendCollisionHitboxPacket(furniture)
+        FurniturePacketHelpers.sendLightPacket(furniture)
+    }
+
+    /**
+     * Updates the hitbox & light packets of a furniture entity for a given player.
+     */
+    fun updateFurniturePackets(furniture: ItemDisplay, player: Player) {
+        FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
+        FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
+        FurniturePacketHelpers.sendLightPacket(furniture, player)
+    }
 }

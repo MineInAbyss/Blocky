@@ -10,7 +10,7 @@ import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.size
 
 @Composable
-fun BlockyUIScope.BlockyNoteBlockMenu() {
+fun BlockyUIScope.BlockyBlockMenu() {
     Grid(Modifier.size(9, 5)) {
         remember {
             blockyBlockQuery

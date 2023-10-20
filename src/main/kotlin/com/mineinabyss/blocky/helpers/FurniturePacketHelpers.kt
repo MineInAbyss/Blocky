@@ -83,7 +83,7 @@ object FurniturePacketHelpers {
      * Sends a packet to show the interaction hitbox of the given furniture to all players in the world.
      * @param furniture The furniture to show the interaction hitbox of.
      */
-    internal fun sendInteractionEntityPacket(furniture: ItemDisplay) {
+    fun sendInteractionEntityPacket(furniture: ItemDisplay) {
         furniture.world.players.forEach {
             sendInteractionEntityPacket(furniture, it)
         }
@@ -93,7 +93,7 @@ object FurniturePacketHelpers {
      * Sends a packet to show the interaction hitbox of the given furniture to the given player.
      * @param furniture The furniture to show the interaction hitbox of.
      */
-    internal fun sendInteractionEntityPacket(furniture: ItemDisplay, player: Player) {
+    fun sendInteractionEntityPacket(furniture: ItemDisplay, player: Player) {
         val entityId = interactionHitboxIdMap.computeIfAbsent(furniture) { Entity.nextEntityId() }
 
         val loc = furniture.location.toBlockCenterLocation()
@@ -119,7 +119,7 @@ object FurniturePacketHelpers {
      * Sends a packet to remove the interaction hitbox of the given furniture to all players in the world.
      * @param furniture The furniture to remove the interaction hitbox of.
      */
-    internal fun removeInteractionHitboxPacket(furniture: ItemDisplay) {
+    fun removeInteractionHitboxPacket(furniture: ItemDisplay) {
         furniture.world.players.forEach {
             removeInteractionHitboxPacket(furniture, it)
         }
@@ -129,7 +129,7 @@ object FurniturePacketHelpers {
      * Sends a packet to remove the interaction hitbox of the given furniture to the given player.
      * @param furniture The furniture to remove the interaction hitbox of.
      */
-    internal fun removeInteractionHitboxPacket(furniture: ItemDisplay, player: Player) {
+    fun removeInteractionHitboxPacket(furniture: ItemDisplay, player: Player) {
         val interactionPacket = ClientboundRemoveEntitiesPacket(interactionHitboxIdMap[furniture] ?: return)
 
         PacketContainer.fromPacket(interactionPacket).sendTo(player)
@@ -140,7 +140,7 @@ object FurniturePacketHelpers {
      * Sends a packet to show the collision hitbox of the given furniture to all players in the world.
      * @param baseEntity The furniture to show the collision hitbox of.
      */
-    internal fun sendCollisionHitboxPacket(baseEntity: ItemDisplay) {
+    fun sendCollisionHitboxPacket(baseEntity: ItemDisplay) {
         baseEntity.world.players.forEach {
             sendCollisionHitboxPacket(baseEntity, it)
         }
@@ -150,7 +150,7 @@ object FurniturePacketHelpers {
      * Sends a packet to show the collision hitbox of the given furniture to the given player.
      * @param baseEntity The furniture to show the collision hitbox of.
      */
-    internal fun sendCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
+    fun sendCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val positions = getLocations(
             baseEntity.yaw,
@@ -171,7 +171,7 @@ object FurniturePacketHelpers {
      * Sends a packet to remove the collision hitbox of the given furniture to all players in the world.
      * @param baseEntity The furniture to remove the collision hitbox of.
      */
-    internal fun removeCollisionHitboxPacket(baseEntity: ItemDisplay) {
+    fun removeCollisionHitboxPacket(baseEntity: ItemDisplay) {
         baseEntity.world.players.forEach {
             removeCollisionHitboxPacket(baseEntity, it)
         }
@@ -181,7 +181,7 @@ object FurniturePacketHelpers {
      * Sends a packet to remove the collision hitbox of the given furniture to the given player.
      * @param baseEntity The furniture to remove the collision hitbox of.
      */
-    private fun removeCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
+    fun removeCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val positions = getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
             .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
@@ -195,7 +195,7 @@ object FurniturePacketHelpers {
      * Sends the light packets for this furniture to all players in the world
      * @param baseEntity The furniture to send the light packets for
      */
-    internal fun sendLightPacket(baseEntity: ItemDisplay) {
+    fun sendLightPacket(baseEntity: ItemDisplay) {
         baseEntity.world.players.forEach {
             sendLightPacket(baseEntity, it)
         }
@@ -205,7 +205,7 @@ object FurniturePacketHelpers {
      * Sends the light packets for this furniture to a specific player
      * @param baseEntity The furniture to send the light packets for
      */
-    internal fun sendLightPacket(baseEntity: ItemDisplay, player: Player) {
+    fun sendLightPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val light = baseEntity.toGeary().get<BlockyLight>() ?: return
 
@@ -224,7 +224,7 @@ object FurniturePacketHelpers {
      * Removes the light packets for this furniture to all players in the world
      * @param baseEntity The furniture to remove the light packets for
      */
-    internal fun removeLightPacket(baseEntity: ItemDisplay) {
+    fun removeLightPacket(baseEntity: ItemDisplay) {
         baseEntity.world.players.forEach {
             removeLightPacket(baseEntity, it)
         }
@@ -234,7 +234,7 @@ object FurniturePacketHelpers {
      * Removes the light packets for this furniture to a specific player
      * @param baseEntity The furniture to remove the light packets for
      */
-    private fun removeLightPacket(baseEntity: ItemDisplay, player: Player) {
+    fun removeLightPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val collisionHitboxPositions =
             getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)

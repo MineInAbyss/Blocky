@@ -3,13 +3,13 @@ package com.mineinabyss.blocky.menus
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.helpers.ui.Navigator
-import com.mineinabyss.blocky.helpers.ui.composables.Button
+import com.mineinabyss.blocky.helpers.composables.Button
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.components.canvases.Chest
 import com.mineinabyss.guiy.inventory.GuiyOwner
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.height
+import com.mineinabyss.guiy.navigation.Navigator
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import org.bukkit.Material
@@ -18,7 +18,7 @@ import org.bukkit.inventory.ItemStack
 
 sealed class BlockyScreen(val title: String, val height: Int) {
     object Default : BlockyScreen(blocky.config.menus.defaultMenu.title, blocky.config.menus.defaultMenu.height)
-    object NoteBlock : BlockyScreen(blocky.config.menus.blockMenu.title, blocky.config.menus.blockMenu.height)
+    object Block : BlockyScreen(blocky.config.menus.blockMenu.title, blocky.config.menus.blockMenu.height)
     object Wire : BlockyScreen(blocky.config.menus.wireMenu.title, blocky.config.menus.wireMenu.height)
     object Furniture : BlockyScreen(blocky.config.menus.furnitureMenu.title, blocky.config.menus.furnitureMenu.height)
 
@@ -42,7 +42,7 @@ fun GuiyOwner.BlockyMainMenu(player: Player) {
                 onClose = { player.closeInventory() }) {
                 when (screen) {
                     BlockyScreen.Default -> BlockyMenu()
-                    BlockyScreen.NoteBlock -> BlockyNoteBlockMenu()
+                    BlockyScreen.Block -> BlockyBlockMenu()
                     BlockyScreen.Wire -> BlockyWireMenu()
                     BlockyScreen.Furniture -> BlockyFurnitureMenu()
                 }

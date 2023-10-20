@@ -18,6 +18,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
+import com.mineinabyss.idofront.messaging.broadcast
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
@@ -34,7 +35,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.inventory.EquipmentSlot
 
 class BlockyFurnitureListener : Listener {
 
@@ -97,14 +97,14 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler
     fun PlayerUseUnknownEntityEvent.onInteract() {
-        if (hand != EquipmentSlot.HAND) return
+        broadcast(this.entityId)
         val baseFurniture = FurniturePacketHelpers.getBaseFurnitureFromInteractionEntity(entityId) ?: return
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
             when {
                 isAttack -> removeFurniture(baseFurniture, player)
                 else ->  BlockyFurnitureInteractEvent(
                     baseFurniture, player,
-                    EquipmentSlot.HAND, player.inventory.itemInMainHand,
+                    hand, player.inventory.itemInMainHand,
                     null, null
                 ).callEvent()
             }

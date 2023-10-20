@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -8,30 +9,20 @@ import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
 import com.mineinabyss.guiy.modifiers.clickable
-import com.mineinabyss.idofront.items.editItemMeta
-import com.mineinabyss.idofront.textcomponents.miniMsg
-import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
-import org.bukkit.inventory.ItemStack
 
 @Composable
 fun BlockyUIScope.BlockyMenu() {
-    Item(ItemStack(Material.NOTE_BLOCK).editItemMeta {
-        displayName("<#4b3123><b>Blocks".miniMsg())
-    }, Modifier.at(2,1).clickable {
-        nav.open(BlockyScreen.NoteBlock)
+    Item(blocky.config.menus.defaultMenu.blockButton.toItemStack(), Modifier.at(2,1).clickable {
+        nav.open(BlockyScreen.Block)
     })
 
-    Item(ItemStack(Material.TRIPWIRE_HOOK).editItemMeta {
-        displayName("<#7fa256><b>Plants".miniMsg())
-    }, Modifier.at(4,1).clickable {
+    Item(blocky.config.menus.defaultMenu.wireButton.toItemStack(), Modifier.at(4,1).clickable {
         nav.open(BlockyScreen.Wire)
     })
 
-    Item(ItemStack(Material.ARMOR_STAND).editItemMeta {
-        displayName("<#e91e63><b>Furniture".miniMsg())
-    }, Modifier.at(6,1).clickable {
+    Item(blocky.config.menus.defaultMenu.furnitureButton.toItemStack(), Modifier.at(6,1).clickable {
         nav.open(BlockyScreen.Furniture)
     })
 

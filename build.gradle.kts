@@ -15,7 +15,7 @@ repositories {
     maven("https://repo.mineinabyss.com/releases")
     maven("https://repo.mineinabyss.com/snapshots")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    maven("https://mvn.lumine.io/repository/maven-public/") { metadataSources { artifact() } } // Model Engine
+    maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
@@ -61,8 +61,4 @@ tasks {
         relocate("com.jeff_media.customblockdata", "com.mineinabyss.shaded.customblockdata")
         relocate("com.jeff_media.morepersistentdatatypes", "com.mineinabyss.shaded.morepersistentdatatypes")
     }
-}
-
-configurations.all {
-    //resolutionStrategy.cacheChangingModulesFor( 0, "seconds")
 }

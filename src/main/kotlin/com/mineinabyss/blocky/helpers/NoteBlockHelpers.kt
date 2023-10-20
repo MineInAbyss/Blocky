@@ -6,7 +6,6 @@ import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
-import com.soywiz.kds.toFastList
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.Note

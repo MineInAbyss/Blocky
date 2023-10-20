@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky
 
-import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.assets_generation.MoreCreativeTabsGeneration
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
@@ -119,7 +118,7 @@ class BlockyPlugin : JavaPlugin() {
         DI.remove<BlockyContext>()
         val blockyContext = object : BlockyContext {
             override val plugin = this@BlockyPlugin
-            override val config: BlockyConfig by config("config") { fromPluginPath(loadDefault = true) }
+            override val config: BlockyConfig by config("config", dataFolder.toPath(), BlockyConfig())
         }
         DI.add<BlockyContext>(blockyContext)
     }

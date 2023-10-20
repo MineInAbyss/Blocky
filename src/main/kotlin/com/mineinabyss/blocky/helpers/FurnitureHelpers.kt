@@ -22,6 +22,8 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED
+import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
@@ -96,31 +98,32 @@ object FurnitureHelpers {
                 properties.shadowRadius?.let { shadowRadius = it }
                 properties.shadowStrength?.let { shadowStrength = it }
 
-                val isFixed = itemDisplayTransform == ItemDisplay.ItemDisplayTransform.FIXED
+                val isFixed = itemDisplayTransform == FIXED
                 transformation = transformation.apply {
                     scale.set(properties.scale ?: if (isFixed) Vector3f(0.5f, 0.5f, 0.5f) else Vector3f(1f, 1f, 1f))
                 }
 
-                when {
-                    isFixed -> loc.yaw = getYaw(getRotation(yaw, furniture))
-                    else -> loc.yaw = getYaw(getRotation(yaw, furniture)) - 180
+                val (newYaw, newPitch) = when {
+                    isFixed -> getYaw(getRotation(yaw, furniture)) - 180 to -90f
+                    else -> yaw to 0f
                 }
 
-                if (itemDisplayTransform == ItemDisplay.ItemDisplayTransform.NONE) teleportAsync(loc.toCenterLocation())
-
+                // NONE spawns into the ground, so we teleport it up
+                // Rotation therefore doesn't always apply due to teleportAsync, so apply yaw/pitch to loc
+                if (itemDisplayTransform == NONE) teleportAsync(loc.toCenterLocation().apply { this.yaw = newYaw; this.pitch = newPitch })
+                else setRotation(newYaw, newPitch)
             }
             this.itemStack = furnitureItem
         } ?: return null
 
         newFurniture.toGeary().addPrefab(gearyEntity)
-
         gearyEntity.get<BlockyModelEngine>()?.let { meg ->
-            if (!Plugins.isEnabled<ModelEngineAPI>()) return@let
+            if (!Plugins.isEnabled("ModelEngine")) return@let
             val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let
             ModelEngineAPI.getOrCreateModeledEntity(newFurniture).apply {
                 addModel(activeModel, false)
                 isBaseEntityVisible = false
-                isModelRotationLocked = true
+                isModelRotationLocked = false
             }
         }
 
