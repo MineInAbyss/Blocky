@@ -29,7 +29,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
-import org.joml.Vector3f
 import kotlin.math.max
 
 object FurnitureHelpers {
@@ -98,8 +97,8 @@ object FurnitureHelpers {
                 itemDisplayTransform = properties.displayTransform
                 displayWidth = properties.displayWidth
                 displayHeight = properties.displayHeight
-                properties.brightness?.let { brightness = it }
-                properties.trackingRotation?.let { billboard = it }
+                brightness = properties.brightness
+                billboard = properties.trackingRotation
                 properties.viewRange?.let { viewRange = it }
                 properties.shadowRadius?.let { shadowRadius = it }
                 properties.shadowStrength?.let { shadowStrength = it }

@@ -67,9 +67,9 @@ data class BlockyFurniture(
         val scale: @Serializable(Vector3fSerializer::class) Vector3f = Vector3f(1f, 1f, 1f),
         val displayWidth: Float = 0f,
         val displayHeight: Float = 0f,
+        val brightness: @Serializable(BrightnessSerializer::class) Brightness = Brightness(0,0),
+        val trackingRotation: Billboard = Billboard.FIXED,
         val viewRange: Float? = null,
-        val brightness: @Serializable(BrightnessSerializer::class) Brightness? = null,
-        val trackingRotation: Billboard? = null,
         val shadowStrength: Float? = null,
         val shadowRadius: Float? = null,
     )

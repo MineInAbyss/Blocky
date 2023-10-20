@@ -10,7 +10,7 @@ import org.bukkit.entity.Display.Brightness
 
 @Serializable
 @SerialName("Brightness")
-private class BrightnessSurrogate(val blockLight: Int, val skyLight: Int)
+private class BrightnessSurrogate(val blockLight: Int = 0, val skyLight: Int = 0)
 
 object BrightnessSerializer : KSerializer<Brightness> {
     override val descriptor: SerialDescriptor = BrightnessSurrogate.serializer().descriptor
