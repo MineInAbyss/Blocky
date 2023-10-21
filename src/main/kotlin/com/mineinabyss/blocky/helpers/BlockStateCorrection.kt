@@ -16,8 +16,8 @@ import org.bukkit.block.BlockFace
 import org.bukkit.block.Sign
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.sign.Side
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
-import org.bukkit.craftbukkit.v1_20_R1.inventory.CraftItemStack
+import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack

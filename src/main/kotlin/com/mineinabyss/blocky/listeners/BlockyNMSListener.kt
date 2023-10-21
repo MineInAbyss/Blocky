@@ -4,10 +4,10 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.registryTagMap
 import it.unimi.dsi.fastutil.ints.IntList
 import net.minecraft.core.registries.Registries
-import net.minecraft.network.protocol.game.ClientboundUpdateTagsPacket
+import net.minecraft.network.protocol.common.ClientboundUpdateTagsPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.TagNetworkSerialization
-import org.bukkit.craftbukkit.v1_20_R1.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
