@@ -1,3 +1,5 @@
+import net.minecrell.pluginyml.paper.PaperPluginDescription
+
 plugins {
     alias(libs.plugins.mia.kotlin.jvm)
     alias(libs.plugins.kotlinx.serialization)
@@ -7,6 +9,7 @@ plugins {
     alias(libs.plugins.mia.publication)
     alias(libs.plugins.mia.autoversion)
     alias(libs.plugins.compose)
+    id("net.minecrell.plugin-yml.paper") version "0.6.0"
 }
 
 repositories {
@@ -59,5 +62,43 @@ tasks {
     shadowJar {
         relocate("com.jeff_media.customblockdata", "com.mineinabyss.shaded.customblockdata")
         relocate("com.jeff_media.morepersistentdatatypes", "com.mineinabyss.shaded.morepersistentdatatypes")
+    }
+}
+
+paper {
+    main = "com.mineinabyss.blocky.BlockyPlugin"
+    name = "Blocky"
+    prefix = "Blocky"
+    val version: String by project
+    this.version = version
+    authors = listOf("boy0000")
+    apiVersion = "1.20"
+
+    serverDependencies {
+        register("Geary") {
+            required = true
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
+        register("ProtocolBurrito") {
+            required = true
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
+        register("Guiy") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
+        register("FastAsyncWorldEdit") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
+        register("ModelEngine") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
     }
 }
