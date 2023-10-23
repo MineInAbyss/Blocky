@@ -1,4 +1,3 @@
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     alias(libs.plugins.mia.kotlin.jvm)
     alias(libs.plugins.kotlinx.serialization)
@@ -25,6 +24,8 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
+    compileOnly(libs.bundles.idofront.core)
+    compileOnly(libs.idofront.nms)
     compileOnly(libs.kotlinx.serialization.json)
     compileOnly(libs.kotlinx.serialization.kaml)
     compileOnly(libs.kotlinx.coroutines)
@@ -44,8 +45,6 @@ dependencies {
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)
-    implementation(libs.bundles.idofront.core)
-    implementation(libs.idofront.nms)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {

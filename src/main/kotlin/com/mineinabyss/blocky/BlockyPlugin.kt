@@ -13,7 +13,6 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.logError
-import com.mineinabyss.idofront.platforms.Platforms
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
 import io.papermc.paper.configuration.GlobalConfiguration
@@ -29,12 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 class BlockyPlugin : JavaPlugin() {
-    override fun onLoad() {
-        Platforms.load(this, "mineinabyss")
-    }
-
     override fun onEnable() {
-
         createBlockyContext()
 
         if (Bukkit.getPluginManager().isPluginEnabled("WorldEdit")) {

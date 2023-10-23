@@ -1,0 +1,28 @@
+name: Blocky
+version: "${plugin_version}"
+author: boy0000
+main: com.mineinabyss.blocky.BlockyPlugin
+api-version: "1.20"
+
+dependencies:
+  server:
+    Geary:
+      required: true
+      load: BEFORE
+      join-classpath: true
+    ProtocolBurrito:
+      required: true
+      load: BEFORE
+      join-classpath: true
+    Guiy:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    FastAsyncWorldEdit:
+      required: false
+      load: BEFORE
+      join-classpath: true
+    ModelEngine:
+      required: false
+      load: BEFORE
+      join-classpath: true
