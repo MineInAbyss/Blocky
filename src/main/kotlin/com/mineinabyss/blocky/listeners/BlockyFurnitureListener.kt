@@ -7,6 +7,7 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.blocky.api.BlockyFurnitures.getBlockySeat
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
+import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
@@ -18,7 +19,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
-import com.mineinabyss.idofront.messaging.broadcast
+import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
@@ -97,7 +98,6 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler
     fun PlayerUseUnknownEntityEvent.onInteract() {
-        broadcast(this.entityId)
         val baseFurniture = FurniturePacketHelpers.getBaseFurnitureFromInteractionEntity(entityId) ?: return
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
             when {
@@ -108,6 +108,20 @@ class BlockyFurnitureListener : Listener {
                     null, null
                 ).callEvent()
             }
+        }
+    }
+
+    @EventHandler // ModelEngine-interaction check
+    fun BaseEntityInteractEvent.onModelEngineInteract() {
+        val baseEntity = baseEntity.original as? ItemDisplay ?: return
+        if (!baseEntity.isBlockyFurniture || !baseEntity.isModelEngineFurniture) return
+        when {
+            action == BaseEntityInteractEvent.Action.ATTACK -> removeFurniture(baseEntity, player)
+            else -> BlockyFurnitureInteractEvent(
+                baseEntity, player,
+                slot, player.inventory.itemInMainHand,
+                null, null
+            ).callEvent()
         }
     }
 

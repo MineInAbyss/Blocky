@@ -26,7 +26,10 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("libs").from("com.mineinabyss:catalog:$idofrontVersion")
+        create("libs"){
+            from("com.mineinabyss:catalog:$idofrontVersion")
+            version("modelengine", "R4.0.3")
+        }
         create("blockyLibs").from(files("gradle/blockyLibs.versions.toml"))
     }
 }
