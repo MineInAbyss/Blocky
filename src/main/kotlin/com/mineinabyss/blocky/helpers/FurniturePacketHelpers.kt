@@ -4,10 +4,12 @@ package com.mineinabyss.blocky.helpers
 
 import com.comphenix.protocol.events.PacketContainer
 import com.mineinabyss.blocky.api.BlockyFurnitures
+import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyLight
+import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.FurnitureHelpers.getLocations
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -15,6 +17,7 @@ import com.mineinabyss.protocolburrito.dsl.protocolManager
 import com.mineinabyss.protocolburrito.dsl.sendTo
 import com.mineinabyss.protocolburrito.packets.ServerboundPlayerActionPacketWrap
 import com.mineinabyss.protocolburrito.packets.ServerboundUseItemOnPacketWrap
+import com.ticxo.modelengine.api.ModelEngineAPI
 import io.papermc.paper.math.Position
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
@@ -84,6 +87,12 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to show the interaction hitbox of.
      */
     fun sendInteractionEntityPacket(furniture: ItemDisplay) {
+        // Don't send interactionEntity packet if modelengine furniture with hitbox
+        if (furniture.isModelEngineFurniture) {
+            val modelId = furniture.toGeary().get<BlockyModelEngine>()?.modelId ?: return
+            val blueprint = ModelEngineAPI.getBlueprint(modelId) ?: return
+            if (blueprint.mainHitbox != null || blueprint.subHitboxes.isNotEmpty()) return
+        }
         furniture.world.players.forEach {
             sendInteractionEntityPacket(furniture, it)
         }
