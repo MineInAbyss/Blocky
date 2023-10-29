@@ -15,15 +15,15 @@ import org.bukkit.event.inventory.ClickType
 @Composable
 fun BlockyUIScope.BlockyMenu() {
     Item(blocky.config.menus.defaultMenu.blockButton.toItemStack(), Modifier.at(2,1).clickable {
-        nav.open(BlockyScreen.Block)
+        nav.open(BlockyScreen.Block())
     })
 
     Item(blocky.config.menus.defaultMenu.wireButton.toItemStack(), Modifier.at(4,1).clickable {
-        nav.open(BlockyScreen.Wire)
+        nav.open(BlockyScreen.Wire())
     })
 
     Item(blocky.config.menus.defaultMenu.furnitureButton.toItemStack(), Modifier.at(6,1).clickable {
-        nav.open(BlockyScreen.Furniture)
+        nav.open(BlockyScreen.Furniture())
     })
 
     BackButton(Modifier.at(0, 4))
