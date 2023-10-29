@@ -12,6 +12,8 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.messaging.logWarn
 import okio.Path.Companion.toPath
 import org.bukkit.Instrument
 import org.bukkit.Material
@@ -59,11 +61,9 @@ class ResourcepackGeneration {
                 "minecraft:block/note_block".getModelJson()
             )
 
-            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.NOTEBLOCK }.values.toSet().forEach { blocks ->
-                blocks.forEachIndexed { index, block ->
-                    val query = blockyQuery.firstOrNull { it.block.blockId == index + 1 } ?: return@forEachIndexed
-                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getNoteBlockData(), it) }
-                }
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.NOTEBLOCK }.values.first().toSet().forEachIndexed { index, block ->
+                val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEachIndexed
+                query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getNoteBlockData(), it) }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
@@ -87,11 +87,11 @@ class ResourcepackGeneration {
                 Material.TRIPWIRE.createBlockData().getTripwireData(),
                 "minecraft:block/barrier".getModelJson()
             )
-            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.WIRE }.values.forEach { blocks ->
-                blocks.forEachIndexed { index, block ->
-                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
-                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getTripwireData(), it) }
-                }
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.WIRE }.values.first().toSet().forEachIndexed { index, block ->
+                blockyQuery.map { it.prefabKey.toString() + ": " + it.block.blockId }.forEach { logError(it) }
+                logWarn("Index: $index")
+                val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEachIndexed
+                query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getTripwireData(), it) }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
@@ -119,11 +119,9 @@ class ResourcepackGeneration {
                 Material.CAVE_VINES.createBlockData().getCaveVineBlockStates(),
                 "minecraft:block/cave_vines".getModelJson()
             )
-            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.CAVEVINE }.values.forEach { blocks ->
-                blocks.forEachIndexed { index, block ->
-                    val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEach
-                    query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getCaveVineBlockStates(), it) }
-                }
+            gearyBlocks.block2Prefab.blockMap.filter { it.key == SetBlock.BlockType.CAVEVINE }.values.toSet().first().forEachIndexed { index, block ->
+                val query = blockyQuery.firstOrNull { it.block.blockId == index } ?: return@forEachIndexed
+                query.prefabKey.getJsonProperties()?.let { blockModel.add(block.getCaveVineBlockStates(), it) }
             }
             if (blockModel.keySet().isNotEmpty()) add("variants", blockModel)
         }
