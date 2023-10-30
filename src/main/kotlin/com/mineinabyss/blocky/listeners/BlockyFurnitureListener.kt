@@ -72,6 +72,7 @@ class BlockyFurnitureListener : Listener {
     fun EntityRemoveFromWorldEvent.onRemoveFurniture() {
         val entity = entity as? ItemDisplay ?: return
         FurniturePacketHelpers.removeInteractionHitboxPacket(entity)
+        FurniturePacketHelpers.removeHitboxOutlinePacket(entity)
         FurniturePacketHelpers.removeCollisionHitboxPacket(entity)
         FurniturePacketHelpers.removeLightPacket(entity)
     }

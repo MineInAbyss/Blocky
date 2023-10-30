@@ -262,9 +262,7 @@ object GenericHelpers {
     /**
      * @return A new location at the bottom-center of a block
      */
-    fun Location.toBlockCenterLocation(): Location {
-        return clone().toCenterLocation().apply { y -= 0.5 }
-    }
+    fun Location.toBlockCenterLocation() = clone().toCenterLocation().apply { y -= 0.5 }
 
     fun isCorrectTool(player: Player, block: Block, hand: EquipmentSlot): Boolean {
         val acceptedToolTypes = block.toGearyOrNull()?.let { geary ->

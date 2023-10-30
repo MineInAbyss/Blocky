@@ -1,8 +1,10 @@
 package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
+import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
@@ -25,6 +27,7 @@ import org.bukkit.Color
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.meta.LeatherArmorMeta
@@ -35,6 +38,14 @@ import org.bukkit.inventory.meta.PotionMeta
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
+            "test" {
+                playerAction {
+                    player.getNearbyEntities(20.0,20.0,20.0).filterIsInstance<ItemDisplay>().filter { it.isBlockyFurniture }.forEach {
+                        FurniturePacketHelpers.sendHitboxOutlinePacket(it)
+                    }
+                    sender.success("Sent hitbox outline packet to all nearby furniture items.")
+                }
+            }
             "reload" {
                 action {
                     blocky.plugin.createBlockyContext()
