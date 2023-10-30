@@ -28,6 +28,13 @@ import org.bukkit.plugin.java.JavaPlugin
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 class BlockyPlugin : JavaPlugin() {
+    override fun onLoad() {
+        geary {
+            autoscan(classLoader, "com.mineinabyss.blocky") {
+                all()
+            }
+        }
+    }
     override fun onEnable() {
         createBlockyContext()
 
@@ -68,14 +75,12 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
-        geary {
-            autoscan(classLoader, "com.mineinabyss.blocky") {
-                all()
-            }
+        geary{
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
             }
         }
+
     }
 
     fun runStartupFunctions() {
