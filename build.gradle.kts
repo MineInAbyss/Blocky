@@ -21,7 +21,7 @@ repositories {
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
-    maven("https://jitpack.io")
+    maven("https://repo.oraxen.com/releases") // ProtectionLib
     mavenLocal()
 }
 
