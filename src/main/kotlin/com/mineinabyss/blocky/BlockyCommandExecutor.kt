@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
+import com.mineinabyss.blocky.migration.config.BlockyNoteblockMigration
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
@@ -35,6 +36,11 @@ import org.bukkit.inventory.meta.PotionMeta
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
+            "migratechunk" {
+                playerAction {
+                    BlockyNoteblockMigration().migrate(player.chunk)
+                }
+            }
             "reload" {
                 fun reloadConfig() {
                     blocky.plugin.createBlockyContext()
