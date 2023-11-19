@@ -45,6 +45,8 @@ dependencies {
     compileOnly(libs.minecraft.plugin.fawe.core)
     compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(libs.minecraft.anvilgui)
+    compileOnly(libs.creative.api)
+    compileOnly(libs.creative.serializer.minecraft)
 
     implementation(blockyLibs.minecraft.plugin.protectionlib)
     implementation(blockyLibs.minecraft.plugin.customblockdata)
