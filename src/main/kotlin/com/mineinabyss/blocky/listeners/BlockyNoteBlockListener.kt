@@ -13,6 +13,8 @@ import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.datastore.has
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
+import com.mineinabyss.idofront.entities.leftClicked
+import com.mineinabyss.idofront.entities.leftClicked
 import com.mineinabyss.idofront.entities.rightClicked
 import org.bukkit.Material
 import org.bukkit.block.data.type.NoteBlock

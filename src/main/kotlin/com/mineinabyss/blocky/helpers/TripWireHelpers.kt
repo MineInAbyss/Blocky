@@ -1,12 +1,14 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
+import com.mineinabyss.idofront.destructure.component1
+import com.mineinabyss.idofront.destructure.component2
+import com.mineinabyss.idofront.destructure.component3
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -38,13 +40,17 @@ fun breakWireBlock(block: Block, player: Player?): Boolean {
 }
 
 fun Player.isInBlock(block: Block): Boolean {
-    return block.location.let { l ->
-        (location.blockX == l.blockX && (location.blockY == l.blockY || location.blockY + 1 == l.blockY) && location.blockZ == l.blockZ)
-    }
+    val expand = 0.3
+    val (px, py, pz) = location
+    val (x, y, z) = block.location
+    return px in x - expand..x + 1 + expand &&
+            py in y - 1 ..< y + 1 &&
+            pz in z - expand..z + 1 + expand
 }
 
 fun handleTallWire(block: Block) {
-    val tallWire = block.persistentDataContainer.decode<BlockyTallWire>() ?: BlockyTallWire(block.getRelative(BlockFace.UP).location)
+    val tallWire = block.persistentDataContainer.decode<BlockyTallWire>()
+        ?: BlockyTallWire(block.getRelative(BlockFace.UP).location)
     tallWire.baseWire?.let {
         it.customBlockData.clear()
         it.type = Material.AIR

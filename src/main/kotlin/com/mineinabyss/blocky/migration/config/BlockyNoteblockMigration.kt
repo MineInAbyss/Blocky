@@ -1,5 +1,9 @@
 package com.mineinabyss.blocky.migration.config
 
+import com.fastasyncworldedit.core.util.TaskManager
+import com.mineinabyss.blocky.components.core.VanillaNoteBlock
+import com.mineinabyss.blocky.helpers.persistentDataContainer
+import com.mineinabyss.geary.papermc.datastore.encode
 import com.sk89q.worldedit.WorldEdit
 import com.sk89q.worldedit.bukkit.BukkitAdapter
 import com.sk89q.worldedit.function.mask.BlockTypeMask
@@ -14,7 +18,6 @@ import org.bukkit.Chunk
 
 class BlockyNoteblockMigration : BlockyMigration {
     override fun migrate(chunk: Chunk) {
-        val pdc = chunk.persistentDataContainer
         // start worldedit session
         chunk.chunkSnapshot
 
@@ -24,28 +27,38 @@ class BlockyNoteblockMigration : BlockyMigration {
         val weWorld: World = BukkitAdapter.adapt(chunk.world)
         val editSession = WorldEdit.getInstance().newEditSession(weWorld)
 
-        editSession.use {
-            val chunkRegion = CuboidRegion(
-                weWorld,
-                BlockVector3.at(chunk.x * 16, chunk.world.minHeight, chunk.z * 16),
-                BlockVector3.at(chunk.x * 16 + 15, chunk.world.maxHeight, chunk.z * 16 + 15)
-            )
+        TaskManager.taskManager().taskNowAsync {
+            val noteblockPitches: MutableList<Pair<BlockVector3, Int>> = mutableListOf()
+            editSession.use {
+                val chunkRegion = CuboidRegion(
+                    weWorld,
+                    BlockVector3.at(chunk.x * 16, chunk.world.minHeight, chunk.z * 16),
+                    BlockVector3.at(chunk.x * 16 + 15, chunk.world.maxHeight, chunk.z * 16 + 15)
+                )
 
-            val noteblock = BlockTypes.NOTE_BLOCK!!
-            val note = noteblock.getProperty<Int>("note")
+                val noteblock = BlockTypes.NOTE_BLOCK!!
+                val note = noteblock.getProperty<Int>("note")
 
-            it.replaceBlocks(
-                chunkRegion,
-                BlockTypeMask(editSession, BlockTypes.NOTE_BLOCK),
-                object : Pattern by noteblock {
-                    override fun applyBlock(position: BlockVector3): BaseBlock {
-                        val pitch = position.getBlock(editSession).getState(note)
-                        println("Block at $position is a noteblock with pitch $pitch")
-                        // get noteblock pitch
-                        return noteblock.applyBlock(position)
+                it.replaceBlocks(
+                    chunkRegion,
+                    BlockTypeMask(editSession, BlockTypes.NOTE_BLOCK),
+                    object : Pattern by noteblock {
+                        override fun applyBlock(position: BlockVector3): BaseBlock {
+                            val pitch = position.getBlock(editSession).getState(note)
+                            noteblockPitches += position to pitch
+                            return noteblock.applyBlock(position)
+                        }
+                    }
+                )
+
+                TaskManager.taskManager().taskNowMain {
+                    noteblockPitches.forEach { (block, pitch) ->
+                        chunk.world.getBlockAt(block.x, block.y, block.z)
+                            .persistentDataContainer
+                            .encode(VanillaNoteBlock(pitch))
                     }
                 }
-            )
+            }
         }
     }
 }

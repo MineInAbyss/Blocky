@@ -89,7 +89,7 @@ fun placeBlockyBlock(
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return
     if (!against.isBlockyBlock && !newData.isBlockyBlock) return
-    if (player.isInBlock(targetBlock) || against.isVanillaNoteBlock) return
+    if (player.isInBlock(targetBlock) || (against.isVanillaNoteBlock && !player.isSneaking)) return
 
     if (targetBlock.isVanillaNoteBlock)
         targetBlock.persistentDataContainer.encode(VanillaNoteBlock(0))
