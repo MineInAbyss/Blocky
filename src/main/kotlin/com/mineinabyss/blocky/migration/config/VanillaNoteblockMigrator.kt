@@ -16,7 +16,7 @@ import com.sk89q.worldedit.world.block.BlockTypes
 import org.bukkit.Chunk
 
 
-class BlockyNoteblockMigration : BlockyMigration {
+class VanillaNoteblockMigrator : ChunkMigrator {
     override fun migrate(chunk: Chunk) {
         // start worldedit session
         chunk.chunkSnapshot

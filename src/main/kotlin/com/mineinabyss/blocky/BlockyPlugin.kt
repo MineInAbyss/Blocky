@@ -6,6 +6,9 @@ import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
+import com.mineinabyss.blocky.migration.config.MigrationGroup
+import com.mineinabyss.blocky.migration.config.Migrations
+import com.mineinabyss.blocky.migration.config.VanillaNoteblockMigrator
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
@@ -23,11 +26,13 @@ import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.Item
 import org.bukkit.Bukkit
+import org.bukkit.NamespacedKey
 import org.bukkit.block.data.BlockData
 import org.bukkit.plugin.java.JavaPlugin
 
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
+
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
         geary {
@@ -36,6 +41,7 @@ class BlockyPlugin : JavaPlugin() {
             }
         }
     }
+
     override fun onEnable() {
         createBlockyContext()
 
@@ -71,9 +77,20 @@ class BlockyPlugin : JavaPlugin() {
             if (slabBlocks.isEnabled) listeners(BlockyCopperListener.BlockySlabListener())
             if (stairBlocks.isEnabled) listeners(BlockyCopperListener.BlockyStairListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
+            if (migrateChunks) {
+                val groups = buildList {
+                    if (noteBlocks.isEnabled) add(
+                        MigrationGroup(
+                            NamespacedKey(this@BlockyPlugin, "noteblock"),
+                            listOf(VanillaNoteblockMigrator())
+                        )
+                    )
+                }
+                listeners(BlockyChunkMigrationListener(Migrations(groups)))
+            }
         }
 
-        geary{
+        geary {
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
             }
@@ -99,11 +116,13 @@ class BlockyPlugin : JavaPlugin() {
                             !it.value().descriptionId.endsWith("note_block")
                         }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
                     }
+
                     BlockTags.MINEABLE_WITH_PICKAXE.location -> {
                         pair.second.filter {
                             !it.value().descriptionId.endsWith("petrified_oak_slab")
                         }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
                     }
+
                     else -> pair.second.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
                 }
             }

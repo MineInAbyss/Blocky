@@ -2,6 +2,6 @@ package com.mineinabyss.blocky.migration.config
 
 import org.bukkit.Chunk
 
-interface BlockyMigration {
+interface ChunkMigrator {
     fun migrate(chunk: Chunk)
 }
