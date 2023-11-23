@@ -29,7 +29,7 @@ class VanillaNoteblockMigrator : ChunkMigrator {
 
         TaskManager.taskManager().taskNowAsync {
             val noteblockPitches: MutableList<Pair<BlockVector3, Int>> = mutableListOf()
-            editSession.use {
+            editSession?.use {
                 val chunkRegion = CuboidRegion(
                     weWorld,
                     BlockVector3.at(chunk.x * 16, chunk.world.minHeight, chunk.z * 16),
@@ -39,17 +39,11 @@ class VanillaNoteblockMigrator : ChunkMigrator {
                 val noteblock = BlockTypes.NOTE_BLOCK!!
                 val note = noteblock.getProperty<Int>("note")
 
-                it.replaceBlocks(
-                    chunkRegion,
-                    BlockTypeMask(editSession, BlockTypes.NOTE_BLOCK),
-                    object : Pattern by noteblock {
-                        override fun applyBlock(position: BlockVector3): BaseBlock {
-                            val pitch = position.getBlock(editSession).getState(note)
-                            noteblockPitches += position to pitch
-                            return noteblock.applyBlock(position)
-                        }
-                    }
-                )
+                it.replaceBlocks(chunkRegion, BlockTypeMask(it, BlockTypes.NOTE_BLOCK)) { position ->
+                    val pitch = position.getBlock(it).getState(note)
+                    noteblockPitches += position to pitch
+                    noteblock.applyBlock(position)
+                }
 
                 TaskManager.taskManager().taskNowMain {
                     noteblockPitches.forEach { (block, pitch) ->
