@@ -98,12 +98,12 @@ class BlockyPlugin : JavaPlugin() {
                 when (pair.first.location) {
                     BlockTags.MINEABLE_WITH_AXE.location -> {
                         pair.second.filter {
-                            Item.BY_BLOCK[it.value()].toString() != "note_block"
+                            !it.value().descriptionId.endsWith("note_block")
                         }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
                     }
                     BlockTags.MINEABLE_WITH_PICKAXE.location -> {
                         pair.second.filter {
-                            Item.BY_BLOCK[it.value()].toString() != "petrified_oak_slab"
+                            !it.value().descriptionId.endsWith("petrified_oak_slab")
                         }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
                     }
                     else -> pair.second.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
