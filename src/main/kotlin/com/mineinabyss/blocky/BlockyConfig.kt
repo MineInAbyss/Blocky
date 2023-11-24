@@ -35,7 +35,7 @@ data class BlockyConfig(
 
     @Serializable data class BlockyMenu(val title: String = "", val height: Int = 6)
     @Serializable data class MoreCreativeTabsModConfig(val generateJsonForMod: Boolean = false)
-    @Serializable data class BlockyNoteBlockConfig(val isEnabled: Boolean = true, val restoreFunctionality: Boolean = false)
+    @Serializable data class BlockyNoteBlockConfig(val isEnabled: Boolean = true)
     @Serializable data class BlockyTripwireConfig(val isEnabled: Boolean = true)
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockySlabConfig(val isEnabled: Boolean = false)

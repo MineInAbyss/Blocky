@@ -91,7 +91,7 @@ fun placeBlockyBlock(
     if (!against.isBlockyBlock && !newData.isBlockyBlock) return
     if (player.isInBlock(targetBlock) || against.isVanillaNoteBlock) return
 
-    if (!blocky.config.noteBlocks.restoreFunctionality && targetBlock.isVanillaNoteBlock)
+    if (targetBlock.isVanillaNoteBlock)
         targetBlock.persistentDataContainer.encode(VanillaNoteBlock(0))
 
     val blockPlaceEvent = BlockPlaceEvent(targetBlock, targetBlock.state, against, item, player, true, hand)

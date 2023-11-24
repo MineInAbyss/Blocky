@@ -57,7 +57,7 @@ class BlockyPlugin : JavaPlugin() {
                 listeners(BlockyNoteBlockListener())
                 if (!GlobalConfiguration.get().blockUpdates.disableNoteblockUpdates) {
                     listeners(BlockyNoteBlockListener.BlockyNoteBlockPhysicsListener())
-                    logError("It is recommended to toggle the disable-noteblock-updates setting in paper-global.yml.")
+                    logError("It is heavily recommended to toggle the disable-noteblock-updates setting in paper-global.yml.")
                     logError("Otherwise Blocky will listen to some events that fire alot and might degrade server performance.")
                 }
             }
@@ -65,7 +65,7 @@ class BlockyPlugin : JavaPlugin() {
                 listeners(BlockyWireListener())
                 if (!GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) {
                     listeners(BlockyWireListener.BlockyWirePhysicsListener())
-                    logError("It is recommended to toggle the disable-tripwire-updates setting in paper-global.yml.")
+                    logError("It is heavily recommended to toggle the disable-tripwire-updates setting in paper-global.yml.")
                     logError("Otherwise Blocky will listen to some events that fire alot and might degrade server performance.")
                 }
             }

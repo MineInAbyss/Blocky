@@ -39,10 +39,6 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
         if (!block.isVanillaNoteBlock) isCancelled = true
-        else if (!blocky.config.noteBlocks.restoreFunctionality) {
-            note = block.updateBlockyNote()
-            instrument = block.getBlockyInstrument()
-        } else return
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -51,12 +47,10 @@ class BlockyNoteBlockListener : Listener {
         if (block.toGearyOrNull()?.has<BlockyBurnable>() != true) isCancelled = true
     }
 
-    // If not restoreFunctionality handle interaction if vanilla block otherwise return cuz vanilla handles it
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock ?: return
         if (block.type != Material.NOTE_BLOCK) return
-        if (blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock) return
 
         if (rightClicked) setUseInteractedBlock(Event.Result.DENY)
         if (block.isVanillaNoteBlock) {
@@ -114,39 +108,19 @@ class BlockyNoteBlockListener : Listener {
         if (blockPlaced.isVanillaNoteBlock) blockPlaced.persistentDataContainer.encode(VanillaNoteBlock())
     }
 
-    //TODO Make sure this works
-    // Convert vanilla blocks into custom note blocks if any after changing the value
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun ChunkLoadEvent.migrateOnChunkLoad() {
         CustomBlockData.getBlocksWithCustomData(blocky.plugin, chunk)
-            .filter { it.persistentDataContainer.has<VanillaNoteBlock>() }.forEach { block ->
-
-                if (block.blockData !is NoteBlock) {
-                    block.persistentDataContainer.remove<VanillaNoteBlock>()
-                    return@forEach
-                }
-
-                // Convert any VANILLA_NOTEBLOCK_KEY blocks to custom if restoreFunctionality is disabled
-                if (!blocky.config.noteBlocks.restoreFunctionality) {
-                    // If block doesn't have VANILLA_NOTEBLOCK_KEY or NOTE_KEY,
-                    // assume it to be a vanilla and convert it to custom
-                    if (block.customBlockData.isEmpty) {
-                        block.persistentDataContainer.encode(VanillaNoteBlock(0))
-                        block.blockData = Material.NOTE_BLOCK.createBlockData()
-                    }
-                    // If block has NOTE_KEY, aka it was a custom vanilla block, convert to full vanilla
-                    else if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
-                        block.persistentDataContainer.encode(VanillaNoteBlock((block.blockData as NoteBlock).note.id.toInt()))
-                        block.blockData = Material.NOTE_BLOCK.createBlockData()
-                    }
+            .filter { it.blockData is NoteBlock && it.persistentDataContainer.has<VanillaNoteBlock>() }.forEach { block ->
+                // If block doesn't have VANILLA_NOTEBLOCK_KEY or NOTE_KEY,
+                // assume it to be a vanilla and convert it to custom
+                if (block.customBlockData.isEmpty) {
+                    block.persistentDataContainer.encode(VanillaNoteBlock(0))
+                    block.blockData = Material.NOTE_BLOCK.createBlockData()
                 } else {
-                    if (block.persistentDataContainer.has<VanillaNoteBlock>()) {
-                        val noteblock = block.blockData as? NoteBlock ?: return@forEach
-                        noteblock.instrument = Instrument.PIANO
-                        noteblock.note = block.getBlockyNote() // Set note from PDC data
-
-                        block.persistentDataContainer.encode(VanillaNoteBlock(noteblock.note.id.toInt()))
-                    }
+                    // If block has NOTE_KEY, aka it was a custom vanilla block, convert to full vanilla
+                    block.persistentDataContainer.encode(VanillaNoteBlock((block.blockData as NoteBlock).note.id.toInt()))
+                    block.blockData = Material.NOTE_BLOCK.createBlockData()
                 }
             }
     }
