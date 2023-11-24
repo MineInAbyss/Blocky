@@ -51,6 +51,7 @@ object BlockStateCorrection {
         if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
             itemStack.subtract(1)
         val target = hitResult.blockPos.let { pos -> block.world.getBlockAt(pos.x, pos.y, pos.z) }
+        // Open sign, side will always be front when placed
         (target.state as? Sign)?.let { if (!it.isWaxed) player.openSign(it, Side.FRONT) }
 
         return target.blockData
