@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.migration.config
+package com.mineinabyss.blocky.systems.migration
 
 import com.mineinabyss.blocky.components.core.AppliedMigrations
 import com.mineinabyss.geary.papermc.datastore.decode

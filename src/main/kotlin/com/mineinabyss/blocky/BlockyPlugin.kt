@@ -6,9 +6,9 @@ import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
-import com.mineinabyss.blocky.migration.config.MigrationGroup
-import com.mineinabyss.blocky.migration.config.Migrations
-import com.mineinabyss.blocky.migration.config.VanillaNoteblockMigrator
+import com.mineinabyss.blocky.systems.migration.MigrationGroup
+import com.mineinabyss.blocky.systems.migration.Migrations
+import com.mineinabyss.blocky.systems.migration.VanillaNoteblockMigrator
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary

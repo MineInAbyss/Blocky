@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.migration.config
+package com.mineinabyss.blocky.systems.migration
 
 import org.bukkit.Chunk
 

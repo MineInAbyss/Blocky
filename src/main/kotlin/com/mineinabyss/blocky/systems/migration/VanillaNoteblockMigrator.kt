@@ -1,4 +1,4 @@
-package com.mineinabyss.blocky.migration.config
+package com.mineinabyss.blocky.systems.migration
 
 import com.fastasyncworldedit.core.util.TaskManager
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock

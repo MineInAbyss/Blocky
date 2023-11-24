@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.migration.config.Migrations
+import com.mineinabyss.blocky.systems.migration.Migrations
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.world.ChunkLoadEvent

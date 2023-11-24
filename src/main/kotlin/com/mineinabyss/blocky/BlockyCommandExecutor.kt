@@ -5,7 +5,7 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
-import com.mineinabyss.blocky.migration.config.VanillaNoteblockMigrator
+import com.mineinabyss.blocky.systems.migration.VanillaNoteblockMigrator
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
