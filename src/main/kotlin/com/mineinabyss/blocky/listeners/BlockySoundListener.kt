@@ -43,7 +43,7 @@ class BlockySoundListener : Listener {
             do {
                 block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
                 delay(3.ticks) // Add small delay to mimic vanilla
-            } while (player.toGeary().has<PlayerIsMining>())
+            } while (player.location.isWorldLoaded && player.toGearyOrNull()?.has<PlayerIsMining>() == true)
         }
     }
 
@@ -59,7 +59,7 @@ class BlockySoundListener : Listener {
             do {
                 entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
                 delay(3.ticks) // Add small delay to mimic vanilla
-            } while (player.toGeary().has<PlayerIsMining>())
+            } while (player.location.isWorldLoaded && player.toGearyOrNull()?.has<PlayerIsMining>() == true)
         }
     }
 
