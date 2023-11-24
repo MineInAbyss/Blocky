@@ -22,8 +22,6 @@ class VanillaNoteblockMigrator : ChunkMigrator {
         chunk.chunkSnapshot
 
         // Create a WorldEdit EditSession
-
-        // Create a WorldEdit EditSession
         val weWorld: World = BukkitAdapter.adapt(chunk.world)
         val editSession = WorldEdit.getInstance().newEditSession(weWorld)
 
@@ -39,8 +37,8 @@ class VanillaNoteblockMigrator : ChunkMigrator {
                 val noteblock = BlockTypes.NOTE_BLOCK!!
                 val note = noteblock.getProperty<Int>("note")
 
-                it.replaceBlocks(chunkRegion, BlockTypeMask(it, BlockTypes.NOTE_BLOCK)) { position ->
-                    val pitch = position.getBlock(it).getState(note)
+                editSession.replaceBlocks(chunkRegion, BlockTypeMask(editSession, BlockTypes.NOTE_BLOCK)) { position ->
+                    val pitch = position.getBlock(editSession).getState(note)
                     noteblockPitches += position to pitch
                     noteblock.applyBlock(position)
                 }
