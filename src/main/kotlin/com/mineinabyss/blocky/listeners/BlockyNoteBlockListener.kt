@@ -40,6 +40,8 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
         if (!block.isVanillaNoteBlock) isCancelled = true
+        note = block.blockyNote()
+        instrument = block.blockyInstrument()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -52,10 +54,8 @@ class BlockyNoteBlockListener : Listener {
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock?.takeIf { it.type == Material.NOTE_BLOCK } ?: return
 
-        if (block.isVanillaNoteBlock) {
-            if (rightClicked) block.updateBlockyNote()
-            block.playBlockyNoteBlock()
-        }
+        if (block.isBlockyBlock) setUseInteractedBlock(Event.Result.DENY)
+        else if (block.isVanillaNoteBlock && rightClicked) block.updateBlockyNote()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

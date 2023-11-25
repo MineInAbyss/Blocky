@@ -46,10 +46,6 @@ fun Block.updateBlockyNote() {
     this.persistentDataContainer.encode(VanillaNoteBlock(note))
 }
 
-fun Block.playBlockyNoteBlock() {
-    NotePlayEvent(this, this.blockyInstrument(), this.blockyNote()).callEvent()
-}
-
 fun Block.blockyNote() = Note(this.persistentDataContainer.decode<VanillaNoteBlock>()?.note ?: 0)
 
 fun Block.blockyInstrument(): Instrument {
