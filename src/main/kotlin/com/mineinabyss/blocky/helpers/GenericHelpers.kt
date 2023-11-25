@@ -109,7 +109,7 @@ fun placeBlockyBlock(
     // if new block is a blocky block, place it via API
     // if not it is a vanilla block placed against a blocky block, and we place it via NMS methods
     newData.toGearyOrNull()?.get<PrefabKey>()?.let { BlockyBlocks.placeBlockyBlock(targetBlock.location, it); item.subtract(1) }
-        ?: BlockStateCorrection.placeItemAsBlock(player, hand, item, targetBlock, face)
+        ?: BlockStateCorrection.placeItemAsBlock(player, hand, item)
 }
 
 internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Boolean {

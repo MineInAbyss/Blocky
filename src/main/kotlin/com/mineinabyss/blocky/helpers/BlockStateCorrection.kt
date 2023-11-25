@@ -2,12 +2,14 @@ package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialSetTag
 import net.minecraft.core.Direction
+import net.minecraft.util.Mth
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
 import net.minecraft.world.item.BlockItem
 import net.minecraft.world.item.context.BlockPlaceContext
 import net.minecraft.world.item.context.DirectionalPlaceContext
 import net.minecraft.world.item.context.UseOnContext
+import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.BlockHitResult
 import net.minecraft.world.phys.Vec3
 import org.bukkit.GameMode
@@ -23,22 +25,25 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 object BlockStateCorrection {
-    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack, block: Block, blockFace: BlockFace): BlockData? {
-        val hitResult = getBlockHitResult(player, block, blockFace) ?: return null
+    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack): BlockData? {
+        val nmsStack = CraftItemStack.asNMSCopy(itemStack)
+        val blockItem = nmsStack.item as? BlockItem
+        val serverPlayer = (player as CraftPlayer).handle
+        val hitResult = playerPOVHitResult(serverPlayer)
         val hand = when (slot) {
             EquipmentSlot.HAND -> InteractionHand.MAIN_HAND
             EquipmentSlot.OFF_HAND -> InteractionHand.OFF_HAND
             else -> null
         } ?: return null
 
-        val nmsStack = CraftItemStack.asNMSCopy(itemStack)
-        val blockItem = nmsStack.item as? BlockItem
-        val serverPlayer = (player as CraftPlayer).handle
         val placeContext = when {// Shulker-Boxes are DirectionalPlace based unlike other directional-blocks
             MaterialSetTag.SHULKER_BOXES.isTagged(itemStack.type) ->
                 DirectionalPlaceContext(serverPlayer.level(), hitResult.blockPos, hitResult.direction, nmsStack, hitResult.direction.opposite)
             else -> BlockPlaceContext(UseOnContext(serverPlayer, hand, hitResult))
         }
+
+        // Fixes EnderPearls and other cooldown items being ignored
+        if (serverPlayer.cooldowns.isOnCooldown(nmsStack.item)) return null
 
         if (blockItem == null) {
             val result = nmsStack.item.use(serverPlayer.level(), serverPlayer, hand)
@@ -50,16 +55,25 @@ object BlockStateCorrection {
         // Seems shulkers for some reason do not adhere to the place-item subtraction by default
         if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
             itemStack.subtract(1)
-        val target = hitResult.blockPos.let { pos -> block.world.getBlockAt(pos.x, pos.y, pos.z) }
+        val target = hitResult.blockPos.let { pos -> player.world.getBlockAt(pos.x, pos.y, pos.z) }
         // Open sign, side will always be front when placed
         (target.state as? Sign)?.let { if (!it.isWaxed) player.openSign(it, Side.FRONT) }
 
         return target.blockData
     }
 
-    private fun getBlockHitResult(player: Player, block: Block, blockFace: BlockFace): BlockHitResult? {
-        val vec3 = player.eyeLocation.let { Vec3(it.x, it.y, it.z) }
-        val direction = Direction.entries.find { it.name == blockFace.name } ?: return null
-        return BlockHitResult(vec3, direction.opposite, block.toBlockPos().relative(direction), false)
+    private fun playerPOVHitResult(player: net.minecraft.world.entity.player.Player, fluidHandling: ClipContext.Fluid = ClipContext.Fluid.ANY): BlockHitResult {
+        val f = player.xRot
+        val g = player.yRot
+        val vec3 = player.eyePosition
+        val h = Mth.cos(-g * (Math.PI.toFloat() / 180f) - Math.PI.toFloat())
+        val i = Mth.sin(-g * (Math.PI.toFloat() / 180f) - Math.PI.toFloat())
+        val j = -Mth.cos(-f * (Math.PI.toFloat() / 180f))
+        val k = Mth.sin(-f * (Math.PI.toFloat() / 180f))
+        val l = i * j
+        val n = h * j
+        val d = 5.0
+        val vec32 = vec3.add(l.toDouble() * 5.0, k.toDouble() * 5.0, n.toDouble() * 5.0)
+        return player.level().clip(ClipContext(vec3, vec32, ClipContext.Block.OUTLINE, fluidHandling, player))
     }
 }

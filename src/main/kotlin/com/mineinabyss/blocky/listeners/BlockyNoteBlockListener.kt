@@ -1,8 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
-import com.github.shynixn.mccoroutine.bukkit.launch
-import com.github.shynixn.mccoroutine.bukkit.ticks
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
@@ -13,16 +11,10 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.datastore.has
-import com.mineinabyss.geary.papermc.datastore.remove
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.idofront.messaging.broadcast
-import kotlinx.coroutines.delay
-import org.bukkit.GameEvent
-import org.bukkit.Instrument
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -32,7 +24,6 @@ import org.bukkit.event.block.*
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.world.ChunkLoadEvent
-import org.bukkit.event.world.GenericGameEvent
 import org.bukkit.inventory.EquipmentSlot
 
 class BlockyNoteBlockListener : Listener {
@@ -66,18 +57,7 @@ class BlockyNoteBlockListener : Listener {
         if (!BlockyBlockInteractEvent(placedAgainst, player, hand, item, blockFace).callEvent()) isCancelled = true
         setUseInteractedBlock(Event.Result.DENY)
 
-        val type = when {
-            item.type == Material.MILK_BUCKET -> return
-            item.type == Material.LAVA_BUCKET -> Material.LAVA
-            MaterialTags.BUCKETS.isTagged(item.type) -> Material.WATER
-            else -> null
-        }
-
-        val newData = when {
-            type != null && type.isBlock -> type.createBlockData()
-            else -> null
-        }
-        BlockStateCorrection.placeItemAsBlock(player, hand, item, placedAgainst, blockFace)
+        BlockStateCorrection.placeItemAsBlock(player, hand, item)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
