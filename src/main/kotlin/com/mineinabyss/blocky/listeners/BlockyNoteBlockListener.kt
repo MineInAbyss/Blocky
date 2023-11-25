@@ -17,6 +17,7 @@ import com.mineinabyss.geary.papermc.datastore.remove
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
+import com.mineinabyss.idofront.messaging.broadcast
 import kotlinx.coroutines.delay
 import org.bukkit.GameEvent
 import org.bukkit.Instrument
@@ -43,16 +44,14 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBurnEvent.onBurnBlockyNoteBlock() {
-        if (!block.isBlockyNoteBlock) return
-        if (block.toGearyOrNull()?.has<BlockyBurnable>() != true) isCancelled = true
+        if (block.isBlockyNoteBlock && block.toGearyOrNull()?.has<BlockyBurnable>() != true)
+            isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
-        val block = clickedBlock ?: return
-        if (block.type != Material.NOTE_BLOCK) return
+        val block = clickedBlock?.takeIf { it.type == Material.NOTE_BLOCK } ?: return
 
-        if (rightClicked) setUseInteractedBlock(Event.Result.DENY)
         if (block.isVanillaNoteBlock) {
             if (rightClicked) block.updateBlockyNote()
             block.playBlockyNoteBlock()
@@ -61,9 +60,8 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onPlaceAgainstBlockyBlock() {
-        val (placedAgainst, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
-        //TODO Figure out  why water replaces custom block
-        if (action != Action.RIGHT_CLICK_BLOCK || !placedAgainst.isBlockyBlock || !item.type.isBlock) return
+        val (placedAgainst, item, hand) = (clickedBlock?.takeIf { it.isBlockyBlock } ?: return) to (item?.takeIf { it.type.isBlock } ?: return) to (hand ?: return)
+        if (action != Action.RIGHT_CLICK_BLOCK) return
 
         if (!BlockyBlockInteractEvent(placedAgainst, player, hand, item, blockFace).callEvent()) isCancelled = true
         setUseInteractedBlock(Event.Result.DENY)
@@ -84,11 +82,9 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPrePlacingBlockyNoteBlock() {
-        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand ?: return)
-        if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
-        val gearyItem = player.gearyInventory?.get(hand) ?: return
-        if (gearyItem.get<SetBlock>()?.blockType != SetBlock.BlockType.NOTEBLOCK) return
-        if (!player.isSneaking && block.isInteractable()) return
+        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+        val gearyItem = player.gearyInventory?.get(hand)?.takeIf { it.get<SetBlock>()?.blockType == SetBlock.BlockType.NOTEBLOCK } ?: return
+        if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 
         setUseInteractedBlock(Event.Result.DENY)
 
@@ -97,9 +93,8 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun EntityExplodeEvent.onExplodingBlocky() {
-        blockList().filter { it.isBlockyNoteBlock }.forEach { block ->
-            block.setType(Material.AIR, false)
-        }
+        blockList().filter { it.isBlockyNoteBlock }.forEach { it.type = Material.AIR }
+        blockList().removeIf { it.isBlockyNoteBlock }
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
