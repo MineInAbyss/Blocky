@@ -109,41 +109,4 @@ class BlockyWireListener : Listener {
         isDropItems = false
     }
 
-    class BlockyWirePhysicsListener : Listener {
-
-        @EventHandler(priority = EventPriority.LOWEST)
-        fun BlockPhysicsEvent.cancelTripwirePhysics() {
-            if (changedType == Material.TRIPWIRE) {
-                isCancelled = true
-                block.state.update(true, false)
-            }
-
-            BlockFace.entries.filter { it.isCardinal }.forEach { f ->
-                val changed = block.getRelative(f)
-                if (changed.type != Material.TRIPWIRE) return@forEach
-
-                blocky.plugin.launch {
-                    val data = changed.blockData.clone()
-                    delay(1)
-                    changed.setBlockData(data, false)
-                }
-            }
-        }
-
-        @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-        fun EntityInsideBlockEvent.onEnterTripwire() {
-            if (block.type == Material.TRIPWIRE) isCancelled = true
-        }
-
-        @EventHandler(priority = EventPriority.HIGH)
-        fun BlockPlaceEvent.onPlacingTripwire() {
-            if (blockPlaced.type != Material.TRIPWIRE) return
-
-            block.state.update(true, false)
-            blockAgainst.state.update(true, false)
-
-            if (player.gearyInventory?.get(hand)?.has<SetBlock>() == true) return
-            block.blockData = Material.TRIPWIRE.createBlockData()
-        }
-    }
 }

@@ -13,6 +13,7 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
 import io.papermc.paper.configuration.GlobalConfiguration
@@ -38,7 +39,7 @@ class BlockyPlugin : JavaPlugin() {
     override fun onEnable() {
         createBlockyContext()
 
-        if (Bukkit.getPluginManager().isPluginEnabled("WorldEdit")) {
+        if (Plugins.isEnabled("WorldEdit")) {
             WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
             listeners(WorldEditListener())
         }
@@ -54,20 +55,17 @@ class BlockyPlugin : JavaPlugin() {
 
         blocky.config.run {
             if (noteBlocks.isEnabled) {
-                listeners(BlockyNoteBlockListener())
                 if (!GlobalConfiguration.get().blockUpdates.disableNoteblockUpdates) {
-                    listeners(BlockyNoteBlockListener.BlockyNoteBlockPhysicsListener())
-                    logError("It is heavily recommended to toggle the disable-noteblock-updates setting in paper-global.yml.")
-                    logError("Otherwise Blocky will listen to some events that fire alot and might degrade server performance.")
-                }
+                    logError("Due to the disable-noteblock-updates being disabled in paper-global.yml, NoteBlock-BlockTypes have been disabled...")
+                    logError("This setting is required for Blocky to function properly.")
+                } else listeners(BlockyNoteBlockListener())
             }
             if (tripWires.isEnabled) {
-                listeners(BlockyWireListener())
                 if (!GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) {
-                    listeners(BlockyWireListener.BlockyWirePhysicsListener())
-                    logError("It is heavily recommended to toggle the disable-tripwire-updates setting in paper-global.yml.")
-                    logError("Otherwise Blocky will listen to some events that fire alot and might degrade server performance.")
-                }
+                    logError("Due to the disable-tripwire-updates being disabled in paper-global.yml, Wire-BlockTypes have been disabled...")
+                    logError("This setting is required for Blocky to function properly.")
+                } else listeners(BlockyWireListener())
+
             }
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
             if (slabBlocks.isEnabled) listeners(BlockyCopperListener.BlockySlabListener())
