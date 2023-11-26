@@ -36,39 +36,19 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
-                fun reloadConfig() {
+                action {
                     blocky.plugin.createBlockyContext()
                     blocky.plugin.runStartupFunctions()
-                    sender.success("Blocky configs has been reloaded!")
-                }
-                fun reloadItems() {
                     blocky.plugin.launch {
-                        BlockyQuery.forEach {
-                            prefabs.loader.reread(it.entity)
-                        }
-                        sender.success("Blocky items have been reloaded!")
+                        BlockyQuery.forEach { prefabs.loader.reread(it.entity) }
                     }
-                }
-                "all" {
-                    actions {
-                        reloadItems()
-                        reloadConfig()
-                    }
-                }
+                    sender.success("Blocky has been reloaded!")
 
-                "config" {
-                    actions {
-                        reloadConfig()
-                    }
-                }
-                "items" {
-                    actions {
-                        reloadItems()
-                    }
                 }
             }
             "give" {
-                val type by optionArg(options = BlockyQuery.toList { it }.filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
+                val type by optionArg(options = BlockyQuery.toList { it }
+                    .filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
                     .map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
@@ -124,27 +104,20 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
         return if (command.name == "blocky") {
             when (args.size) {
                 1 -> listOf("reload", "give", "dye", "menu").filter { it.startsWith(args[0]) }
-                2 -> {
-                    when (args[0]) {
-                        "reload" -> listOf("all", "config", "items").filter { it.startsWith(args[1]) }
-                        "give" ->
-                            BlockyQuery.toList { it }.filter {
-                                val arg = args[1].lowercase()
-                                (it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)) &&
-                                        it.entity.get<BlockyDirectional>()?.isParentBlock != false
-                            }.map { it.prefabKey.toString() }
+                2 -> when (args[0]) {
+                    "give" -> BlockyQuery.toList { it }.filter {
+                        val arg = args[1].lowercase()
+                        (it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)) &&
+                                it.entity.get<BlockyDirectional>()?.isParentBlock != false
+                    }.map { it.prefabKey.toString() }
 
-                        "menu" -> emptyList()
-                        else -> emptyList()
-                    }
-                }
+                    else -> emptyList()
+                }.filter { it.startsWith(args[1]) }
 
-                3 -> {
-                    when (args[0]) {
-                        "modelengine" -> blockyModelEngineQuery.filter { it.startsWith(args[2]) }
-                        else -> emptyList()
-                    }
-                }
+                3 -> when (args[0]) {
+                    "modelengine" -> blockyModelEngineQuery.filter { it.startsWith(args[2]) }
+                    else -> emptyList()
+                }.filter { it.startsWith(args[2]) }
 
                 else -> emptyList()
             }
