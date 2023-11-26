@@ -12,6 +12,7 @@ import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
@@ -93,19 +94,13 @@ class BlockyPlugin : JavaPlugin() {
         return BuiltInRegistries.BLOCK.tags.map { pair ->
             pair.first.location to IntArrayList(pair.second.size()).apply {
                 // If the tag is MINEABLE_WITH_AXE, don't add noteblock, if it's MINEABLE_WITH_PICKAXE, don't add petrified oak slab
-                when (pair.first.location) {
-                    BlockTags.MINEABLE_WITH_AXE.location -> {
-                        pair.second.filter {
-                            !it.value().descriptionId.endsWith("note_block")
-                        }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
+                pair.second.filter {
+                    it.value().descriptionId != when (pair.first.location) {
+                        BlockTags.MINEABLE_WITH_AXE.location -> "block.minecraft.note_block"
+                        BlockTags.MINEABLE_WITH_PICKAXE.location -> "block.minecraft.petrified_oak_slab"
+                        else -> it.value().descriptionId
                     }
-                    BlockTags.MINEABLE_WITH_PICKAXE.location -> {
-                        pair.second.filter {
-                            !it.value().descriptionId.endsWith("petrified_oak_slab")
-                        }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
-                    }
-                    else -> pair.second.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
-                }
+                }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
             }
         }.toList().toMap()
     }
