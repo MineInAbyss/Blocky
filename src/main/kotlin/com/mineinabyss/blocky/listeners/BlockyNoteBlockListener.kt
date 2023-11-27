@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.listeners
 
-import com.destroystokyo.paper.MaterialTags
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
@@ -20,7 +19,10 @@ import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.*
+import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBurnEvent
+import org.bukkit.event.block.BlockPlaceEvent
+import org.bukkit.event.block.NotePlayEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.world.ChunkLoadEvent
@@ -44,6 +46,7 @@ class BlockyNoteBlockListener : Listener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     fun PlayerInteractEvent.onChangingNote() {
         val block = clickedBlock?.takeIf { it.type == Material.NOTE_BLOCK } ?: return
+        if (hand != EquipmentSlot.HAND || !rightClicked) return
 
         if (block.isBlockyBlock) setUseInteractedBlock(Event.Result.DENY)
         else if (block.isVanillaNoteBlock && rightClicked) block.updateBlockyNote()
