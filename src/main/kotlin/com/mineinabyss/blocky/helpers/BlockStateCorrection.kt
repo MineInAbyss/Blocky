@@ -25,16 +25,12 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 object BlockStateCorrection {
-    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack): BlockData? {
+    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack)  {
         val nmsStack = CraftItemStack.asNMSCopy(itemStack)
         val blockItem = nmsStack.item as? BlockItem
         val serverPlayer = (player as CraftPlayer).handle
         val hitResult = playerPOVHitResult(serverPlayer)
-        val hand = when (slot) {
-            EquipmentSlot.HAND -> InteractionHand.MAIN_HAND
-            EquipmentSlot.OFF_HAND -> InteractionHand.OFF_HAND
-            else -> null
-        } ?: return null
+        val hand = if (slot == EquipmentSlot.HAND) InteractionHand.MAIN_HAND else InteractionHand.OFF_HAND
 
         val placeContext = when {// Shulker-Boxes are DirectionalPlace based unlike other directional-blocks
             MaterialSetTag.SHULKER_BOXES.isTagged(itemStack.type) ->
@@ -42,24 +38,15 @@ object BlockStateCorrection {
             else -> BlockPlaceContext(UseOnContext(serverPlayer, hand, hitResult))
         }
 
-        // Fixes EnderPearls and other cooldown items being ignored
-        if (serverPlayer.cooldowns.isOnCooldown(nmsStack.item)) return null
-
-        if (blockItem == null) {
-            val result = nmsStack.item.use(serverPlayer.level(), serverPlayer, hand)
-            if (result.result == InteractionResult.CONSUME) player.getInventory().setItem(slot, result.getObject().asBukkitCopy())
-            return null
-        }
-
-        if (blockItem.place(placeContext) == InteractionResult.FAIL) return null
-        // Seems shulkers for some reason do not adhere to the place-item subtraction by default
-        if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
-            itemStack.subtract(1)
-        val target = hitResult.blockPos.let { pos -> player.world.getBlockAt(pos.x, pos.y, pos.z) }
-        // Open sign, side will always be front when placed
-        (target.state as? Sign)?.let { if (!it.isWaxed) player.openSign(it, Side.FRONT) }
-
-        return target.blockData
+        blockItem?.let {
+            if (blockItem.place(placeContext) == InteractionResult.FAIL) return
+            // Seems shulkers for some reason do not adhere to the place-item subtraction by default
+            if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
+                itemStack.subtract(1)
+            val target = hitResult.blockPos.let { pos -> player.world.getBlockAt(pos.x, pos.y, pos.z) }
+            // Open sign, side will always be front when placed
+            (target.state as? Sign)?.let { if (!it.isWaxed) player.openSign(it, Side.FRONT) }
+        } ?: serverPlayer.gameMode.useItem(serverPlayer, serverPlayer.level(), nmsStack, hand)
     }
 
     private fun playerPOVHitResult(player: net.minecraft.world.entity.player.Player, fluidHandling: ClipContext.Fluid = ClipContext.Fluid.ANY): BlockHitResult {
