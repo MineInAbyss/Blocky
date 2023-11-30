@@ -92,7 +92,7 @@ class BlockyFurnitureListener : Listener {
         }
 
         player.swingHand(hand)
-        if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.subtract()
+        if (player.gameMode != GameMode.CREATIVE) player.inventory.getItem(hand).subtract(1)
         setUseInteractedBlock(Event.Result.DENY)
     }
 
