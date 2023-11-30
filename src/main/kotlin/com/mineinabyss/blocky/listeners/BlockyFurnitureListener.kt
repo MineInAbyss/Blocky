@@ -61,7 +61,6 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun EntityRemoveFromWorldEvent.onRemoveFurniture() {
         val entity = entity as? ItemDisplay ?: return
-        if (!entity.isBlockyFurniture) return
         FurniturePacketHelpers.removeInteractionHitboxPacket(entity)
         FurniturePacketHelpers.removeCollisionHitboxPacket(entity)
         FurniturePacketHelpers.removeLightPacket(entity)
