@@ -134,9 +134,10 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to remove the interaction hitbox of.
      */
     fun removeInteractionHitboxPacket(furniture: ItemDisplay) {
-        furniture.world.players.forEach {
-            removeInteractionHitboxPacket(furniture, it)
+        blocky.plugin.server.onlinePlayers.forEach { player ->
+            removeInteractionHitboxPacket(furniture, player)
         }
+        interactionHitboxIdMap.remove(furniture.uniqueId)
     }
 
     /**
@@ -147,7 +148,6 @@ object FurniturePacketHelpers {
         val interactionPacket = ClientboundRemoveEntitiesPacket(interactionHitboxIdMap[furniture.uniqueId] ?: return)
 
         PacketContainer.fromPacket(interactionPacket).sendTo(player)
-        interactionHitboxIdMap.remove(furniture.uniqueId)
     }
 
     /**
@@ -186,9 +186,10 @@ object FurniturePacketHelpers {
      * @param baseEntity The furniture to remove the collision hitbox of.
      */
     fun removeCollisionHitboxPacket(baseEntity: ItemDisplay) {
-        baseEntity.world.players.forEach {
+        blocky.plugin.server.onlinePlayers.forEach {
             removeCollisionHitboxPacket(baseEntity, it)
         }
+        collisionHitboxPosMap.remove(baseEntity.uniqueId)
     }
 
     /**
@@ -200,7 +201,6 @@ object FurniturePacketHelpers {
         val positions = getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
             .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
-        collisionHitboxPosMap.remove(baseEntity.uniqueId)
     }
 
     /**
@@ -237,7 +237,7 @@ object FurniturePacketHelpers {
      * @param baseEntity The furniture to remove the light packets for
      */
     fun removeLightPacket(baseEntity: ItemDisplay) {
-        baseEntity.world.players.forEach {
+        blocky.plugin.server.onlinePlayers.forEach {
             removeLightPacket(baseEntity, it)
         }
     }
