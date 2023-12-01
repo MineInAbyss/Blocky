@@ -19,10 +19,13 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.helpers.prefabs
+import com.mineinabyss.idofront.messaging.broadcast
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
+import org.bukkit.Bukkit
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.block.BlockFace
@@ -36,6 +39,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import kotlin.math.pow
+import kotlin.math.sqrt
 
 class BlockyFurnitureListener : Listener {
 
@@ -52,7 +57,7 @@ class BlockyFurnitureListener : Listener {
     fun EntityAddToWorldEvent.onAddFurniture() {
         val furniture = entity as? ItemDisplay ?: return
         blocky.plugin.server.onlinePlayers.filterNotNull()
-            .filter { it.world == entity.world && it.location.distanceSquared(entity.location) < 16 }
+            .filter { it.world == entity.world && it.location.distanceSquared(entity.location) < (Bukkit.getServer().simulationDistance * 16.0).pow(2) }
             .forEach { player ->
                 blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
                     delay(1)

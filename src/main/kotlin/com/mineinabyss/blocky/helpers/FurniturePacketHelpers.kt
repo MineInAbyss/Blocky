@@ -4,6 +4,7 @@ package com.mineinabyss.blocky.helpers
 
 import com.comphenix.protocol.events.PacketContainer
 import com.mineinabyss.blocky.api.BlockyFurnitures
+import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.blocky
@@ -46,6 +47,7 @@ object FurniturePacketHelpers {
 
     val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
     val interactionHitboxIdMap = mutableMapOf<FurnitureUUID, Int>()
+    val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, Pair<ClientboundAddEntityPacket, ClientboundSetEntityDataPacket?>>()
 
     fun getBaseFurnitureFromInteractionEntity(id: Int) =
         interactionHitboxIdMap.entries.firstOrNull { it.value == id }?.key?.toEntity() as? ItemDisplay
@@ -108,24 +110,36 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to show the interaction hitbox of.
      */
     fun sendInteractionEntityPacket(furniture: ItemDisplay, player: Player) {
-        val entityId = interactionHitboxIdMap.computeIfAbsent(furniture.uniqueId) { Entity.nextEntityId() }
+        if (!furniture.isBlockyFurniture) return
+        // Don't send interactionEntity packet if modelengine furniture with hitbox
+        if (furniture.isModelEngineFurniture) {
+            val modelId = furniture.toGeary().get<BlockyModelEngine>()?.modelId ?: return
+            val blueprint = ModelEngineAPI.getBlueprint(modelId) ?: return
+            if (blueprint.mainHitbox != null || blueprint.subHitboxes.isNotEmpty()) return
+        }
 
-        val loc = furniture.location.toBlockCenterLocation()
-        val interactionPacket = ClientboundAddEntityPacket(
-            entityId, UUID.randomUUID(),
-            loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
-            EntityType.INTERACTION, 0, Vec3.ZERO, 0.0
-        )
-        PacketContainer.fromPacket(interactionPacket).sendTo(player)
-        val hitbox = furniture.toGeary().get<BlockyFurniture>()?.interactionHitbox ?: return
-        if (hitbox.width == 0f || hitbox.height == 0f) return
-        val metadataPacket = ClientboundSetEntityDataPacket(
-            entityId, listOf(
-                SynchedEntityData.DataValue(8, EntityDataSerializers.FLOAT, hitbox.width),
-                SynchedEntityData.DataValue(9, EntityDataSerializers.FLOAT, hitbox.height)
+        val interactionPackets = interactionHitboxPacketMap.computeIfAbsent(furniture.uniqueId) {
+            val entityId = interactionHitboxIdMap.computeIfAbsent(furniture.uniqueId) { Entity.nextEntityId() }
+            val loc = furniture.location.toBlockCenterLocation()
+            val addEntityPacket = ClientboundAddEntityPacket(
+                entityId, UUID.randomUUID(),
+                loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
+                EntityType.INTERACTION, 0, Vec3.ZERO, 0.0
             )
-        )
-        PacketContainer.fromPacket(metadataPacket).sendTo(player)
+
+            val hitbox = furniture.toGeary().get<BlockyFurniture>()?.interactionHitbox ?: return@computeIfAbsent addEntityPacket to null
+            if (hitbox.width == 0f || hitbox.height == 0f) return@computeIfAbsent addEntityPacket to null
+            val metadataPacket = ClientboundSetEntityDataPacket(
+                entityId, listOf(
+                    SynchedEntityData.DataValue(8, EntityDataSerializers.FLOAT, hitbox.width),
+                    SynchedEntityData.DataValue(9, EntityDataSerializers.FLOAT, hitbox.height)
+                )
+            )
+            return@computeIfAbsent addEntityPacket to metadataPacket
+        }
+
+        PacketContainer.fromPacket(interactionPackets.first).sendTo(player)
+        interactionPackets.second?.let { PacketContainer.fromPacket(it).sendTo(player) }
 
     }
 
@@ -138,6 +152,7 @@ object FurniturePacketHelpers {
             removeInteractionHitboxPacket(furniture, player)
         }
         interactionHitboxIdMap.remove(furniture.uniqueId)
+        interactionHitboxPacketMap.remove(furniture.uniqueId)
     }
 
     /**
