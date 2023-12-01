@@ -45,6 +45,10 @@ import java.util.*
 typealias FurnitureUUID = UUID
 object FurniturePacketHelpers {
 
+    const val INTERACTION_WIDTH_ID = 8
+    const val INTERACTION_HEIGHT_ID = 9
+    const val ITEM_DISPLAY_ITEMSTACK_ID = 23
+
     val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
     val interactionHitboxIdMap = mutableMapOf<FurnitureUUID, Int>()
     val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, Pair<ClientboundAddEntityPacket, ClientboundSetEntityDataPacket?>>()
@@ -131,8 +135,8 @@ object FurniturePacketHelpers {
             if (hitbox.width == 0f || hitbox.height == 0f) return@computeIfAbsent addEntityPacket to null
             val metadataPacket = ClientboundSetEntityDataPacket(
                 entityId, listOf(
-                    SynchedEntityData.DataValue(8, EntityDataSerializers.FLOAT, hitbox.width),
-                    SynchedEntityData.DataValue(9, EntityDataSerializers.FLOAT, hitbox.height)
+                    SynchedEntityData.DataValue(INTERACTION_WIDTH_ID, EntityDataSerializers.FLOAT, hitbox.width),
+                    SynchedEntityData.DataValue(INTERACTION_HEIGHT_ID, EntityDataSerializers.FLOAT, hitbox.height)
                 )
             )
             return@computeIfAbsent addEntityPacket to metadataPacket
