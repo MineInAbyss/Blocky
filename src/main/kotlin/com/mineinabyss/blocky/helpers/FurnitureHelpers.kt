@@ -29,6 +29,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
+import java.util.UUID
 import kotlin.math.max
 
 object FurnitureHelpers {

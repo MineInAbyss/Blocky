@@ -48,17 +48,18 @@ class BlockyFurnitureListener : Listener {
         }
     }
 
-    /*@EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.HIGH)
     fun EntityAddToWorldEvent.onAddFurniture() {
-        val entity = entity as? ItemDisplay ?: return
-        blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
-            delay(1)
-            if (!entity.isBlockyFurniture) return@launch
-            FurniturePacketHelpers.sendInteractionEntityPacket(entity)
-            FurniturePacketHelpers.sendCollisionHitboxPacket(entity)
-            FurniturePacketHelpers.sendLightPacket(entity)
+        val furniture = entity as? ItemDisplay ?: return
+        blocky.plugin.server.onlinePlayers.filterNotNull().forEach { player ->
+            blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
+                delay(1)
+                FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
+                FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
+                FurniturePacketHelpers.sendLightPacket(furniture, player)
+            }
         }
-    }*/
+    }
 
     @EventHandler(priority = EventPriority.LOWEST)
     fun EntityRemoveFromWorldEvent.onRemoveFurniture() {

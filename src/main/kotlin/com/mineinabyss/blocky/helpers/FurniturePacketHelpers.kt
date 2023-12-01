@@ -12,6 +12,7 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.FurnitureHelpers.getLocations
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
+import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.protocolburrito.dsl.protocolManager
 import com.mineinabyss.protocolburrito.dsl.sendTo
@@ -37,16 +38,20 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import java.util.*
 
+/**
+ * Typealias to make it clear that this is a UUID for a furniture entity.
+ */
+typealias FurnitureUUID = UUID
 object FurniturePacketHelpers {
 
-    val collisionHitboxPosMap = mutableMapOf<ItemDisplay, MutableSet<BlockPos>>()
-    val interactionHitboxIdMap = mutableMapOf<ItemDisplay, Int>()
+    val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
+    val interactionHitboxIdMap = mutableMapOf<FurnitureUUID, Int>()
 
     fun getBaseFurnitureFromInteractionEntity(id: Int) =
-        interactionHitboxIdMap.entries.firstOrNull { it.value == id }?.key
+        interactionHitboxIdMap.entries.firstOrNull { it.value == id }?.key?.toEntity() as? ItemDisplay
 
     fun getBaseFurnitureFromCollisionHitbox(pos: BlockPos) =
-        collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key
+        collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key?.toEntity() as? ItemDisplay
 
     internal fun registerPacketListeners() {
 
@@ -103,7 +108,7 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to show the interaction hitbox of.
      */
     fun sendInteractionEntityPacket(furniture: ItemDisplay, player: Player) {
-        val entityId = interactionHitboxIdMap.computeIfAbsent(furniture) { Entity.nextEntityId() }
+        val entityId = interactionHitboxIdMap.computeIfAbsent(furniture.uniqueId) { Entity.nextEntityId() }
 
         val loc = furniture.location.toBlockCenterLocation()
         val interactionPacket = ClientboundAddEntityPacket(
@@ -139,10 +144,10 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to remove the interaction hitbox of.
      */
     fun removeInteractionHitboxPacket(furniture: ItemDisplay, player: Player) {
-        val interactionPacket = ClientboundRemoveEntitiesPacket(interactionHitboxIdMap[furniture] ?: return)
+        val interactionPacket = ClientboundRemoveEntitiesPacket(interactionHitboxIdMap[furniture.uniqueId] ?: return)
 
         PacketContainer.fromPacket(interactionPacket).sendTo(player)
-        interactionHitboxIdMap.remove(furniture)
+        interactionHitboxIdMap.remove(furniture.uniqueId)
     }
 
     /**
@@ -169,7 +174,7 @@ object FurniturePacketHelpers {
             .toMutableMap()
         player.sendMultiBlockChange(positions)
         positions.map { it.key.toBlock() }.forEach {
-            collisionHitboxPosMap.compute(baseEntity) { _, blockPos ->
+            collisionHitboxPosMap.compute(baseEntity.uniqueId) { _, blockPos ->
                 blockPos?.plus(BlockPos(it.blockX(), it.blockY(), it.blockZ()))?.toMutableSet()
                     ?: mutableSetOf(BlockPos(it.blockX(), it.blockY(), it.blockZ()))
             }
@@ -195,9 +200,7 @@ object FurniturePacketHelpers {
         val positions = getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
             .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
-        positions.forEach {
-            collisionHitboxPosMap.remove(baseEntity)
-        }
+        collisionHitboxPosMap.remove(baseEntity.uniqueId)
     }
 
     /**
