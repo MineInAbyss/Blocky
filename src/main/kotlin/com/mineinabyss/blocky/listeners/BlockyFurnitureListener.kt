@@ -43,10 +43,12 @@ class BlockyFurnitureListener : Listener {
     fun PlayerChunkLoadEvent.onLoadChunk() {
         chunk.entities.filterIsInstance<ItemDisplay>().forEach {
             FurniturePacketHelpers.sendInteractionEntityPacket(it, player)
+            FurniturePacketHelpers.sendCollisionHitboxPacket(it, player)
+            FurniturePacketHelpers.sendLightPacket(it, player)
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    /*@EventHandler(priority = EventPriority.HIGH)
     fun EntityAddToWorldEvent.onAddFurniture() {
         val entity = entity as? ItemDisplay ?: return
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
@@ -56,7 +58,7 @@ class BlockyFurnitureListener : Listener {
             FurniturePacketHelpers.sendCollisionHitboxPacket(entity)
             FurniturePacketHelpers.sendLightPacket(entity)
         }
-    }
+    }*/
 
     @EventHandler(priority = EventPriority.LOWEST)
     fun EntityRemoveFromWorldEvent.onRemoveFurniture() {
