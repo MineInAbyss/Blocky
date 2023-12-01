@@ -51,7 +51,7 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH)
     fun EntityAddToWorldEvent.onAddFurniture() {
         val furniture = entity as? ItemDisplay ?: return
-        blocky.plugin.server.onlinePlayers.filterNotNull().forEach { player ->
+        blocky.plugin.server.onlinePlayers.filterNotNull().filter { it.world == entity.world && it.location.distanceSquared(entity.location) < 16 }.forEach { player ->
             blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
                 delay(1)
                 FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
