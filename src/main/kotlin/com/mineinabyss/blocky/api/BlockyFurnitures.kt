@@ -14,7 +14,6 @@ import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.helpers.prefabs
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Location

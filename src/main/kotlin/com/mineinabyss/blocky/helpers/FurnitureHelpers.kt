@@ -10,7 +10,6 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.helpers.addPrefab
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.spawning.spawn
@@ -105,7 +104,7 @@ object FurnitureHelpers {
             this.itemStack = furnitureItem
         } ?: return null
 
-        newFurniture.toGeary().addPrefab(gearyEntity)
+        newFurniture.toGeary().extend(gearyEntity)
         gearyEntity.get<BlockyModelEngine>()?.let { meg ->
             if (!Plugins.isEnabled("ModelEngine")) return@let
             val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let

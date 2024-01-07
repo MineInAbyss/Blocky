@@ -9,7 +9,6 @@ import com.mineinabyss.blocky.helpers.toBlockPos
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.helpers.prefabs
 import org.bukkit.FluidCollisionMode
 import org.bukkit.Material
 import org.bukkit.entity.Player

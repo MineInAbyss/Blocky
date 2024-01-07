@@ -18,9 +18,6 @@ import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.helpers.prefabs
-import com.mineinabyss.idofront.messaging.broadcast
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.th0rgal.protectionlib.ProtectionLib
@@ -57,7 +54,11 @@ class BlockyFurnitureListener : Listener {
     fun EntityAddToWorldEvent.onAddFurniture() {
         val furniture = entity as? ItemDisplay ?: return
         blocky.plugin.server.onlinePlayers.filterNotNull()
-            .filter { it.world == entity.world && it.location.distanceSquared(entity.location) < (Bukkit.getServer().simulationDistance * 16.0).pow(2) }
+            .filter {
+                it.world == entity.world && it.location.distanceSquared(entity.location) < (Bukkit.getServer().simulationDistance * 16.0).pow(
+                    2
+                )
+            }
             .forEach { player ->
                 blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
                     delay(1)
@@ -83,7 +84,12 @@ class BlockyFurnitureListener : Listener {
         val targetBlock = FurnitureHelpers.getTargetBlock(block, blockFace) ?: return
         val gearyEntity = player.gearyInventory?.get(hand) ?: return
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return
-        val yaw = if (furniture.hasStrictRotation) FurnitureHelpers.getYaw(FurnitureHelpers.getRotation(player.yaw, furniture)) else player.yaw
+        val yaw = if (furniture.hasStrictRotation) FurnitureHelpers.getYaw(
+            FurnitureHelpers.getRotation(
+                player.yaw,
+                furniture
+            )
+        ) else player.yaw
 
         when {
             action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE -> return
@@ -112,7 +118,7 @@ class BlockyFurnitureListener : Listener {
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
             when {
                 isAttack -> removeFurniture(baseFurniture, player)
-                else ->  BlockyFurnitureInteractEvent(
+                else -> BlockyFurnitureInteractEvent(
                     baseFurniture, player,
                     hand, player.inventory.itemInMainHand,
                     null, null
