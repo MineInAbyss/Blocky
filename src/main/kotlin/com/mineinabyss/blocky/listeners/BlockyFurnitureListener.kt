@@ -20,6 +20,7 @@ import com.mineinabyss.geary.papermc.tracking.entities.events.GearyEntityAddToWo
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.messaging.logSuccess
 import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.plugin.Plugins
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
@@ -131,17 +132,24 @@ class BlockyFurnitureListener : Listener {
         }
     }
 
-    @EventHandler // ModelEngine-interaction check
-    fun BaseEntityInteractEvent.onModelEngineInteract() {
-        val baseEntity = baseEntity.original as? ItemDisplay ?: return
-        if (!baseEntity.isBlockyFurniture || !baseEntity.isModelEngineFurniture) return
-        when {
-            action == BaseEntityInteractEvent.Action.ATTACK -> removeFurniture(baseEntity, player)
-            else -> BlockyFurnitureInteractEvent(
-                baseEntity, player,
-                slot, player.inventory.itemInMainHand,
-                null, null
-            ).callEvent()
+    init {
+        if (Plugins.isEnabled("ModelEngine")) {
+            logSuccess("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
+            Bukkit.getPluginManager().registerEvents(object : Listener {
+                @EventHandler
+                fun BaseEntityInteractEvent.onModelEngineInteract() {
+                    val baseEntity = baseEntity.original as? ItemDisplay ?: return
+                    if (!baseEntity.isBlockyFurniture || !baseEntity.isModelEngineFurniture) return
+                    when {
+                        action == BaseEntityInteractEvent.Action.ATTACK -> removeFurniture(baseEntity, player)
+                        else -> BlockyFurnitureInteractEvent(
+                            baseEntity, player,
+                            slot, player.inventory.itemInMainHand,
+                            null, null
+                        ).callEvent()
+                    }
+                }
+            }, blocky.plugin)
         }
     }
 
