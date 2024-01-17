@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.listeners
 
-import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent
 import com.github.shynixn.mccoroutine.bukkit.launch
@@ -42,8 +41,8 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
+import org.bukkit.util.Vector
 import kotlin.math.pow
-import kotlin.math.sqrt
 
 class BlockyFurnitureListener : Listener {
 
@@ -124,9 +123,7 @@ class BlockyFurnitureListener : Listener {
             when {
                 isAttack -> removeFurniture(baseFurniture, player)
                 else -> BlockyFurnitureInteractEvent(
-                    baseFurniture, player,
-                    hand, player.inventory.itemInMainHand,
-                    null, null
+                    baseFurniture, player, hand, player.inventory.itemInMainHand, clickedRelativePosition
                 ).callEvent()
             }
         }
@@ -143,9 +140,7 @@ class BlockyFurnitureListener : Listener {
                     when {
                         action == BaseEntityInteractEvent.Action.ATTACK -> removeFurniture(baseEntity, player)
                         else -> BlockyFurnitureInteractEvent(
-                            baseEntity, player,
-                            slot, player.inventory.itemInMainHand,
-                            null, null
+                            baseEntity, player, slot, player.inventory.itemInMainHand, clickedPosition
                         ).callEvent()
                     }
                 }
@@ -157,7 +152,7 @@ class BlockyFurnitureListener : Listener {
     fun BlockyFurnitureInteractEvent.onSitting() {
         if (!ProtectionLib.canInteract(player, entity.location) || player.isSneaking) return
 
-        player.sitOnBlockySeat(baseEntity, clickedBlock?.location ?: baseEntity.location)
+        player.sitOnBlockySeat(baseEntity, baseEntity.location.add(clickedRelativePosition ?: Vector()))
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
