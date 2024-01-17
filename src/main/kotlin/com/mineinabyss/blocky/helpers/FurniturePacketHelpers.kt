@@ -44,6 +44,7 @@ import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.util.Vector
 import org.joml.Vector3f
 import java.util.*
 
@@ -91,13 +92,10 @@ object FurniturePacketHelpers {
             onReceive<ServerboundUseItemOnPacketWrap> { wrap ->
                 Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
                     getBaseFurnitureFromCollisionHitbox(wrap.blockHit.blockPos)?.let { baseFurniture ->
-                        isCancelled = true
-                        BlockyFurnitureInteractEvent(
-                            baseFurniture, player,
-                            EquipmentSlot.HAND, player.inventory.itemInMainHand,
-                            null, null
-                        ).callEvent()
-                    }
+                        val clickedRelativePosition = Vector(wrap.blockHit.location.x, wrap.blockHit.location.y, wrap.blockHit.location.z)
+                isCancelled = true
+
+                    BlockyFurnitureInteractEvent(baseFurniture, player, EquipmentSlot.HAND, player.inventory.itemInMainHand, clickedRelativePosition).callEvent()}
                 }
             }
         }

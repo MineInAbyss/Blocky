@@ -4,10 +4,8 @@ import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
-import com.mineinabyss.blocky.api.BlockyFurnitures.getBlockySeat
+import com.mineinabyss.blocky.api.BlockyFurnitures
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
-import com.mineinabyss.blocky.api.BlockyFurnitures.removeFurniture
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.blocky
@@ -107,7 +105,7 @@ class BlockyFurnitureListener : Listener {
         val newFurniture = FurnitureHelpers.placeBlockyFurniture(prefabKey, targetBlock.location, yaw, item) ?: return
 
         if (!BlockyFurniturePlaceEvent(newFurniture, player, hand, item).callEvent()) {
-            removeFurniture(newFurniture)
+            BlockyFurnitures.removeFurniture(newFurniture)
             return
         }
 
@@ -121,7 +119,7 @@ class BlockyFurnitureListener : Listener {
         val baseFurniture = FurniturePacketHelpers.getBaseFurnitureFromInteractionEntity(entityId) ?: return
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
             when {
-                isAttack -> removeFurniture(baseFurniture, player)
+                isAttack -> BlockyFurnitures.removeFurniture(baseFurniture, player)
                 else -> BlockyFurnitureInteractEvent(
                     baseFurniture, player, hand, player.inventory.itemInMainHand, clickedRelativePosition
                 ).callEvent()
@@ -135,13 +133,10 @@ class BlockyFurnitureListener : Listener {
             Bukkit.getPluginManager().registerEvents(object : Listener {
                 @EventHandler
                 fun BaseEntityInteractEvent.onModelEngineInteract() {
-                    val baseEntity = baseEntity.original as? ItemDisplay ?: return
-                    if (!baseEntity.isBlockyFurniture || !baseEntity.isModelEngineFurniture) return
+                    val baseEntity = (baseEntity.original as? ItemDisplay)?.takeIf { it.isBlockyFurniture } ?: return
                     when {
-                        action == BaseEntityInteractEvent.Action.ATTACK -> removeFurniture(baseEntity, player)
-                        else -> BlockyFurnitureInteractEvent(
-                            baseEntity, player, slot, player.inventory.itemInMainHand, clickedPosition
-                        ).callEvent()
+                        action == BaseEntityInteractEvent.Action.ATTACK -> BlockyFurnitures.removeFurniture(baseEntity, player)
+                        else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, clickedPosition).callEvent()
                     }
                 }
             }, blocky.plugin)
@@ -162,6 +157,6 @@ class BlockyFurnitureListener : Listener {
     }
 
     private fun Player.sitOnBlockySeat(entity: ItemDisplay, location: Location = entity.location) {
-        if (this.passengers.isEmpty()) getBlockySeat(entity, location)?.addPassenger(this)
+        BlockyFurnitures.blockySeat(entity, location)?.addPassenger(this)
     }
 }

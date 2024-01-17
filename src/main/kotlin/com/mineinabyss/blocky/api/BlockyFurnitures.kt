@@ -57,7 +57,7 @@ object BlockyFurnitures {
     val ItemDisplay.seats: List<Entity>
         get() = this.toGearyOrNull()?.get<BlockyAssociatedSeats>()?.seats ?: emptyList()
 
-    fun getBlockySeat(itemDisplay: ItemDisplay, location: Location = itemDisplay.location): Entity? =
+    fun blockySeat(itemDisplay: ItemDisplay, location: Location = itemDisplay.location): Entity? =
         itemDisplay.seats.minByOrNull { it.location.distanceSquared(location) }
 
     val ItemDisplay.blockySeat
