@@ -16,8 +16,12 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.geary.papermc.tracking.entities.events.GearyEntityAddToWorldEvent
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.messaging.logVal
+import com.mineinabyss.idofront.plugin.Plugins
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.th0rgal.protectionlib.ProtectionLib
@@ -28,6 +32,7 @@ import org.bukkit.Location
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemDisplay
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -51,22 +56,21 @@ class BlockyFurnitureListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    fun EntityAddToWorldEvent.onAddFurniture() {
+    fun GearyEntityAddToWorldEvent.onAddFurniture() {
         val furniture = entity as? ItemDisplay ?: return
-        blocky.plugin.server.onlinePlayers.filterNotNull()
-            .filter {
-                it.world == entity.world && it.location.distanceSquared(entity.location) < (Bukkit.getServer().simulationDistance * 16.0).pow(
-                    2
-                )
+        if (entity !is LivingEntity) logError("Entity $entity is not a living entity")
+        else (entity as LivingEntity).equipment.logVal("equipment: ")
+        val simulationDistance = (Bukkit.getServer().simulationDistance * 16.0).pow(2)
+        blocky.plugin.server.onlinePlayers.filterNotNull().filter {
+            it.world == entity.world && it.location.distanceSquared(entity.location) < simulationDistance
+        }.forEach { player ->
+            blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
+                delay(1)
+                FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
+                FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
+                FurniturePacketHelpers.sendLightPacket(furniture, player)
             }
-            .forEach { player ->
-                blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
-                    delay(1)
-                    FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
-                    FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
-                    FurniturePacketHelpers.sendLightPacket(furniture, player)
-                }
-            }
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
