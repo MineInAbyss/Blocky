@@ -14,13 +14,13 @@ import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.blocky.systems.FurnitureOutlineSystem
+import com.mineinabyss.blocky.systems.FurnitureTrackerSystem
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
@@ -34,8 +34,6 @@ import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
-import net.minecraft.world.item.Item
-import org.bukkit.Bukkit
 import org.bukkit.block.data.BlockData
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
@@ -59,6 +57,9 @@ class BlockyPlugin : JavaPlugin() {
         }
 
         BlockyCommandExecutor()
+
+        geary.pipeline.addSystems(FurnitureTrackerSystem(), FurnitureOutlineSystem())
+        FurniturePacketHelpers.registerPacketListeners()
 
         listeners(
             BlockyGenericListener(),
@@ -92,10 +93,6 @@ class BlockyPlugin : JavaPlugin() {
                 runStartupFunctions()
             }
         }
-
-        FurniturePacketHelpers.registerPacketListeners()
-        geary.pipeline.addSystem(FurnitureOutlineSystem())
-
     }
 
     fun runStartupFunctions() {

@@ -16,9 +16,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.events.GearyEntityAddToWorldEvent
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.messaging.logSuccess
-import com.mineinabyss.idofront.messaging.logVal
 import com.mineinabyss.idofront.plugin.Plugins
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
@@ -30,7 +28,6 @@ import org.bukkit.Location
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemDisplay
-import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -56,8 +53,6 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH)
     fun GearyEntityAddToWorldEvent.onAddFurniture() {
         val furniture = entity as? ItemDisplay ?: return
-        if (entity !is LivingEntity) logError("Entity $entity is not a living entity")
-        else (entity as LivingEntity).equipment.logVal("equipment: ")
         val simulationDistance = (Bukkit.getServer().simulationDistance * 16.0).pow(2)
         blocky.plugin.server.onlinePlayers.filterNotNull().filter {
             it.world == entity.world && it.location.distanceSquared(entity.location) < simulationDistance
