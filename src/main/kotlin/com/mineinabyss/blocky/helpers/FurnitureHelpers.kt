@@ -79,8 +79,8 @@ object FurnitureHelpers {
         item: ItemStack?
     ): ItemDisplay? {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return null
-        val itemStack = item ?: gearyEntity.get<SetItem>()?.item?.toItemStack() ?: return null
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return null
+        val itemStack = furniture.properties.itemStack?.toItemStackOrNull() ?: item ?: gearyEntity.get<SetItem>()?.item?.toItemStack() ?: return null
         val furnitureItem = itemStack.clone().editItemMeta {
             displayName(Component.empty())
             (this as? LeatherArmorMeta)?.setColor((itemStack.itemMeta as? LeatherArmorMeta)?.color)
@@ -95,7 +95,7 @@ object FurnitureHelpers {
         }
 
         val newFurniture = spawnLoc.spawn<ItemDisplay> {
-            isPersistent = true
+            isPersistent = furniture.properties.persistent
 
             furniture.properties.let { properties ->
                 itemDisplayTransform = properties.displayTransform

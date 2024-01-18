@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.listeners
 
-import com.destroystokyo.paper.MaterialTags
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
@@ -9,9 +8,10 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerIsMining
-import com.mineinabyss.blocky.helpers.*
-import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
-import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
+import com.mineinabyss.blocky.helpers.CopperHelpers
+import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
+import com.mineinabyss.blocky.helpers.gearyInventory
+import com.mineinabyss.blocky.helpers.to
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -20,13 +20,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.Sound
-import org.bukkit.Tag
 import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
-import org.bukkit.block.data.Directional
-import org.bukkit.block.data.type.Slab
-import org.bukkit.entity.EntityType
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority

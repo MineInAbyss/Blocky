@@ -1,10 +1,8 @@
 package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
-import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
@@ -22,12 +20,10 @@ import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
-import com.mineinabyss.idofront.plugin.actions
 import org.bukkit.Color
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
-import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.meta.LeatherArmorMeta
@@ -43,7 +39,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     blocky.plugin.createBlockyContext()
                     blocky.plugin.runStartupFunctions()
                     blocky.plugin.launch {
-                        BlockyQuery.forEach { prefabs.loader.reread(it.entity) }
+                        BlockyQuery.forEach { prefabs.loader.reload(it.entity) }
                     }
                     sender.success("Blocky has been reloaded!")
 

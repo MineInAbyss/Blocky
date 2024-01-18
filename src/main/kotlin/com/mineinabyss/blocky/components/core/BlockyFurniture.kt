@@ -73,6 +73,8 @@ data class BlockyFurniture(
     @Serializable
     @SerialName("blocky:furniture_properties")
     data class FurnitureProperties(
+        val persistent: Boolean = true,
+        val itemStack: SerializableItemStack? = null,
         val displayTransform: ItemDisplayTransform = ItemDisplayTransform.NONE,
         val scale: @Serializable(Vector3fSerializer::class) Vector3f = Vector3f(1f, 1f, 1f),
         val displayWidth: Float = 0f,

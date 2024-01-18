@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialSetTag
-import net.minecraft.core.Direction
 import net.minecraft.util.Mth
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
@@ -11,12 +10,8 @@ import net.minecraft.world.item.context.DirectionalPlaceContext
 import net.minecraft.world.item.context.UseOnContext
 import net.minecraft.world.level.ClipContext
 import net.minecraft.world.phys.BlockHitResult
-import net.minecraft.world.phys.Vec3
 import org.bukkit.GameMode
-import org.bukkit.block.Block
-import org.bukkit.block.BlockFace
 import org.bukkit.block.Sign
-import org.bukkit.block.data.BlockData
 import org.bukkit.block.sign.Side
 import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer
 import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack
@@ -60,7 +55,7 @@ object BlockStateCorrection {
         val l = i * j
         val n = h * j
         val d = 5.0
-        val vec32 = vec3.add(l.toDouble() * 5.0, k.toDouble() * 5.0, n.toDouble() * 5.0)
+        val vec32 = vec3.add(l.toDouble() * d, k.toDouble() * d, n.toDouble() * d)
         return player.level().clip(ClipContext(vec3, vec32, ClipContext.Block.OUTLINE, fluidHandling, player))
     }
 }
