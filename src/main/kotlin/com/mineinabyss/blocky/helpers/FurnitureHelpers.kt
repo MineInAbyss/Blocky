@@ -1,5 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
+import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
@@ -14,6 +16,10 @@ import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.spawning.spawn
 import com.ticxo.modelengine.api.ModelEngineAPI
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.yield
 import io.papermc.paper.math.Position
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
@@ -42,6 +48,7 @@ object FurnitureHelpers {
 
     fun collisionHitboxLocations(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.CollisionHitbox>): List<Location> =
         hitbox.map { c -> c.location.groundRotate(rotation).add(center) }
+
     fun collisionHitboxPositions(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.CollisionHitbox>): List<Position> =
         collisionHitboxLocations(rotation, center, hitbox).map { Position.block(it) }
 
@@ -104,7 +111,7 @@ object FurnitureHelpers {
             this.itemStack = furnitureItem
         } ?: return null
 
-        newFurniture.toGeary().extend(gearyEntity)
+        blocky.plugin.launch { newFurniture.delayUntilTracked().extend(gearyEntity) }
         gearyEntity.get<BlockyModelEngine>()?.let { meg ->
             if (!Plugins.isEnabled("ModelEngine")) return@let
             val activeModel = ModelEngineAPI.createActiveModel(meg.modelId) ?: return@let
@@ -142,4 +149,11 @@ object FurnitureHelpers {
     internal fun ItemDisplay.handleFurnitureDrops(player: Player) {
         this.toGearyOrNull()?.get<BlockyDrops>()?.let { GenericHelpers.handleBlockDrop(it, player, location) }
     }
+
+    internal suspend fun ItemDisplay.delayUntilTracked() = coroutineScope {
+        async {
+            while (toGearyOrNull() == null) delay(1)
+            toGeary()
+        }
+    }.await()
 }
