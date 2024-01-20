@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.systems
 
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
@@ -15,7 +16,7 @@ class FurnitureOutlineSystem : RepeatingSystem(1.ticks) {
     val Pointer.player by get<Player>()
 
     override fun Pointer.tick() {
-        if (!player.isConnected) return
+        if (!blocky.config.furniture.showHitboxOutline || !player.isConnected) return
 
         val location = player.eyeLocation
         val direction = location.direction.clone().multiply(0.1)

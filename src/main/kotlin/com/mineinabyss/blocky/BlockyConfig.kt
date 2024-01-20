@@ -15,6 +15,7 @@ data class BlockyConfig(
     @YamlComment("[restoreFunctionality]: Restores redstone and vanilla note functionality for noteblocks", "NOTE: This reduces the total amount of custom block slots from 799 to 750")
     val noteBlocks: BlockyNoteBlockConfig = BlockyNoteBlockConfig(),
     val tripWires: BlockyTripwireConfig = BlockyTripwireConfig(),
+    val furniture: BlockyFurnitureConfig = BlockyFurnitureConfig(),
     @YamlComment("You will need to disable these in world-generation if you wanna use it", "It aims to free up all CAVE_VINES except age = 0 and replaces its behaviour with CAVE_VINES_PLANT")
     val caveVineBlocks: BlockyCaveVineConfig = BlockyCaveVineConfig(),
     val slabBlocks: BlockySlabConfig = BlockySlabConfig(),
@@ -40,6 +41,7 @@ data class BlockyConfig(
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockySlabConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyStairConfig(val isEnabled: Boolean = false)
+    @Serializable data class BlockyFurnitureConfig(val showHitboxOutline: Boolean = false)
     @Serializable data class DefaultBlockyMenu(
         val title: String = "",
         val height: Int = 5,
