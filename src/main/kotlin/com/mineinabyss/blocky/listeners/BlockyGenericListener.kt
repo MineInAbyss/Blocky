@@ -129,7 +129,7 @@ class BlockyGenericListener : Listener {
         isDropItems = false
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    /*@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPlaceGravityOnBlocky() {
         val block = clickedBlock ?: return
         val relative = block.getRelative(blockFace)
@@ -145,9 +145,9 @@ class BlockyGenericListener : Listener {
             block.world.spawnFallingBlock(relative.location.toBlockCenterLocation(), data)
             isCancelled = true
         }
-    }
+    }*/
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    /*@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onMakingDoubleSlabOnBlockyBlock() {
         val block = clickedBlock ?: return
         val relative = block.getRelative(blockFace)
@@ -166,9 +166,9 @@ class BlockyGenericListener : Listener {
             if (player.gameMode != GameMode.CREATIVE) item.subtract()
             isCancelled = true
         }
-    }
+    }*/
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    /*@EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun PlayerInteractEvent.onPlaceLiquidOnBlockyBlock() {
         val block = clickedBlock ?: return
         val relative = block.getRelative(blockFace)
@@ -204,13 +204,13 @@ class BlockyGenericListener : Listener {
             }
         }
         block.setType(type, false)
-    }
+    }*/
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         val materialSet = mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).apply {
-            this.addAll(CopperHelpers.BLOCKY_SLABS)
-            this.addAll(CopperHelpers.BLOCKY_STAIRS)
+            this += CopperHelpers.BLOCKY_SLABS
+            this += CopperHelpers.BLOCKY_STAIRS
         }
 
         when {
