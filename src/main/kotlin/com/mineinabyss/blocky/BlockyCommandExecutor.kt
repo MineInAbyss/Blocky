@@ -38,14 +38,6 @@ import org.bukkit.inventory.meta.PotionMeta
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
-            "test" {
-                playerAction {
-                    player.getNearbyEntities(20.0,20.0,20.0).filterIsInstance<ItemDisplay>().filter { it.isBlockyFurniture }.forEach {
-                        FurniturePacketHelpers.sendHitboxOutlinePacket(it)
-                    }
-                    sender.success("Sent hitbox outline packet to all nearby furniture items.")
-                }
-            }
             "reload" {
                 action {
                     blocky.plugin.createBlockyContext()
