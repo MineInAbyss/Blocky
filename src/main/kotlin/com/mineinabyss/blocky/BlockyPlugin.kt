@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
+import com.mineinabyss.blocky.systems.FurnitureOutlineSystem
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
@@ -79,6 +80,8 @@ class BlockyPlugin : JavaPlugin() {
                 runStartupFunctions()
             }
         }
+
+        geary.pipeline.addSystem(FurnitureOutlineSystem())
 
     }
 
