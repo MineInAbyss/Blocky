@@ -1,7 +1,9 @@
 package com.mineinabyss.blocky.components.core
 
 import com.mineinabyss.blocky.serializers.BrightnessSerializer
+import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.Vector3fSerializer
+import com.mineinabyss.idofront.serialization.toSerializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location
@@ -10,6 +12,8 @@ import org.bukkit.block.data.type.Slab
 import org.bukkit.entity.Display.Billboard
 import org.bukkit.entity.Display.Brightness
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform
+import org.bukkit.inventory.ItemStack
+import org.bukkit.util.BoundingBox
 import org.joml.Vector3f
 import kotlin.math.cos
 import kotlin.math.sin
@@ -24,7 +28,9 @@ data class BlockyFurniture(
 ) {
     @Serializable
     @SerialName("blocky:interaction_hitbox")
-    data class InteractionHitbox(val width: Float, val height: Float)
+    data class InteractionHitbox(val width: Float, val height: Float, val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()) {
+        fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
+    }
 
     @Serializable
     @SerialName("blocky:collision_hitbox")
