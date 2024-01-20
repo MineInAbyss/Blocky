@@ -1,21 +1,29 @@
 package com.mineinabyss.blocky.compatibility.worldedit
 
+import ca.spottedleaf.dataconverter.converters.datatypes.DataType
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
+import com.mineinabyss.idofront.nms.nbt.WrappedPDC
 import com.sk89q.worldedit.WorldEditException
 import com.sk89q.worldedit.bukkit.BukkitAdapter
+import com.sk89q.worldedit.entity.BaseEntity
+import com.sk89q.worldedit.entity.Entity
 import com.sk89q.worldedit.event.extent.EditSessionEvent
 import com.sk89q.worldedit.extent.AbstractDelegateExtent
 import com.sk89q.worldedit.math.BlockVector3
 import com.sk89q.worldedit.util.eventbus.Subscribe
 import com.sk89q.worldedit.world.block.BlockStateHolder
+import net.minecraft.nbt.CompoundTag
 import org.bukkit.*
+import org.bukkit.entity.EntityType
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
+import org.bukkit.persistence.PersistentDataAdapterContext
+import org.bukkit.persistence.PersistentDataContainer
 
 
 class WorldEditListener : Listener {

@@ -13,7 +13,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 
 @Serializable
-@SerialName("blocky:placable_on")
+@SerialName("blocky:placableOn")
 class BlockyPlacableOn(
     val floor: Boolean = true,
     val wall: Boolean = true,
@@ -29,30 +29,30 @@ class BlockyPlacableOn(
         DENY
     }
 
-    fun isPlacableOn(block: Block, face: BlockFace): Boolean {
-        val against = block.getRelative(face.oppositeFace)
+    fun isPlacableOn(block: Block, blockFace: BlockFace): Boolean {
+        val against = block.getRelative(blockFace.oppositeFace)
 
-        if ((!checkFace(against, face))) return false
+        if ((!placableAgainstFace(block, blockFace))) return false
         if (blocks.isEmpty() && blockTags.isEmpty() && blockyBlocks.isEmpty()) return true
-        if (against.prefabKey in this.blockyBlocks ||
-            against.isInProvidedTags(this.blockTags) ||
+        if (against.prefabKey in this.blockyBlocks || against.isInProvidedTags ||
             (against.type in this.blocks && !against.isBlockyBlock)
         ) return type == AllowType.ALLOW
 
         return type != AllowType.ALLOW
     }
 
-    private fun checkFace(block: Block, blockFace: BlockFace): Boolean {
-        return when (blockFace) {
-            BlockFace.UP -> this@BlockyPlacableOn.floor
-            BlockFace.DOWN -> this@BlockyPlacableOn.ceiling
-            else -> this@BlockyPlacableOn.wall || block.getRelative(BlockFace.DOWN).isSolid
+    private fun placableAgainstFace(block: Block, blockFace: BlockFace): Boolean {
+        return when {
+            wall && block.type.isSolid && blockFace.modY == 0 -> true
+            floor && (blockFace == BlockFace.UP || block.getRelative(BlockFace.DOWN).type.isSolid) -> true
+            ceiling && (blockFace == BlockFace.DOWN || block.getRelative(BlockFace.UP).type.isSolid) -> true
+            else -> false
         }
     }
 
     // Gets a list of all the materials present in the provided tags
-    private fun Block.isInProvidedTags(list: List<String>): Boolean {
-        list.forEach { tag ->
+    private val Block.isInProvidedTags: Boolean get() {
+        blockTags.forEach { tag ->
             if (Bukkit.getTag(Tag.REGISTRY_BLOCKS, NamespacedKey.minecraft(tag), Material::class.java)
                     ?.isTagged(type) != true
             ) return@forEach
