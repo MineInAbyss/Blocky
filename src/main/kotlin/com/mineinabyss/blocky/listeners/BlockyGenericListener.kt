@@ -76,11 +76,7 @@ class BlockyGenericListener : Listener {
         if (player.gameMode == GameMode.CREATIVE) return
         if (mining.miningTask?.isActive == true) return
         isCancelled = true
-        val damageEvent = when {
-            block.isBlockyBlock -> BlockyBlockDamageEvent(block, player)
-            else -> return
-        }.run { call(); this }
-        if (damageEvent.isCancelled) return
+        if (BlockyBlockDamageEvent(block, player).takeIf { block.isBlockyBlock }?.callEvent() != true) return
 
         blocky.plugin.launch {
             mining.miningTask = this.coroutineContext.job
