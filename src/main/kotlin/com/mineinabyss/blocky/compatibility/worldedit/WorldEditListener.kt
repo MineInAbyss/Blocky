@@ -2,11 +2,15 @@ package com.mineinabyss.blocky.compatibility.worldedit
 
 import ca.spottedleaf.dataconverter.converters.datatypes.DataType
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.prefabMap
 import com.mineinabyss.blocky.systems.BlockyBlockQuery
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.geary.papermc.datastore.decode
+import com.mineinabyss.geary.papermc.datastore.decodePrefabs
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
+import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.nms.nbt.WrappedPDC
 import com.sk89q.worldedit.WorldEditException
 import com.sk89q.worldedit.bukkit.BukkitAdapter
@@ -25,6 +29,7 @@ import org.bukkit.event.Listener
 import org.bukkit.persistence.PersistentDataAdapterContext
 import org.bukkit.persistence.PersistentDataContainer
 
+typealias WorldEditLocation = com.sk89q.worldedit.util.Location
 
 class WorldEditListener : Listener {
 
@@ -33,6 +38,20 @@ class WorldEditListener : Listener {
         if (world == null) return
 
         extent = object : AbstractDelegateExtent(extent) {
+
+            override fun createEntity(location: WorldEditLocation?, baseEntity: BaseEntity?): Entity? {
+                val superEntity by lazy { super.createEntity(location, baseEntity) }
+                val world = world?.name?.let { Bukkit.getWorld(it) } ?: return superEntity
+                val bukkitLoc = BukkitAdapter.adapt(world, location) ?: return superEntity
+                val wrappedPdc = (baseEntity?.nbt as? CompoundTag)?.let { WrappedPDC(it) } ?: return superEntity
+                val prefabKey = wrappedPdc.decodePrefabs().firstOrNull()?.toEntityOrNull()?.get<PrefabKey>() ?: return superEntity
+
+                if (!blocky.config.furniture.worldEdit) return superEntity
+                if (baseEntity.type != BukkitAdapter.adapt(EntityType.ITEM_DISPLAY)) return superEntity
+
+                return superEntity
+            }
+
             @Deprecated("Deprecated in Java")
             @Throws(WorldEditException::class)
             override fun <T : BlockStateHolder<T>?> setBlock(pos: BlockVector3, block: T): Boolean {

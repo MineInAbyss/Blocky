@@ -16,6 +16,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.util.BoundingBox
 import org.joml.Vector3f
 import kotlin.math.cos
+import kotlin.math.round
 import kotlin.math.sin
 
 @Serializable
@@ -45,8 +46,9 @@ data class BlockyFurniture(
             val fixedAngle = 360 - angle
             val radians = Math.toRadians(fixedAngle.toDouble())
 
-            return BlockLocation((cos(radians) * x - sin(radians) * z), y,
-                (sin(radians) * x - cos(radians) * z).apply { if (fixedAngle % 180 > 1) this * -1 }.toDouble()
+            return BlockLocation((round(cos(radians) * x - sin(radians) * z).toInt().toDouble()), y,
+                (round(sin(radians) * x - cos(radians) * z).toInt()
+                    .toDouble()).let { it.takeUnless { fixedAngle % 180 > 1 } ?: (it * -1) }
             )
         }
     }
@@ -56,13 +58,13 @@ data class BlockyFurniture(
     }
 
     enum class CollisionHitboxType {
-        FULL, HALF;
+        FULL/*, HALF*/;
 
         fun toBlockData(location: Location) = when (this) {
             FULL -> Material.BARRIER.createBlockData()
-            HALF -> (Material.PETRIFIED_OAK_SLAB.createBlockData() as Slab).apply {
+            /*HALF -> (Material.PETRIFIED_OAK_SLAB.createBlockData() as Slab).apply {
                 type = if (location.y - location.blockY < 0.5) Slab.Type.BOTTOM else Slab.Type.TOP
-            }
+            }*/
         }
     }
 

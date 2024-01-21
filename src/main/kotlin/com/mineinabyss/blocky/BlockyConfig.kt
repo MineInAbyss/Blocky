@@ -41,7 +41,7 @@ data class BlockyConfig(
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockySlabConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyStairConfig(val isEnabled: Boolean = false)
-    @Serializable data class BlockyFurnitureConfig(val showHitboxOutline: Boolean = false)
+    @Serializable data class BlockyFurnitureConfig(val showHitboxOutline: Boolean = false, val worldEdit: Boolean = false)
     @Serializable data class DefaultBlockyMenu(
         val title: String = "",
         val height: Int = 5,

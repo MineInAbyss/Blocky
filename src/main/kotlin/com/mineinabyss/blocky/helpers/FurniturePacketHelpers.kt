@@ -242,7 +242,7 @@ object FurniturePacketHelpers {
             baseEntity.yaw,
             baseEntity.location,
             furniture.collisionHitbox
-        ).values.flatten().map { Position.block(it) }.associateWith { Material.BARRIER.createBlockData() }
+        ).values.flatten().map(Position::block).associateWith { Material.BARRIER.createBlockData() }
             .toMutableMap()
         player.sendMultiBlockChange(positions)
         positions.map { it.key.toBlock() }.forEach {
