@@ -15,6 +15,7 @@ import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.spawning.spawn
 import com.ticxo.modelengine.api.ModelEngineAPI
+import io.papermc.paper.math.Position
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
 import org.bukkit.Rotation
@@ -29,7 +30,6 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.inventory.meta.LeatherArmorMeta
 import org.bukkit.inventory.meta.MapMeta
 import org.bukkit.inventory.meta.PotionMeta
-import java.util.UUID
 import kotlin.math.max
 
 object FurnitureHelpers {
@@ -41,14 +41,10 @@ object FurnitureHelpers {
         }
     }
 
-    fun getLocations(
-        rotation: Float,
-        center: Location,
-        hitbox: Set<BlockyFurniture.CollisionHitbox>
-    ): Map<BlockyFurniture.CollisionHitboxType, List<Location>> =
-        BlockyFurniture.CollisionHitboxType.entries.associateWith {
-            hitbox.map { c -> c.location.groundRotate(rotation).add(center) }
-        }
+    fun collisionHitboxLocations(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.CollisionHitbox>): List<Location> =
+        hitbox.map { c -> c.location.groundRotate(rotation).add(center) }
+    fun collisionHitboxPositions(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.CollisionHitbox>): List<Position> =
+        collisionHitboxLocations(rotation, center, hitbox).map { Position.block(it) }
 
     fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
         val furniture = nullFurniture ?: BlockyFurniture()
@@ -63,9 +59,7 @@ object FurnitureHelpers {
 
     fun hasEnoughSpace(blockyFurniture: BlockyFurniture, loc: Location, yaw: Float): Boolean {
         return if (blockyFurniture.collisionHitbox.isEmpty()) true
-        else blockyFurniture.collisionHitbox.let {
-            getLocations(yaw, loc, it).values.flatten().stream().allMatch { adjacent -> adjacent.block.type.isAir }
-        }
+        else collisionHitboxLocations(yaw, loc, blockyFurniture.collisionHitbox).all { adjacent -> adjacent.block.type.isAir }
     }
 
 
@@ -121,7 +115,7 @@ object FurnitureHelpers {
 
         gearyEntity.get<BlockySeat>()?.let { seat ->
             if (furniture.collisionHitbox.isNotEmpty()) {
-                getLocations(yaw, newFurniture.location, furniture.collisionHitbox)
+                collisionHitboxLocations(yaw, newFurniture.location, furniture.collisionHitbox)
                     .forEach { _ -> spawnFurnitureSeat(newFurniture, yaw - 180, seat.heightOffset) }
             } else spawnFurnitureSeat(newFurniture, yaw, seat.heightOffset)
         }

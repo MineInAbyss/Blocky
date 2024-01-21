@@ -11,7 +11,8 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
-import com.mineinabyss.blocky.helpers.FurnitureHelpers.getLocations
+import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxLocations
+import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxPositions
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -254,12 +255,8 @@ object FurniturePacketHelpers {
      */
     fun sendCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
-        val positions = getLocations(
-            baseEntity.yaw,
-            baseEntity.location,
-            furniture.collisionHitbox
-        ).values.flatten().map(Position::block).associateWith { Material.BARRIER.createBlockData() }
-            .toMutableMap()
+        val positions = collisionHitboxPositions(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
+            .associateWith { Material.BARRIER.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
         positions.map { it.key.toBlock() }.forEach {
             collisionHitboxPosMap.compute(baseEntity.uniqueId) { _, blockPos ->
@@ -286,8 +283,8 @@ object FurniturePacketHelpers {
      */
     fun removeCollisionHitboxPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
-        val positions = getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
-            .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }.toMutableMap()
+        val positions = collisionHitboxPositions(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
+            .associateWith { Material.AIR.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
     }
 
@@ -309,12 +306,10 @@ object FurniturePacketHelpers {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
         val light = baseEntity.toGeary().get<BlockyLight>() ?: return
 
-        val collisionHitboxPositions = getLocations(
+        val collisionHitboxPositions = collisionHitboxPositions(
             baseEntity.yaw, baseEntity.location, furniture.collisionHitbox
-        ).values.flatten().map { Position.block(it) }.associateWith {
-            Material.LIGHT.createBlockData {
-                (it as Light).level = light.lightLevel
-            }
+        ).associateWith {
+            Material.LIGHT.createBlockData { (it as Light).level = light.lightLevel }
         }.toMutableMap()
 
         player.sendMultiBlockChange(collisionHitboxPositions)
@@ -336,10 +331,8 @@ object FurniturePacketHelpers {
      */
     fun removeLightPacket(baseEntity: ItemDisplay, player: Player) {
         val furniture = baseEntity.toGeary().get<BlockyFurniture>() ?: return
-        val collisionHitboxPositions =
-            getLocations(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
-                .values.flatten().map { Position.block(it) }.associateWith { Material.AIR.createBlockData() }
-                .toMutableMap()
+        val collisionHitboxPositions = collisionHitboxPositions(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
+            .associateWith { Material.AIR.createBlockData() }.toMutableMap()
 
         player.sendMultiBlockChange(collisionHitboxPositions)
     }

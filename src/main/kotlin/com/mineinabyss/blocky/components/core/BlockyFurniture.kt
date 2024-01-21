@@ -44,9 +44,10 @@ data class BlockyFurniture(
         fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
     }
 
+    @JvmInline
     @Serializable
     @SerialName("blocky:collision_hitbox")
-    data class CollisionHitbox(val location: BlockLocation, val type: CollisionHitboxType = CollisionHitboxType.FULL)
+    value class CollisionHitbox(val location: BlockLocation)
 
     @Serializable
     class BlockLocation(val x: Int = 0, val y: Int = 0, val z: Int = 0) {
@@ -67,17 +68,6 @@ data class BlockyFurniture(
 
     enum class RotationType {
         NONE, STRICT, VERY_STRICT
-    }
-
-    enum class CollisionHitboxType {
-        FULL/*, HALF*/;
-
-        fun toBlockData(location: Location) = when (this) {
-            FULL -> Material.BARRIER.createBlockData()
-            /*HALF -> (Material.PETRIFIED_OAK_SLAB.createBlockData() as Slab).apply {
-                type = if (location.y - location.blockY < 0.5) Slab.Type.BOTTOM else Slab.Type.TOP
-            }*/
-        }
     }
 
     @Serializable
