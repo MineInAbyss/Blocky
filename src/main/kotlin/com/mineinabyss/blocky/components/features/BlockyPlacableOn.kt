@@ -13,7 +13,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 
 @Serializable
-@SerialName("blocky:placableOn")
+@SerialName("blocky:placable_on")
 class BlockyPlacableOn(
     val floor: Boolean = true,
     val wall: Boolean = true,

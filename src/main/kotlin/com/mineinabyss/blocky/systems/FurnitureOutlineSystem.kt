@@ -25,7 +25,7 @@ class FurnitureOutlineSystem : RepeatingSystem(1.ticks) {
 
         while (location.toBlockLocation().distanceSquared(player.eyeLocation) < distanceEyeToRaycastBlock) {
             location.getNearbyEntities(5.0, 5.0, 5.0).filterIsInstance<ItemDisplay>().firstOrNull {
-                it.toGearyOrNull()?.get<BlockyFurniture>()?.interactionHitbox?.let { i ->
+                it.toGearyOrNull()?.get<BlockyFurniture>()?.interactionHitbox?.any { i ->
                     it.boundingBox.overlaps(i.toBoundingBox(location))
                 } == true
             }?.let {

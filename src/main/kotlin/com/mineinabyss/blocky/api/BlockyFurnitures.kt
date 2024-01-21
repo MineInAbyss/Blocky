@@ -33,10 +33,6 @@ object BlockyFurnitures {
     val Entity.isModelEngineFurniture: Boolean get() = this.toGearyOrNull()?.isModelEngineFurniture ?: false
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
-    val Block.isFurnitureHitbox get() = location
-    val Entity.isFurnitureHitbox: Boolean
-        get() = this is Interaction && entityId in FurniturePacketHelpers.interactionHitboxIdMap.values
-
     //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
     val Block.isBlockyFurniture get() = this.toGearyOrNull()?.isBlockyFurniture ?: false
     val GearyEntity.isBlockyFurniture get() = has<BlockyFurniture>() || this.isModelEngineFurniture

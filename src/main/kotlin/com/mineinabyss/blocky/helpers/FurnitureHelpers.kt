@@ -44,7 +44,7 @@ object FurnitureHelpers {
     fun getLocations(
         rotation: Float,
         center: Location,
-        hitbox: List<BlockyFurniture.CollisionHitbox>
+        hitbox: Set<BlockyFurniture.CollisionHitbox>
     ): Map<BlockyFurniture.CollisionHitboxType, List<Location>> =
         BlockyFurniture.CollisionHitboxType.entries.associateWith {
             hitbox.map { c -> c.location.groundRotate(rotation).add(center) }
