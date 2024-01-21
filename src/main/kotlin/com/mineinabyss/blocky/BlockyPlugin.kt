@@ -1,5 +1,12 @@
 package com.mineinabyss.blocky
 
+import com.comphenix.protocol.PacketType
+import com.comphenix.protocol.ProtocolLibrary
+import com.comphenix.protocol.events.ListenerPriority
+import com.comphenix.protocol.events.PacketAdapter
+import com.comphenix.protocol.events.PacketEvent
+import com.mineinabyss.blocky.api.BlockyFurnitures
+import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.assets_generation.MoreCreativeTabsGeneration
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
@@ -17,15 +24,20 @@ import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
+import com.mineinabyss.protocolburrito.dsl.protocolManager
+import com.mineinabyss.protocolburrito.packets.ServerboundPlayerActionPacketWrap
+import com.mineinabyss.protocolburrito.packets.ServerboundUseItemOnPacketWrap
 import com.sk89q.worldedit.WorldEdit
 import io.papermc.paper.configuration.GlobalConfiguration
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import net.minecraft.world.item.Item
 import org.bukkit.Bukkit
 import org.bukkit.block.data.BlockData
+import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
 
 var prefabMap = mapOf<BlockData, PrefabKey>()
@@ -81,6 +93,7 @@ class BlockyPlugin : JavaPlugin() {
             }
         }
 
+        FurniturePacketHelpers.registerPacketListeners()
         geary.pipeline.addSystem(FurnitureOutlineSystem())
 
     }
@@ -89,7 +102,6 @@ class BlockyPlugin : JavaPlugin() {
         registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
         MoreCreativeTabsGeneration().generateModAssets()
-        FurniturePacketHelpers.registerPacketListeners()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {

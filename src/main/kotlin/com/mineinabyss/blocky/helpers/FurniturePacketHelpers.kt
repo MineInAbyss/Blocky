@@ -17,8 +17,10 @@ import com.mineinabyss.blocky.helpers.FurnitureHelpers.interactionHitboxLocation
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.protocolburrito.dsl.protocolManager
 import com.mineinabyss.protocolburrito.dsl.sendTo
+import com.mineinabyss.protocolburrito.packets.ClientboundDisguisedChatPacketWrap
 import com.mineinabyss.protocolburrito.packets.ServerboundPlayerActionPacketWrap
 import com.mineinabyss.protocolburrito.packets.ServerboundUseItemOnPacketWrap
 import com.ticxo.modelengine.api.ModelEngineAPI
@@ -26,6 +28,7 @@ import io.papermc.paper.math.Position
 import it.unimi.dsi.fastutil.ints.IntList
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
+import net.minecraft.network.protocol.game.ClientboundPlayerChatPacket
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
 import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
@@ -72,32 +75,29 @@ object FurniturePacketHelpers {
     internal fun registerPacketListeners() {
 
         protocolManager(blocky.plugin) {
-            // Handles left-clicks and right-clicks with Interaction Barrier hitbox
-            // Moved to [com/mineinabyss/blocky/listeners/BlockyFurnitureListener.kt:102]
-
             // Handles left-clicks with Collision Barrier hitbox
             onReceive<ServerboundPlayerActionPacketWrap> { wrap ->
-                val baseFurniture = getBaseFurnitureFromCollisionHitbox(wrap.pos) ?: return@onReceive
-                when ((wrap.handle as ServerboundPlayerActionPacket).action) {
-                    ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK ->
-                        Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
+                Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
+                    getBaseFurnitureFromCollisionHitbox(wrap.pos)?.let { baseFurniture ->
+                        isCancelled = true
+                        if ((wrap.handle as ServerboundPlayerActionPacket).action == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK)
                             BlockyFurnitures.removeFurniture(baseFurniture, player)
-                        }
+                    }
 
-                    else -> {}
                 }
             }
             // Handles right-clicks with Collision Barrier hitbox
             // Cancelled so client doesn't remove the "Ghost Block"
             onReceive<ServerboundUseItemOnPacketWrap> { wrap ->
-                val baseFurniture = getBaseFurnitureFromCollisionHitbox(wrap.blockHit.blockPos) ?: return@onReceive
-                isCancelled = true
                 Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
-                    BlockyFurnitureInteractEvent(
-                        baseFurniture, player,
-                        EquipmentSlot.HAND, player.inventory.itemInMainHand,
-                        null, null
-                    ).callEvent()
+                    getBaseFurnitureFromCollisionHitbox(wrap.blockHit.blockPos)?.let { baseFurniture ->
+                        isCancelled = true
+                        BlockyFurnitureInteractEvent(
+                            baseFurniture, player,
+                            EquipmentSlot.HAND, player.inventory.itemInMainHand,
+                            null, null
+                        ).callEvent()
+                    }
                 }
             }
         }
