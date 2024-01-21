@@ -13,6 +13,7 @@ import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxLocations
 import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxPositions
+import com.mineinabyss.blocky.helpers.FurnitureHelpers.interactionHitboxLocations
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -139,7 +140,7 @@ object FurniturePacketHelpers {
                 }
                 mutableSetOf<FurnitureInteractionHitboxPacket>().apply {
                     interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
-                        val loc = baseLoc.clone().add(hitbox.originOffset)
+                        val loc = hitbox.originOffset.groundRotate(furniture.yaw).add(baseLoc)
                         val addEntityPacket = ClientboundAddEntityPacket(
                             entityId, UUID.randomUUID(),
                             loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
@@ -201,7 +202,7 @@ object FurniturePacketHelpers {
         val baseLoc = furniture.location.toBlockCenterLocation()
 
         interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
-            val loc = baseLoc.clone().add(hitbox.originOffset).apply { y += hitbox.height / 2 }
+            val loc = hitbox.originOffset.groundRotate(furniture.yaw).add(baseLoc).apply { y += hitbox.height / 2 }
             val displayEntityPacket = ClientboundAddEntityPacket(
                 entityId, UUID.randomUUID(),
                 loc.x, loc.y, loc.z, loc.pitch, loc.yaw,

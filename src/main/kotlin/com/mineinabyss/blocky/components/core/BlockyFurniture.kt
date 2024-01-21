@@ -37,7 +37,7 @@ data class BlockyFurniture(
     @Serializable
     @SerialName("blocky:interaction_hitbox")
     data class InteractionHitbox(
-        val originOffset: @Serializable(VectorSerializer::class) Vector = Vector(0f,0f,0f),
+        val originOffset: BlockLocation = BlockLocation(),
         val width: Float,
         val height: Float,
         val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()) {

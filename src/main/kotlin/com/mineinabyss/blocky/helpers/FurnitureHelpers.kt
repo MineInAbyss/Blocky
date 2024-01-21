@@ -46,6 +46,9 @@ object FurnitureHelpers {
     fun collisionHitboxPositions(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.CollisionHitbox>): List<Position> =
         collisionHitboxLocations(rotation, center, hitbox).map { Position.block(it) }
 
+    fun interactionHitboxLocations(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.InteractionHitbox>): List<Location> =
+        hitbox.map { c -> c.originOffset.groundRotate(rotation).add(center) }
+
     fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
         val furniture = nullFurniture ?: BlockyFurniture()
         val rotationDegree = if (furniture.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
