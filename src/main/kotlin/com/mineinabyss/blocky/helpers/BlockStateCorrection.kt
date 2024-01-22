@@ -13,8 +13,8 @@ import net.minecraft.world.phys.BlockHitResult
 import org.bukkit.GameMode
 import org.bukkit.block.Sign
 import org.bukkit.block.sign.Side
-import org.bukkit.craftbukkit.v1_20_R2.entity.CraftPlayer
-import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack

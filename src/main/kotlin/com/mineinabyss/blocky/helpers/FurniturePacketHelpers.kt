@@ -40,7 +40,7 @@ import net.minecraft.world.phys.Vec3
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.data.type.Light
-import org.bukkit.craftbukkit.v1_20_R2.inventory.CraftItemStack
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
