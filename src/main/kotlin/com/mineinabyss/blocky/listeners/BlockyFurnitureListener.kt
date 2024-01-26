@@ -20,6 +20,7 @@ import com.mineinabyss.idofront.messaging.logSuccess
 import com.mineinabyss.idofront.plugin.Plugins
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
+import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
@@ -63,6 +64,16 @@ class BlockyFurnitureListener : Listener {
                 FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
                 FurniturePacketHelpers.sendLightPacket(furniture, player)
             }
+        }
+    }
+
+    @EventHandler
+    fun PlayerChunkUnloadEvent.onUnloadChunk() {
+        chunk.entities.filterIsInstance<ItemDisplay>().forEach {
+            FurniturePacketHelpers.removeInteractionHitboxPacket(it)
+            FurniturePacketHelpers.removeHitboxOutlinePacket(it)
+            FurniturePacketHelpers.removeCollisionHitboxPacket(it)
+            FurniturePacketHelpers.removeLightPacket(it)
         }
     }
 
