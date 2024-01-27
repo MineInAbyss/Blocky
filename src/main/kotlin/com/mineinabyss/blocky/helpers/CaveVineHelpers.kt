@@ -12,7 +12,7 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
 
 object CaveVineHelpers {
-    fun getBlockyCaveVine(setBlock: SetBlock) : BlockData {
+    fun blockyCaveVine(setBlock: SetBlock) : BlockData {
         return gearyBlocks.block2Prefab.blockMap[setBlock.blockType]!![setBlock.blockId]
     }
 

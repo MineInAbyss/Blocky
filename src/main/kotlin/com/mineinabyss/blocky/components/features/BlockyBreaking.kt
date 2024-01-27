@@ -40,7 +40,7 @@ data class BlockyBreaking(
             }
             if (modifier != null) duration = maxOf(duration - modifier.value, Duration.ZERO)
         } else if (modifiers.heldTypes.isNotEmpty()) {
-            val heldTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes ?: setOf(GenericHelpers.getVanillaToolTypes(itemInHand))
+            val heldTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes ?: setOf(GenericHelpers.vanillaToolTypes(itemInHand))
             val modifier = modifiers.heldTypes.firstOrNull { it.toolType in heldTypes }
             if (modifier != null) duration = maxOf(duration - modifier.value, Duration.ZERO)
         }

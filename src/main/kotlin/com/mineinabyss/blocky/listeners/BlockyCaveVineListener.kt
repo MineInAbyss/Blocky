@@ -83,6 +83,6 @@ class BlockyCaveVineListener : Listener {
         val blockyVine = gearyVine.get<SetBlock>() ?: return
         if (blockyVine.blockType != SetBlock.BlockType.CAVEVINE) return
 
-        placeBlockyBlock(player, hand, item, block, blockFace, CaveVineHelpers.getBlockyCaveVine(blockyVine))
+        placeBlockyBlock(player, hand, item, block, blockFace, CaveVineHelpers.blockyCaveVine(blockyVine))
     }
 }

@@ -71,7 +71,7 @@ class BlockyNoteBlockListener : Listener {
 
         setUseInteractedBlock(Event.Result.DENY)
 
-        placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.getBlockyNoteBlock(blockFace, player))
+        placeBlockyBlock(player, hand, item, block, blockFace, gearyItem.blockyNoteBlock(blockFace, player))
     }
 
     @EventHandler(ignoreCancelled = true)

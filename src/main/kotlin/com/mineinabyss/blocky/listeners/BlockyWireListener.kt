@@ -1,9 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
-import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
@@ -14,8 +12,6 @@ import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import io.papermc.paper.event.block.BlockBreakBlockEvent
-import io.papermc.paper.event.entity.EntityInsideBlockEvent
-import kotlinx.coroutines.delay
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Tripwire
@@ -50,7 +46,7 @@ class BlockyWireListener : Listener {
         if (type == Material.WATER_BUCKET) type = Material.WATER
         if (type != Material.STRING && !type.isBlock) return
 
-        placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.getBlockyTripWire())
+        placeBlockyBlock(player, hand, item, block.getRelative(BlockFace.DOWN), blockFace, blockyBlock.blockyTripWire())
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -81,7 +77,7 @@ class BlockyWireListener : Listener {
         val wireBlock = blockyWire.get<SetBlock>() ?: return
         if (wireBlock.blockType != SetBlock.BlockType.WIRE) return
 
-        placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.getBlockyTripWire())
+        placeBlockyBlock(player, hand, item, block, blockFace, wireBlock.blockyTripWire())
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)

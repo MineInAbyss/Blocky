@@ -46,9 +46,9 @@ object BlockyBlocks {
         val blockyBlock = gearyEntity.get<SetBlock>() ?: return false
 
         location.block.blockData = when (blockyBlock.blockType) {
-            SetBlock.BlockType.NOTEBLOCK -> gearyEntity.getBlockyNoteBlock()
-            SetBlock.BlockType.WIRE -> blockyBlock.getBlockyTripWire()
-            SetBlock.BlockType.CAVEVINE -> CaveVineHelpers.getBlockyCaveVine(blockyBlock)
+            SetBlock.BlockType.NOTEBLOCK -> gearyEntity.blockyNoteBlock()
+            SetBlock.BlockType.WIRE -> blockyBlock.blockyTripWire()
+            SetBlock.BlockType.CAVEVINE -> CaveVineHelpers.blockyCaveVine(blockyBlock)
             else -> return false
         }
 

@@ -9,7 +9,6 @@ import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.idofront.messaging.broadcast
 import org.bukkit.Instrument
 import org.bukkit.Note
 import org.bukkit.block.Block
@@ -17,19 +16,18 @@ import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.entity.Player
-import org.bukkit.event.block.NotePlayEvent
 
 /**
  * Gets the blockdata of a given Blocky-block from a GearyEntity
  * Note: For directional Blocky-blocks, use [getBlockyNoteBlock(org.bukkit.block.BlockFace, org.bukkit.entity.Player)] instead
  * This will just use the parent-block of the BlockyDirectional component, which is not what you want
  */
-fun PrefabKey.getBlockyNoteBlock(): BlockData {
+fun PrefabKey.blockyNoteBlock(): BlockData {
     val blockID = (this.toEntityOrNull()?.get<BlockyDirectional>()?.parentBlock?.blockyBlock ?: blockyBlock)?.blockId ?: 0
     return gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]!![blockID]
 }
-fun GearyEntity.getBlockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
-    val directional = GenericHelpers.getDirectionalId(this, face, player)
+fun GearyEntity.blockyNoteBlock(face: BlockFace = BlockFace.NORTH, player: Player? = null): BlockData {
+    val directional = GenericHelpers.directionalId(this, face, player)
     return gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]!![directional]
 }
 

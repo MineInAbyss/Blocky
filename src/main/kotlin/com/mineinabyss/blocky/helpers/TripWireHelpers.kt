@@ -1,19 +1,21 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.util.BoundingBox
 
-fun SetBlock.getBlockyTripWire() = gearyBlocks.block2Prefab.blockMap[blockType]!![blockId]
+fun SetBlock.blockyTripWire() = gearyBlocks.block2Prefab.blockMap[blockType]!![blockId]
 
 fun breakWireBlock(block: Block, player: Player?): Boolean {
     val gearyBlock = block.toGearyOrNull() ?: return false
@@ -35,12 +37,6 @@ fun breakWireBlock(block: Block, player: Player?): Boolean {
     if (aboveBlock.type == Material.TRIPWIRE)
         breakWireBlock(aboveBlock, null)
     return true
-}
-
-fun Player.isInBlock(block: Block): Boolean {
-    return block.location.let { l ->
-        (location.blockX == l.blockX && (location.blockY == l.blockY || location.blockY + 1 == l.blockY) && location.blockZ == l.blockZ)
-    }
 }
 
 fun handleTallWire(block: Block) {

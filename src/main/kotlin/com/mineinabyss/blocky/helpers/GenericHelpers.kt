@@ -35,11 +35,13 @@ import org.bukkit.block.data.type.Fence
 import org.bukkit.block.data.type.Stairs
 import org.bukkit.enchantments.Enchantment
 import org.bukkit.entity.ExperienceOrb
+import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
+import org.bukkit.util.BoundingBox
 import java.util.*
 import kotlin.random.Random
 import kotlin.time.Duration
@@ -67,15 +69,12 @@ const val DEFAULT_STEP_PITCH = 1.0f
 const val DEFAULT_FALL_VOLUME = 0.5f
 const val DEFAULT_FALL_PITCH = 0.75f
 
-val BlockFace.isCardinal get() = this == BlockFace.NORTH || this == BlockFace.EAST || this == BlockFace.SOUTH || this == BlockFace.WEST
 val Block.persistentDataContainer get() = customBlockData as PersistentDataContainer
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 fun Block.toBlockPos() = BlockPos(this.x, this.y, this.z)
-fun Location.toBlockPos() = BlockPos(this.blockX, this.blockY, this.blockZ)
 
-internal fun minOf(duration: Duration, duration2: Duration) = if (duration < duration2) duration else duration2
 internal infix fun <A, B, C> Pair<A, B>.to(that: C): Triple<A, B, C> = Triple(this.first, this.second, that)
-internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta.persistentDataContainer.decode()
+internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta?.persistentDataContainer?.decode()
 internal val Player.gearyInventory get() = inventory.toGeary()
 
 fun placeBlockyBlock(
@@ -89,7 +88,7 @@ fun placeBlockyBlock(
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return
     if (!against.isBlockyBlock && !newData.isBlockyBlock) return
-    if (player.isInBlock(targetBlock) || against.isVanillaNoteBlock) return
+    if (GenericHelpers.entityStandingInside(targetBlock) || against.isVanillaNoteBlock) return
 
     if (targetBlock.isVanillaNoteBlock)
         targetBlock.persistentDataContainer.encode(VanillaNoteBlock(0))
@@ -99,16 +98,22 @@ fun placeBlockyBlock(
     when {
         newData.toGearyOrNull()?.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, face) == true ->
             blockPlaceEvent.isCancelled = true
+
         !ProtectionLib.canBuild(player, targetBlock.location) ->
             blockPlaceEvent.isCancelled = true
     }
-    blockPlaceEvent.callEvent()
 
-    if (!blockPlaceEvent.canBuild() || blockPlaceEvent.isCancelled || !BlockyBlockPlaceEvent(targetBlock, player, hand, item).callEvent()) return
+    if (!blockPlaceEvent.callEvent() || !blockPlaceEvent.canBuild() ||
+        !BlockyBlockPlaceEvent(targetBlock, player, hand, item).callEvent()
+    ) return
 
     // if new block is a blocky block, place it via API
     // if not it is a vanilla block placed against a blocky block, and we place it via NMS methods
-    newData.toGearyOrNull()?.get<PrefabKey>()?.let { BlockyBlocks.placeBlockyBlock(targetBlock.location, it); item.subtract(1) }
+    newData.toGearyOrNull()?.get<PrefabKey>()
+        ?.let {
+            BlockyBlocks.placeBlockyBlock(targetBlock.location, it)
+            if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
+        }
         ?: BlockStateCorrection.placeItemAsBlock(player, hand, item)
 }
 
@@ -140,28 +145,24 @@ fun handleBlockyDrops(block: Block, player: Player) {
 
 object GenericHelpers {
 
-    fun ItemStack.isSimilarNoDurab(other: ItemStack): Boolean {
-        if (other === this) return true
-        return type == other.type && hasItemMeta() == other.hasItemMeta() && if (hasItemMeta()) Bukkit.getItemFactory()
-            .equals(itemMeta, other.itemMeta) else true
+    fun entityStandingInside(block: Block) =
+        block.world.getNearbyEntities(BoundingBox.of(block.location.toCenterLocation(), 0.5, 0.5, 0.5))
+            .any { it is LivingEntity && (it !is Player || it.gameMode != GameMode.SPECTATOR) }
+
+    fun Block.isInteractable() = when {
+        isBlockyBlock || isBlockyFurniture || CaveVineHelpers.isBlockyCaveVine(this) -> false
+        blockData is Stairs || blockData is Fence -> false
+        !type.isInteractable || type in setOf(
+            Material.PUMPKIN,
+            Material.MOVING_PISTON,
+            Material.REDSTONE_ORE,
+            Material.REDSTONE_WIRE
+        ) -> false
+
+        else -> true
     }
 
-    fun Block.isInteractable(): Boolean {
-        return when {
-            isBlockyBlock || isBlockyFurniture || CaveVineHelpers.isBlockyCaveVine(this) -> false
-            blockData is Stairs || blockData is Fence -> false
-            !type.isInteractable || type in setOf(
-                Material.PUMPKIN,
-                Material.MOVING_PISTON,
-                Material.REDSTONE_ORE,
-                Material.REDSTONE_WIRE
-            ) -> false
-
-            else -> true
-        }
-    }
-
-    fun getDirectionalId(gearyEntity: GearyEntity, face: BlockFace, player: Player?): Int {
+    fun directionalId(gearyEntity: GearyEntity, face: BlockFace, player: Player?): Int {
         return gearyEntity.get<BlockyDirectional>()?.let { directional ->
             if (directional.isLogType) {
                 return when (face) {
@@ -171,7 +172,7 @@ object GenericHelpers {
                     else -> gearyEntity
                 }.get<SetBlock>()?.blockId ?: 0
             } else {
-                return when ((player?.getDirectionalRelative(directional) ?: face)) {
+                return when ((player?.directionalRelative(directional) ?: face)) {
                     BlockFace.NORTH -> directional.northBlock?.toEntityOrNull() ?: gearyEntity
                     BlockFace.SOUTH -> directional.southBlock?.toEntityOrNull() ?: gearyEntity
                     BlockFace.WEST -> directional.westBlock?.toEntityOrNull() ?: gearyEntity
@@ -184,26 +185,21 @@ object GenericHelpers {
         } ?: gearyEntity.get<SetBlock>()?.blockId ?: 0
     }
 
-    private fun Player.getDirectionalRelative(directional: BlockyDirectional): BlockFace? {
-
-        return when {
-            directional.isLogType -> null
-            directional.isDropperType && pitch >= 45 -> BlockFace.UP
-            directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
-            else -> getRelativeBlockFace(yaw.toInt())
-        }
+    private fun Player.directionalRelative(directional: BlockyDirectional) = when {
+        directional.isLogType -> null
+        directional.isDropperType && pitch >= 45 -> BlockFace.UP
+        directional.isDropperType && pitch <= -45 -> BlockFace.DOWN
+        else -> relativeBlockFace(yaw.toInt())
     }
 
-    fun getRelativeBlockFace(yaw: Int): BlockFace {
-        return when (yaw) {
-            in 45..135, in -315..-225 -> BlockFace.EAST
-            in 135..225, in -225..-135 -> BlockFace.SOUTH
-            in 225..315, in -135..-45 -> BlockFace.WEST
-            else -> BlockFace.NORTH
-        }
+    fun relativeBlockFace(yaw: Int) = when (yaw) {
+        in 45..135, in -315..-225 -> BlockFace.EAST
+        in 135..225, in -225..-135 -> BlockFace.SOUTH
+        in 225..315, in -135..-45 -> BlockFace.WEST
+        else -> BlockFace.NORTH
     }
 
-    fun getLeftBlock(block: Block, player: Player): Block {
+    fun leftBlock(block: Block, player: Player): Block {
         val leftBlock = when (player.facing) {
             BlockFace.NORTH -> block.getRelative(BlockFace.WEST)
             BlockFace.SOUTH -> block.getRelative(BlockFace.EAST)
@@ -215,7 +211,7 @@ object GenericHelpers {
         else leftBlock
     }
 
-    fun getRightBlock(block: Block, player: Player): Block {
+    fun rightBlock(block: Block, player: Player): Block {
         val rightBlock = when (player.facing) {
             BlockFace.NORTH -> block.getRelative(BlockFace.EAST)
             BlockFace.SOUTH -> block.getRelative(BlockFace.WEST)
@@ -225,38 +221,6 @@ object GenericHelpers {
         }
         return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) block
         else rightBlock
-    }
-
-    fun Player.getRelativeFacing(): BlockFace {
-        return when {
-            (yaw >= 348.75 || yaw in 0.0..11.25 || yaw >= -11.25 && yaw <= 0.0 || yaw <= -348.75 || yaw <= 0.0) -> BlockFace.SOUTH
-            (yaw in 11.25..33.75 || yaw in -348.75..-326.25) -> BlockFace.SOUTH_SOUTH_WEST
-            (yaw in 33.75..56.25 || yaw in -326.25..-303.75) -> BlockFace.SOUTH_WEST
-            (yaw in 56.25..78.75 || yaw in -303.75..-281.25) -> BlockFace.WEST_SOUTH_WEST
-            (yaw in 78.75..101.25 || yaw in -281.25..-258.75) -> BlockFace.WEST
-            (yaw in 101.25..123.75 || yaw in -258.75..-236.25) -> BlockFace.WEST_NORTH_WEST
-            (yaw in 123.75..146.25 || yaw in -236.25..-213.75) -> BlockFace.NORTH_WEST
-            (yaw in 146.25..168.75 || yaw in -213.75..-191.25) -> BlockFace.NORTH_NORTH_WEST
-            (yaw in 168.75..191.25 || yaw in -191.25..-168.75) -> BlockFace.NORTH
-            (yaw in 191.25..213.75 || yaw in -168.75..-146.25) -> BlockFace.NORTH_NORTH_EAST
-            (yaw in 213.75..236.25 || yaw in -146.25..-123.75) -> BlockFace.NORTH_EAST
-            (yaw in 236.25..258.75 || yaw in -123.75..-101.25) -> BlockFace.EAST_NORTH_EAST
-            (yaw in 258.75..281.25 || yaw in -101.25..-78.75) -> BlockFace.EAST
-            (yaw in 281.25..303.75 || yaw in -78.75..-56.25) -> BlockFace.EAST_SOUTH_EAST
-            (yaw in 303.75..326.25 || yaw in -56.25..-33.75) -> BlockFace.SOUTH_EAST
-            (yaw in 326.25..348.75 || yaw in -33.75..-11.25) -> BlockFace.SOUTH_SOUTH_EAST
-            else -> facing
-        }
-    }
-
-    fun getAnvilFacing(face: BlockFace): BlockFace {
-        return when (face) {
-            BlockFace.NORTH -> BlockFace.EAST
-            BlockFace.EAST -> BlockFace.NORTH
-            BlockFace.SOUTH -> BlockFace.WEST
-            BlockFace.WEST -> BlockFace.SOUTH
-            else -> BlockFace.NORTH
-        }
     }
 
     /**
@@ -270,21 +234,19 @@ object GenericHelpers {
                 ?: geary.get<BlockyBreaking>()?.modifiers?.heldTypes?.map { it.toolType }
         } ?: return false
         val heldToolTypes = player.gearyInventory?.get(hand)?.get<BlockyMining>()?.toolTypes
-            ?: getVanillaToolTypes(player.inventory.getItem(hand))?.let { setOf(it) } ?: setOf()
+            ?: vanillaToolTypes(player.inventory.getItem(hand))?.let { setOf(it) } ?: setOf()
 
         return ToolType.ANY in acceptedToolTypes || acceptedToolTypes.any { it in heldToolTypes }
     }
 
-    fun getVanillaToolTypes(itemStack: ItemStack): ToolType? {
-        return when {
-            MaterialTags.AXES.isTagged(itemStack.type) -> ToolType.AXE
-            MaterialTags.PICKAXES.isTagged(itemStack.type) -> ToolType.PICKAXE
-            MaterialTags.SWORDS.isTagged(itemStack.type) -> ToolType.SWORD
-            MaterialTags.SHOVELS.isTagged(itemStack.type) -> ToolType.SHOVEL
-            MaterialTags.HOES.isTagged(itemStack.type) -> ToolType.HOE
-            itemStack.type == Material.SHEARS -> ToolType.SHEARS
-            else -> null
-        }
+    fun vanillaToolTypes(itemStack: ItemStack) = when {
+        MaterialTags.AXES.isTagged(itemStack.type) -> ToolType.AXE
+        MaterialTags.PICKAXES.isTagged(itemStack.type) -> ToolType.PICKAXE
+        MaterialTags.SWORDS.isTagged(itemStack.type) -> ToolType.SWORD
+        MaterialTags.SHOVELS.isTagged(itemStack.type) -> ToolType.SHOVEL
+        MaterialTags.HOES.isTagged(itemStack.type) -> ToolType.HOE
+        itemStack.type == Material.SHEARS -> ToolType.SHEARS
+        else -> null
     }
 
     fun handleBlockDrop(blockyDrop: BlockyDrops, player: Player, location: Location) {
@@ -298,8 +260,11 @@ object GenericHelpers {
             }
             val amount = when {
                 drop.affectedByFortune && Enchantment.LOOT_BONUS_BLOCKS in hand.enchantments ->
-                    drop.amount.randomOrMin() * Random.nextInt(1,
-                        hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1)
+                    drop.amount.randomOrMin() * Random.nextInt(
+                        1,
+                        hand.getEnchantmentLevel(Enchantment.LOOT_BONUS_BLOCKS) + 1
+                    )
+
                 else -> drop.amount.randomOrMin()
             }
 

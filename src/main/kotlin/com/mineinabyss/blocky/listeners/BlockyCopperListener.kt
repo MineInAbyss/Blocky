@@ -197,8 +197,7 @@ class BlockyCopperListener {
             val loc = if (relative.blockData == blockyData) relative.location else block.location
             val blockyEvent = BlockyBlockPlaceEvent(loc.block, player, hand, item)
             if (!ProtectionLib.canBuild(player, loc)) blockyEvent.isCancelled = true
-            blockyEvent.call()
-            if (blockyEvent.isCancelled) {
+            if (!blockyEvent.callEvent()) {
                 loc.block.blockData = oldData
                 return
             }
@@ -253,8 +252,8 @@ class BlockyCopperListener {
         }
 
         private fun Block.getStairShape(player: Player): Stairs.Shape {
-            val leftBlock = GenericHelpers.getLeftBlock(this, player)
-            val rightBlock = GenericHelpers.getRightBlock(this, player)
+            val leftBlock = GenericHelpers.leftBlock(this, player)
+            val rightBlock = GenericHelpers.rightBlock(this, player)
             val aheadBlock = getRelative(player.facing)
             val behindBlock = getRelative(player.facing.oppositeFace)
 
