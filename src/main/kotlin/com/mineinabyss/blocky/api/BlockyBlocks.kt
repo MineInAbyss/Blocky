@@ -52,9 +52,6 @@ object BlockyBlocks {
             else -> return false
         }
 
-        /*if (!blocky.config.noteBlocks.restoreFunctionality && block.isVanillaNoteBlock)
-            block.persistentDataContainer.encode(VanillaNoteBlock(0))*/
-
         //TODO Handle light via packets for blocks
         return true
     }

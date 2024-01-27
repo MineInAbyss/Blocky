@@ -34,6 +34,7 @@ import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Fence
 import org.bukkit.block.data.type.Stairs
 import org.bukkit.enchantments.Enchantment
+import org.bukkit.entity.Entity
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -44,7 +45,6 @@ import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.util.BoundingBox
 import java.util.*
 import kotlin.random.Random
-import kotlin.time.Duration
 
 const val VANILLA_STONE_PLACE = "blocky.stone.place"
 const val VANILLA_STONE_BREAK = "blocky.stone.break"
@@ -144,6 +144,26 @@ fun handleBlockyDrops(block: Block, player: Player) {
 }
 
 object GenericHelpers {
+
+    fun blockStandingOn(entity: LivingEntity): Block {
+        val block = entity.location.block
+        val blockBelow = block.getRelative(BlockFace.DOWN)
+        if (!block.type.isAir) return block
+        if (!blockBelow.type.isAir) return blockBelow
+
+
+        // Expand players hitbox by 0.3, which is the maximum size a player can be off a block
+        // Whilst not falling off
+        val entityBox = entity.boundingBox.expand(0.3)
+        for (face in BlockFace.entries) {
+            if (!face.isCartesian || face.modY != 0) continue
+            val relative = blockBelow.getRelative(face)
+            if (relative.type.isAir) continue
+            if (relative.boundingBox.overlaps(entityBox)) return relative
+        }
+
+        return blockBelow
+    }
 
     fun entityStandingInside(block: Block) =
         block.world.getNearbyEntities(BoundingBox.of(block.location.toCenterLocation(), 0.5, 0.5, 0.5))

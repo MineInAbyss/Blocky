@@ -80,17 +80,17 @@ class BlockySoundListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun GenericGameEvent.onSound() {
-        if (entity !is LivingEntity || !location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
+        if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
 
-        val block = entity?.location?.block?.getRelative(BlockFace.DOWN) ?: return
-        val stepGroup = block.blockSoundGroup.stepSound
+        val (entity, standingOn) = (entity as? LivingEntity ?: return) to (GenericHelpers.blockStandingOn(entity as LivingEntity) ?: return)
+        val stepGroup = standingOn.blockSoundGroup.stepSound
 
         if (stepGroup != Sound.BLOCK_WOOD_STEP && stepGroup != Sound.BLOCK_STONE_STEP) return
         if (event != GameEvent.STEP && event != GameEvent.HIT_GROUND) return
-        if (event == GameEvent.HIT_GROUND && (entity as LivingEntity).lastDamageCause?.cause != EntityDamageEvent.DamageCause.FALL) return
+        if (event == GameEvent.HIT_GROUND && entity.lastDamageCause?.cause != EntityDamageEvent.DamageCause.FALL) return
 
-        val blockySound = block.toGearyOrNull()?.get<BlockySound>()
-        val currentBlock = entity?.location?.block ?: return
+        val blockySound = standingOn.toGearyOrNull()?.get<BlockySound>()
+        val currentBlock = entity.location.block
         if (!currentBlock.isReplaceable || currentBlock.type == Material.TRIPWIRE) return
 
         val sound = when (event) {
@@ -102,29 +102,24 @@ class BlockySoundListener : Listener {
 
             else -> return
         }
-        val volume = when (event) {
-            GameEvent.STEP -> DEFAULT_STEP_VOLUME
-            GameEvent.HIT_GROUND -> DEFAULT_FALL_VOLUME
-            else -> return
-        }
-        val pitch = when (event) {
-            GameEvent.STEP -> DEFAULT_STEP_PITCH
-            GameEvent.HIT_GROUND -> DEFAULT_FALL_PITCH
+        val (volume, pitch) = when (event) {
+            GameEvent.STEP -> DEFAULT_STEP_VOLUME to DEFAULT_STEP_PITCH
+            GameEvent.HIT_GROUND -> DEFAULT_FALL_VOLUME to DEFAULT_FALL_PITCH
             else -> return
         }
 
-        block.world.playSound(block.location, sound, SoundCategory.PLAYERS, volume, pitch)
+        standingOn.world.playSound(standingOn.location, sound, SoundCategory.PLAYERS, volume, pitch)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyBlockPlaceEvent.onPlaceBlockyBlock() {
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: block.blockSoundGroup.placeSound.key.toString()
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: block.blockSoundGroup.placeSound.key.asString()
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_PLACE_VOLUME, DEFAULT_PLACE_PITCH)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyFurniturePlaceEvent.onPlaceBlockyFurniture() {
-        val sound = entity.toGeary().get<BlockySound>()?.placeSound ?: entity.location.block.blockData.soundGroup.placeSound.key.toString()
+        val sound = entity.toGeary().get<BlockySound>()?.placeSound ?: entity.location.block.blockData.soundGroup.placeSound.key.asString()
         entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_PLACE_VOLUME, DEFAULT_PLACE_PITCH)
     }
 
