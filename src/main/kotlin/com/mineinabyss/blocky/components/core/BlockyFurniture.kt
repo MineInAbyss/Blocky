@@ -87,4 +87,8 @@ data class BlockyFurniture(
     )
 
     val hasStrictRotation get() = rotationType != RotationType.NONE
+
+    @Serializable
+    @SerialName("blocky:prevent_itemstack_update")
+    class PreventItemStackUpdate
 }

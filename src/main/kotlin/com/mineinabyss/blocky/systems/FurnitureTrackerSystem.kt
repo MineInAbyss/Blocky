@@ -1,6 +1,8 @@
 package com.mineinabyss.blocky.systems
 
 import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
+import com.mineinabyss.blocky.components.core.BlockyFurniture
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.systems.RepeatingSystem
 import com.mineinabyss.geary.systems.accessors.Pointer
@@ -15,6 +17,7 @@ class FurnitureTrackerSystem : RepeatingSystem(interval = 1.ticks) {
     private val Pointer.furniture by get<ItemDisplay>()
 
     override fun Pointer.tick() {
+        if (furniture.toGearyOrNull()?.has<BlockyFurniture.PreventItemStackUpdate>() != false) return
         val freshItem = furniture.prefabKey?.let { gearyItems.createItem(it, furniture.itemStack) } ?: return
         furniture.itemStack = freshItem.toSerializable().toItemStack(furniture.itemStack ?: ItemStack.empty(), EnumSet.of(BaseSerializableItemStack.Properties.COLOR))
     }
