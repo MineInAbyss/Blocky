@@ -16,6 +16,7 @@ import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
+import org.bukkit.GameEvent
 import org.bukkit.Location
 import org.bukkit.block.Block
 import org.bukkit.entity.Entity
@@ -96,6 +97,7 @@ object BlockyFurnitures {
 
         furniture.seats.filter { !it.isDead }.forEach(Entity::remove)
         if (!furniture.isDead) furniture.remove()
+        furniture.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, furniture.location.toVector())
         return true
     }
 

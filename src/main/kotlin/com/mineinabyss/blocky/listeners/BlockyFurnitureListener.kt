@@ -24,6 +24,7 @@ import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
 import org.bukkit.Bukkit
+import org.bukkit.GameEvent
 import org.bukkit.GameMode
 import org.bukkit.Location
 import org.bukkit.block.BlockFace
@@ -129,6 +130,7 @@ class BlockyFurnitureListener : Listener {
         player.swingHand(hand)
         if (player.gameMode != GameMode.CREATIVE) player.inventory.getItem(hand).subtract(1)
         setUseInteractedBlock(Event.Result.DENY)
+        player.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, newFurniture.location.toVector())
     }
 
     @EventHandler
