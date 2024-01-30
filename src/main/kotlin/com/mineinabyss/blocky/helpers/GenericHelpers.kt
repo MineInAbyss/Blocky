@@ -115,6 +115,8 @@ fun placeBlockyBlock(
             if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
         }
         ?: BlockStateCorrection.placeItemAsBlock(player, hand, item)
+
+    targetBlock.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, targetBlock.location.toVector())
 }
 
 internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Boolean {
@@ -131,6 +133,7 @@ internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Bool
     block.customBlockData.clear()
     block.type = Material.AIR
     block.world.playEffect(block.location, Effect.STEP_SOUND, block.blockData)
+    block.world.sendGameEvent(null, GameEvent.BLOCK_DESTROY, block.location.toVector())
     return true
 }
 
