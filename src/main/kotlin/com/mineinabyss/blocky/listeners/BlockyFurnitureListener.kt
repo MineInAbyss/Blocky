@@ -70,10 +70,10 @@ class BlockyFurnitureListener : Listener {
     @EventHandler
     fun PlayerChunkUnloadEvent.onUnloadChunk() {
         chunk.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.removeInteractionHitboxPacket(it)
-            FurniturePacketHelpers.removeHitboxOutlinePacket(it)
-            FurniturePacketHelpers.removeCollisionHitboxPacket(it)
-            FurniturePacketHelpers.removeLightPacket(it)
+            FurniturePacketHelpers.removeInteractionHitboxPacket(it, player)
+            FurniturePacketHelpers.removeHitboxOutlinePacket(it, player)
+            FurniturePacketHelpers.removeCollisionHitboxPacket(it, player)
+            FurniturePacketHelpers.removeLightPacket(it, player)
         }
     }
 
