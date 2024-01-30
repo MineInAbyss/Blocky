@@ -3,24 +3,16 @@ package com.mineinabyss.blocky.components.core
 import com.mineinabyss.blocky.serializers.BrightnessSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.Vector3fSerializer
-import com.mineinabyss.idofront.serialization.VectorSerializer
 import com.mineinabyss.idofront.serialization.toSerializable
-import kotlinx.serialization.KSerializer
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.descriptors.SerialDescriptor
-import kotlinx.serialization.encoding.Decoder
-import kotlinx.serialization.encoding.Encoder
 import org.bukkit.Location
 import org.bukkit.Material
-import org.bukkit.block.data.type.Slab
 import org.bukkit.entity.Display.Billboard
 import org.bukkit.entity.Display.Brightness
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.BoundingBox
-import org.bukkit.util.Vector
 import org.joml.Vector3f
 import kotlin.math.cos
 import kotlin.math.round
@@ -90,5 +82,7 @@ data class BlockyFurniture(
 
     @Serializable
     @SerialName("blocky:prevent_itemstack_update")
-    class PreventItemStackUpdate
+    data class PreventItemStackUpdate(
+        val forceWhenDifferentMaterial: Boolean = true,
+    )
 }

@@ -17,8 +17,11 @@ class FurnitureTrackerSystem : RepeatingSystem(interval = 1.ticks) {
     private val Pointer.furniture by get<ItemDisplay>()
 
     override fun Pointer.tick() {
-        if (furniture.toGearyOrNull()?.has<BlockyFurniture.PreventItemStackUpdate>() != false) return
+        val preventUpdate = furniture.toGearyOrNull()?.get<BlockyFurniture.PreventItemStackUpdate>()
+        if (preventUpdate != null && !preventUpdate.forceWhenDifferentMaterial) return
         val freshItem = furniture.prefabKey?.let { gearyItems.createItem(it, furniture.itemStack) } ?: return
+        // Skip updating if preventUpdate is present and forceWhenDifferentMaterial is true
+        if (freshItem.type != furniture.itemStack?.type && preventUpdate != null) return
         furniture.itemStack = freshItem.toSerializable().toItemStack(furniture.itemStack ?: ItemStack.empty(), EnumSet.of(BaseSerializableItemStack.Properties.COLOR))
     }
 
