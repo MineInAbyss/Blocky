@@ -16,13 +16,13 @@ import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.spawning.spawn
 import com.ticxo.modelengine.api.ModelEngineAPI
+import io.papermc.paper.math.Position
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.yield
-import io.papermc.paper.math.Position
 import net.kyori.adventure.text.Component
 import org.bukkit.Location
+import org.bukkit.Material
 import org.bukkit.Rotation
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -38,12 +38,9 @@ import org.bukkit.inventory.meta.PotionMeta
 import kotlin.math.max
 
 object FurnitureHelpers {
-    fun getTargetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
-
-        return if (placedAgainst.isReplaceable) placedAgainst else {
-            val target = placedAgainst.getRelative(blockFace)
-            if (!target.type.isAir && target.isReplaceable) null else target
-        }
+    fun targetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
+        return if (placedAgainst.isReplaceable) placedAgainst
+        else placedAgainst.getRelative(blockFace).takeUnless { !it.type.isAir && it.isReplaceable }
     }
 
     fun collisionHitboxLocations(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.CollisionHitbox>): List<Location> =
@@ -55,7 +52,7 @@ object FurnitureHelpers {
     fun interactionHitboxLocations(rotation: Float, center: Location, hitbox: Set<BlockyFurniture.InteractionHitbox>): List<Location> =
         hitbox.map { c -> c.originOffset.groundRotate(rotation).add(center) }
 
-    fun getRotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
+    fun rotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
         val furniture = nullFurniture ?: BlockyFurniture()
         val rotationDegree = if (furniture.rotationType == BlockyFurniture.RotationType.STRICT) 0 else 1
         val id = (((Location.normalizeYaw(yaw) + 180) * 8 / 360 + 0.5).toInt() % 8).apply {
@@ -64,7 +61,7 @@ object FurnitureHelpers {
         return Rotation.entries[id].rotateClockwise().rotateClockwise()
     }
 
-    fun getYaw(rotation: Rotation) = Rotation.entries.indexOf(rotation) * 360f / 8f
+    fun yaw(rotation: Rotation) = Rotation.entries.indexOf(rotation) * 360f / 8f
 
     fun hasEnoughSpace(blockyFurniture: BlockyFurniture, loc: Location, yaw: Float): Boolean {
         return if (blockyFurniture.collisionHitbox.isEmpty()) true
@@ -90,7 +87,7 @@ object FurnitureHelpers {
 
         val spawnLoc = loc.clone().toBlockCenterLocation().apply {
             if (furniture.properties.displayTransform == NONE) this.y += 0.5 * furniture.properties.scale.y
-            this.yaw = getYaw(getRotation(yaw, furniture))
+            this.yaw = yaw(rotation(yaw, furniture))
             this.pitch = if (furniture.properties.displayTransform == FIXED) 90f else 0f
         }
 
@@ -128,6 +125,8 @@ object FurnitureHelpers {
                     .forEach { _ -> spawnFurnitureSeat(newFurniture, yaw - 180, seat.heightOffset) }
             } else spawnFurnitureSeat(newFurniture, yaw, seat.heightOffset)
         }
+
+        loc.block.type = Material.AIR
 
         return newFurniture
     }
