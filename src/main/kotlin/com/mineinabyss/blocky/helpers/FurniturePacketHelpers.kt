@@ -145,7 +145,7 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to remove the interaction hitbox of.
      */
     fun removeInteractionHitboxPacket(furniture: ItemDisplay) {
-        blocky.plugin.server.onlinePlayers.forEach { player ->
+        furniture.world.players.forEach { player ->
             removeInteractionHitboxPacket(furniture, player)
         }
         interactionHitboxIdMap.removeIf { it.furnitureUUID == furniture.uniqueId }
@@ -232,7 +232,7 @@ object FurniturePacketHelpers {
      * @param baseEntity The furniture to remove the collision hitbox of.
      */
     fun removeCollisionHitboxPacket(baseEntity: ItemDisplay) {
-        blocky.plugin.server.onlinePlayers.forEach {
+        baseEntity.world.players.forEach {
             removeCollisionHitboxPacket(baseEntity, it)
         }
         collisionHitboxPosMap.remove(baseEntity.uniqueId)
@@ -271,7 +271,7 @@ object FurniturePacketHelpers {
      * @param baseEntity The furniture to remove the light packets for
      */
     fun removeLightPacket(baseEntity: ItemDisplay) {
-        blocky.plugin.server.onlinePlayers.forEach {
+        baseEntity.world.players.forEach {
             removeLightPacket(baseEntity, it)
         }
     }
