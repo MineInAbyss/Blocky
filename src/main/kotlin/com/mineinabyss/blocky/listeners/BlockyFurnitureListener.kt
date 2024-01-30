@@ -35,6 +35,7 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.util.Vector
@@ -84,6 +85,16 @@ class BlockyFurnitureListener : Listener {
         FurniturePacketHelpers.removeHitboxOutlinePacket(entity)
         FurniturePacketHelpers.removeCollisionHitboxPacket(entity)
         FurniturePacketHelpers.removeLightPacket(entity)
+    }
+
+    @EventHandler
+    fun PlayerChangedWorldEvent.onChangeWorld() {
+        from.entities.filterIsInstance<ItemDisplay>().forEach {
+            FurniturePacketHelpers.removeInteractionHitboxPacket(it, player)
+            FurniturePacketHelpers.removeHitboxOutlinePacket(it, player)
+            FurniturePacketHelpers.removeCollisionHitboxPacket(it, player)
+            FurniturePacketHelpers.removeLightPacket(it, player)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
