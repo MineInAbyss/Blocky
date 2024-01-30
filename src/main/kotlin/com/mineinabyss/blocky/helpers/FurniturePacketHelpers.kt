@@ -56,10 +56,11 @@ object FurniturePacketHelpers {
     const val INTERACTION_HEIGHT_ID = 9
     const val ITEM_DISPLAY_ITEMSTACK_ID = 23
 
-    val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
-    val interactionHitboxIdMap = mutableSetOf<FurnitureInteractionHitboxIds>()
-    val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, MutableSet<FurnitureInteractionHitboxPacket>>()
-    val hitboxOutlineIdMap = mutableMapOf<FurnitureUUID, IntList>()
+    private val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
+    private val interactionHitboxIdMap = mutableSetOf<FurnitureInteractionHitboxIds>()
+    private val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, MutableSet<FurnitureInteractionHitboxPacket>>()
+    private val hitboxOutlineIdMap = mutableMapOf<FurnitureUUID, IntList>()
+    private val outlinePlayerMap = mutableMapOf<UUID, UUID>()
 
     fun getBaseFurnitureFromInteractionEntity(id: Int) =
         interactionHitboxIdMap.firstOrNull { id in it.entityIds }?.furniture
@@ -92,22 +93,6 @@ object FurniturePacketHelpers {
                     BlockyFurnitureInteractEvent(baseFurniture, player, EquipmentSlot.HAND, player.inventory.itemInMainHand, clickedRelativePosition).callEvent()}
                 }
             }
-        }
-    }
-
-    /**
-     * Sends a packet to show the interaction hitbox of the given furniture to all players in the world.
-     * @param furniture The furniture to show the interaction hitbox of.
-     */
-    fun sendInteractionEntityPacket(furniture: ItemDisplay) {
-        // Don't send interactionEntity packet if modelengine furniture with hitbox
-        if (furniture.isModelEngineFurniture) {
-            val modelId = furniture.toGeary().get<BlockyModelEngine>()?.modelId ?: return
-            val blueprint = ModelEngineAPI.getBlueprint(modelId) ?: return
-            if (blueprint.mainHitbox != null || blueprint.subHitboxes.isNotEmpty()) return
-        }
-        furniture.world.players.forEach {
-            sendInteractionEntityPacket(furniture, it)
         }
     }
 
@@ -176,14 +161,6 @@ object FurniturePacketHelpers {
         PacketContainer.fromPacket(ClientboundRemoveEntitiesPacket(*entityIds.toIntArray())).sendTo(player)
     }
 
-    fun sendHitboxOutlinePacket(furniture: ItemDisplay) {
-        furniture.world.players.forEach {
-            sendHitboxOutlinePacket(furniture, it)
-        }
-    }
-
-    val outlinePlayerMap = mutableMapOf<UUID, UUID>()
-
     fun sendHitboxOutlinePacket(furniture: ItemDisplay, player: Player) {
         if (outlinePlayerMap[player.uniqueId] == furniture.uniqueId) return
         removeHitboxOutlinePacket(player)
@@ -232,15 +209,6 @@ object FurniturePacketHelpers {
         outlinePlayerMap.remove(player.uniqueId)
     }
 
-    /**
-     * Sends a packet to show the collision hitbox of the given furniture to all players in the world.
-     * @param baseEntity The furniture to show the collision hitbox of.
-     */
-    fun sendCollisionHitboxPacket(baseEntity: ItemDisplay) {
-        baseEntity.world.players.forEach {
-            sendCollisionHitboxPacket(baseEntity, it)
-        }
-    }
 
     /**
      * Sends a packet to show the collision hitbox of the given furniture to the given player.
@@ -279,16 +247,6 @@ object FurniturePacketHelpers {
         val positions = collisionHitboxPositions(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
             .associateWith { Material.AIR.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
-    }
-
-    /**
-     * Sends the light packets for this furniture to all players in the world
-     * @param baseEntity The furniture to send the light packets for
-     */
-    fun sendLightPacket(baseEntity: ItemDisplay) {
-        baseEntity.world.players.forEach {
-            sendLightPacket(baseEntity, it)
-        }
     }
 
     /**
