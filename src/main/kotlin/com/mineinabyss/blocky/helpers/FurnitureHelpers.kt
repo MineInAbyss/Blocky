@@ -13,6 +13,7 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.spawning.spawn
 import com.ticxo.modelengine.api.ModelEngineAPI
@@ -64,8 +65,9 @@ object FurnitureHelpers {
     fun yaw(rotation: Rotation) = Rotation.entries.indexOf(rotation) * 360f / 8f
 
     fun hasEnoughSpace(blockyFurniture: BlockyFurniture, loc: Location, yaw: Float): Boolean {
-        return if (blockyFurniture.collisionHitbox.isEmpty()) true
-        else collisionHitboxLocations(yaw, loc, blockyFurniture.collisionHitbox).all { adjacent -> adjacent.block.type.isAir }
+        return if (blockyFurniture.collisionHitbox.isEmpty() && blockyFurniture.interactionHitbox.isEmpty()) true
+        else collisionHitboxLocations(yaw, loc, blockyFurniture.collisionHitbox).all { adjacent -> adjacent.block.isReplaceable } &&
+                interactionHitboxLocations(yaw, loc, blockyFurniture.interactionHitbox).all { adjacent -> adjacent.block.isReplaceable }
     }
 
 
@@ -125,8 +127,6 @@ object FurnitureHelpers {
                     .forEach { _ -> spawnFurnitureSeat(newFurniture, yaw - 180, seat.heightOffset) }
             } else spawnFurnitureSeat(newFurniture, yaw, seat.heightOffset)
         }
-
-        loc.block.type = Material.AIR
 
         return newFurniture
     }

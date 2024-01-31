@@ -16,6 +16,7 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.events.GearyEntityAddToWorldEvent
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.messaging.logSuccess
 import com.mineinabyss.idofront.plugin.Plugins
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
@@ -23,10 +24,7 @@ import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
-import org.bukkit.Bukkit
-import org.bukkit.GameEvent
-import org.bukkit.GameMode
-import org.bukkit.Location
+import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemDisplay
@@ -104,16 +102,13 @@ class BlockyFurnitureListener : Listener {
         val targetBlock = FurnitureHelpers.targetBlock(block, blockFace) ?: return
         val gearyEntity = player.gearyInventory?.get(hand) ?: return
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return
-        val yaw = if (furniture.hasStrictRotation) FurnitureHelpers.yaw(
-            FurnitureHelpers.rotation(
-                player.yaw,
-                furniture
-            )
-        ) else player.yaw
+        val yaw = if (furniture.hasStrictRotation)
+            FurnitureHelpers.yaw(FurnitureHelpers.rotation(player.yaw, furniture))
+        else player.yaw
 
         when {
             action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE -> return
-            !FurnitureHelpers.hasEnoughSpace(furniture, targetBlock.location, yaw) -> return
+            !FurnitureHelpers.hasEnoughSpace(furniture, targetBlock.location, yaw).broadcastVal() -> return
             !ProtectionLib.canBuild(player, targetBlock.location) -> return
             gearyEntity.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, blockFace) == false -> return
             targetBlock.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> return
@@ -126,6 +121,8 @@ class BlockyFurnitureListener : Listener {
             BlockyFurnitures.removeFurniture(newFurniture)
             return
         }
+
+        newFurniture.location.block.type = Material.AIR
 
         player.swingHand(hand)
         if (player.gameMode != GameMode.CREATIVE) player.inventory.getItem(hand).subtract(1)
