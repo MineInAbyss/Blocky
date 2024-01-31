@@ -21,7 +21,7 @@ class FurnitureTrackerSystem : RepeatingSystem(interval = 1.ticks) {
         if (preventUpdate != null && !preventUpdate.forceWhenDifferentMaterial) return
         val freshItem = furniture.prefabKey?.let { gearyItems.createItem(it, furniture.itemStack) } ?: return
         // Skip updating if preventUpdate is present and forceWhenDifferentMaterial is true
-        if (freshItem.type != furniture.itemStack?.type && preventUpdate != null) return
+        if (preventUpdate != null && freshItem.type == furniture.itemStack?.type) return
         furniture.itemStack = freshItem.toSerializable().toItemStack(furniture.itemStack ?: ItemStack.empty(), EnumSet.of(BaseSerializableItemStack.Properties.COLOR))
     }
 
