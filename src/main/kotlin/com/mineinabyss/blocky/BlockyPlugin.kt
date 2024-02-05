@@ -11,7 +11,6 @@ import com.mineinabyss.blocky.systems.FurnitureOutlineSystem
 import com.mineinabyss.blocky.systems.actions.SetItemOnFurnitureSystem
 import com.mineinabyss.blocky.systems.actions.SetMEGModelOnFurnitureSystem
 import com.mineinabyss.blocky.systems.actions.SetSeatOnFurnitureSystem
-import com.mineinabyss.blocky.systems.cleanup.RemoveSeatsOnUnloadSystem
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
@@ -64,7 +63,6 @@ class BlockyPlugin : JavaPlugin() {
             BlockyFurnitureListener(),
             BlockyMiddleClickListener(),
             BlockyNMSListener(),
-            RemoveSeatsOnUnloadSystem(),
         )
 
         blocky.config.run {
