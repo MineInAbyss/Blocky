@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.components.core
 
 import com.mineinabyss.blocky.serializers.BrightnessSerializer
+import com.mineinabyss.idofront.serialization.ColorSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.Vector3fSerializer
 import com.mineinabyss.idofront.serialization.toSerializable
@@ -85,4 +86,8 @@ data class BlockyFurniture(
     data class PreventItemStackUpdate(
         val forceWhenDifferentMaterial: Boolean = true,
     )
+
+    @Serializable
+    @SerialName("blocky:furniture_color")
+    data class Color(val color: @Serializable(with = ColorSerializer::class) org.bukkit.Color)
 }
