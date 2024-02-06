@@ -23,9 +23,6 @@ import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.LeatherArmorMeta
-import org.bukkit.inventory.meta.MapMeta
-import org.bukkit.inventory.meta.PotionMeta
 import kotlin.math.max
 
 object FurnitureHelpers {
@@ -67,17 +64,11 @@ object FurnitureHelpers {
     fun yaw(rotation: Rotation) = Rotation.entries.indexOf(rotation) * 360f / 8f
 
     fun hasEnoughSpace(blockyFurniture: BlockyFurniture, loc: Location, yaw: Float): Boolean {
-        return if (blockyFurniture.collisionHitbox.isEmpty() && blockyFurniture.interactionHitbox.isEmpty()) true
-        else collisionHitboxLocations(
-            yaw,
-            loc,
-            blockyFurniture.collisionHitbox
-        ).all { adjacent -> adjacent.block.isReplaceable } &&
-                interactionHitboxLocations(
-                    yaw,
-                    loc,
-                    blockyFurniture.interactionHitbox
-                ).all { adjacent -> adjacent.block.isReplaceable }
+        if (blockyFurniture.collisionHitbox.isEmpty() && blockyFurniture.interactionHitbox.isEmpty()) return true
+
+        return collisionHitboxLocations(yaw, loc, blockyFurniture.collisionHitbox)
+            .plus(interactionHitboxLocations(yaw, loc, blockyFurniture.interactionHitbox))
+            .all { adjacent -> adjacent.block.isReplaceable }
     }
 
 
@@ -97,11 +88,8 @@ object FurnitureHelpers {
         }
 
         // Try to get held item's color, used to dye furniture
-        val color = item?.itemMeta.run {
-            (this as? LeatherArmorMeta)?.color
-                ?: (this as? PotionMeta)?.color
-                ?: (this as? MapMeta)?.color
-        }
+
+        val color = item?.itemMeta?.asRGBColorable()?.color
 
         return spawnLoc.spawnFromPrefab(prefabKey, initEvent = {
             if (color != null) set(BlockyFurniture.Color(color))

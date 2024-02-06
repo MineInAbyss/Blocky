@@ -13,8 +13,8 @@ import org.bukkit.entity.ItemDisplay
 class AttemptSpawnFurnitureSystem : GearyListener() {
     private val Pointers.furniture by get<BlockyFurniture>().on(target)
 
-    //    private val Pointers.color by get<BlockyFurniture.Color>().orNull().on(event)
     private val Pointers.attemptSpawn by get<AttemptSpawn>().on(event)
+    private val Pointers.color by get<BlockyFurniture.Color>().orNull().on(event)
 
     val Pointers.family by family {
         not { has<BukkitEntity>() }
@@ -23,28 +23,24 @@ class AttemptSpawnFurnitureSystem : GearyListener() {
 
     @OptIn(UnsafeAccessors::class)
     override fun Pointers.handle() {
-        val color = event.entity.get<BlockyFurniture.Color>()
         val spawnLoc = attemptSpawn.location
 
         spawnLoc.spawn<ItemDisplay> {
-            isPersistent = furniture.properties.persistent
+            val props = furniture.properties
 
-            furniture.properties.let { properties ->
-                itemDisplayTransform = properties.displayTransform
-                displayWidth = properties.displayWidth
-                displayHeight = properties.displayHeight
-                brightness = properties.brightness
-                billboard = properties.trackingRotation
-                properties.viewRange?.let { viewRange = it }
-                properties.shadowRadius?.let { shadowRadius = it }
-                properties.shadowStrength?.let { shadowStrength = it }
-                transformation = transformation.apply { scale.set(properties.scale) }
-            }
-            if (color != null) {
-                target.entity.setPersisting(color)
-            }
+            isPersistent = props.persistent
+            itemDisplayTransform = props.displayTransform
+            displayWidth = props.displayWidth
+            displayHeight = props.displayHeight
+            brightness = props.brightness
+            billboard = props.trackingRotation
+            props.viewRange?.let { viewRange = it }
+            props.shadowRadius?.let { shadowRadius = it }
+            props.shadowStrength?.let { shadowStrength = it }
+            transformation = transformation.apply { scale.set(props.scale) }
+
+            color?.let { target.entity.setPersisting<BlockyFurniture.Color>(it) }
             target.entity.set<BukkitEntity>(this)
-//            this.itemStack = furnitureItem
         } ?: return
     }
 }
