@@ -98,7 +98,7 @@ object FurnitureHelpers {
     }
 
     //TODO Fix seat breaking below 0.0 offset and remove max() check here
-    fun spawnFurnitureSeat(furniture: ItemDisplay, yaw: Float, height: Double = 0.0, location: Location) =
+    fun spawnFurnitureSeat(furniture: ItemDisplay, location: Location, yaw: Float, height: Double = 0.0) =
         location.toBlockCenterLocation().apply { y += max(0.0, height) }.spawn<ArmorStand> {
             isVisible = false
             isMarker = true

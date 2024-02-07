@@ -20,8 +20,8 @@ class SetSeatOnFurnitureSystem : GearyListener() {
         Bukkit.getScheduler().scheduleSyncDelayedTask(blocky.plugin, {
             if (furniture.collisionHitbox.isNotEmpty()) {
                 FurnitureHelpers.collisionHitboxLocations(yaw, display.location, furniture.collisionHitbox)
-                    .forEach { loc -> FurnitureHelpers.spawnFurnitureSeat(display, yaw - 180, seat.heightOffset, loc) }
-            } else FurnitureHelpers.spawnFurnitureSeat(display, yaw, seat.heightOffset, display.location)
+                    .forEach { loc -> FurnitureHelpers.spawnFurnitureSeat(display, loc, yaw - 180, seat.heightOffset) }
+            } else FurnitureHelpers.spawnFurnitureSeat(display, display.location, yaw, seat.heightOffset)
         }, 1L)
     }
 }

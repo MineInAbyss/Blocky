@@ -8,6 +8,7 @@ import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.Pointers
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.typealiases.BukkitEntity
+import net.kyori.adventure.text.Component
 import org.bukkit.entity.ItemDisplay
 
 class AttemptSpawnFurnitureSystem : GearyListener() {
@@ -41,6 +42,7 @@ class AttemptSpawnFurnitureSystem : GearyListener() {
 
             color?.let { target.entity.setPersisting<BlockyFurniture.Color>(it) }
             target.entity.set<BukkitEntity>(this)
+            customName(Component.empty())
         } ?: return
     }
 }
