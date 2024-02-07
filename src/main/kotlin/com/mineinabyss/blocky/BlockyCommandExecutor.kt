@@ -3,7 +3,6 @@ package com.mineinabyss.blocky
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
-import com.mineinabyss.blocky.helpers.asRGBColorable
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
@@ -18,6 +17,7 @@ import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
@@ -76,10 +76,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     item.editItemMeta {
-                        (asRGBColorable() ?: run {
-                            player.error("This item cannot be dyed.")
-                            return@playerAction
-                        }).color = color.toColor
+                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed."))
+                            .color = color.toColor
                     }
                     player.success("Dyed item to <$color>$color")
                 }

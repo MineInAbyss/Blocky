@@ -1,10 +1,10 @@
 package com.mineinabyss.blocky.systems.actions
 
 import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.blocky.helpers.asRGBColorable
 import com.mineinabyss.geary.papermc.tracking.items.components.SetItem
 import com.mineinabyss.geary.systems.GearyListener
 import com.mineinabyss.geary.systems.accessors.Pointers
+import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.items.editItemMeta
 import net.kyori.adventure.text.Component
 import org.bukkit.entity.ItemDisplay
@@ -19,7 +19,7 @@ class SetItemOnFurnitureSystem : GearyListener() {
         val itemStack = furniture.properties.itemStack?.toItemStackOrNull() ?: setItem.item.toItemStack()
         val furnitureItem = itemStack.clone().editItemMeta {
             displayName(Component.empty())
-            furnitureColor?.color?.let { asRGBColorable()?.color = it }
+            furnitureColor?.color?.let { asColorable()?.color = it }
         }
         display.itemStack = furnitureItem
     }
