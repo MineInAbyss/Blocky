@@ -42,7 +42,6 @@ class AttemptSpawnFurnitureSystem : GearyListener() {
 
             color?.let { target.entity.setPersisting<BlockyFurniture.Color>(it) }
             target.entity.set<BukkitEntity>(this)
-            customName(Component.empty())
         } ?: return
     }
 }
