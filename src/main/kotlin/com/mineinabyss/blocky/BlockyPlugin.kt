@@ -1,20 +1,16 @@
 package com.mineinabyss.blocky
 
-import com.comphenix.protocol.PacketType
-import com.comphenix.protocol.ProtocolLibrary
-import com.comphenix.protocol.events.ListenerPriority
-import com.comphenix.protocol.events.PacketAdapter
-import com.comphenix.protocol.events.PacketEvent
-import com.mineinabyss.blocky.api.BlockyFurnitures
-import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
 import com.mineinabyss.blocky.assets_generation.MoreCreativeTabsGeneration
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
+import com.mineinabyss.blocky.systems.AttemptSpawnFurnitureSystem
 import com.mineinabyss.blocky.systems.FurnitureOutlineSystem
-import com.mineinabyss.blocky.systems.FurnitureTrackerSystem
+import com.mineinabyss.blocky.systems.actions.SetItemOnFurnitureSystem
+import com.mineinabyss.blocky.systems.actions.SetMEGModelOnFurnitureSystem
+import com.mineinabyss.blocky.systems.actions.SetSeatOnFurnitureSystem
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
@@ -24,18 +20,13 @@ import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.logError
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
-import com.mineinabyss.protocolburrito.dsl.protocolManager
-import com.mineinabyss.protocolburrito.packets.ServerboundPlayerActionPacketWrap
-import com.mineinabyss.protocolburrito.packets.ServerboundUseItemOnPacketWrap
 import com.sk89q.worldedit.WorldEdit
 import io.papermc.paper.configuration.GlobalConfiguration
 import it.unimi.dsi.fastutil.ints.IntArrayList
 import net.minecraft.core.registries.BuiltInRegistries
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.resources.ResourceLocation
 import net.minecraft.tags.BlockTags
 import org.bukkit.block.data.BlockData
-import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.plugin.java.JavaPlugin
 
 var prefabMap = mapOf<BlockData, PrefabKey>()
@@ -58,7 +49,13 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
 
-        geary.pipeline.addSystems(FurnitureTrackerSystem(), FurnitureOutlineSystem())
+        geary.pipeline.addSystems(
+            AttemptSpawnFurnitureSystem(),
+            SetItemOnFurnitureSystem(),
+            SetSeatOnFurnitureSystem(),
+            SetMEGModelOnFurnitureSystem(),
+            FurnitureOutlineSystem()
+        )
         FurniturePacketHelpers.registerPacketListeners()
 
         listeners(

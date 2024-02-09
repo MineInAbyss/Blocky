@@ -17,6 +17,7 @@ import com.mineinabyss.idofront.commands.arguments.optionArg
 import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
+import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
@@ -26,9 +27,6 @@ import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.inventory.meta.LeatherArmorMeta
-import org.bukkit.inventory.meta.MapMeta
-import org.bukkit.inventory.meta.PotionMeta
 
 @OptIn(UnsafeAccessors::class)
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
@@ -78,9 +76,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     item.editItemMeta {
-                        (this as? LeatherArmorMeta)?.setColor(color.toColor)
-                            ?: (this as? PotionMeta)?.setColor(color.toColor)
-                            ?: (this as? MapMeta)?.setColor(color.toColor) ?: return@playerAction
+                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed."))
+                            .color = color.toColor
                     }
                     player.success("Dyed item to <$color>$color")
                 }

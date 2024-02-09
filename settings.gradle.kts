@@ -9,11 +9,6 @@ pluginManagement {
         maven("https://repo.papermc.io/repository/maven-public/") //Paper
         mavenLocal()
     }
-
-    val composeVersion: String by settings
-    plugins {
-        id("org.jetbrains.compose") version composeVersion
-    }
 }
 
 dependencyResolutionManagement {
