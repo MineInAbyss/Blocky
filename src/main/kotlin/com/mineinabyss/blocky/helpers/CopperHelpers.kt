@@ -2,16 +2,15 @@ package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.components.core.WaxedCopperBlock
 import com.mineinabyss.geary.papermc.datastore.encode
-import com.mineinabyss.idofront.util.toMCKey
+import com.mineinabyss.geary.papermc.datastore.has
+import com.mineinabyss.geary.papermc.datastore.remove
 import org.bukkit.Material
 import org.bukkit.block.Block
 
 object CopperHelpers {
-    val WAXED_COPPER_KEY = "blocky:waxed_copper".toMCKey()
-    val BLOCKY_COPPER_BLOCK = "blocky:copper_block".toMCKey()
-    fun isFakeWaxedCopper(block: Block) = (block.type in COPPER_SLABS || block.type in COPPER_STAIRS) && block.persistentDataContainer.has(WAXED_COPPER_KEY)
+    fun isFakeWaxedCopper(block: Block) = (block.type in COPPER_SLABS || block.type in COPPER_STAIRS) && block.persistentDataContainer.has<WaxedCopperBlock>()
     fun setFakeWaxedCopper(block: Block, value: Boolean) = when {
-        !value -> block.persistentDataContainer.remove(WAXED_COPPER_KEY)
+        !value -> block.persistentDataContainer.remove<WaxedCopperBlock>()
         block.type in COPPER_SLABS || block.type in COPPER_STAIRS ->
             block.persistentDataContainer.encode(WaxedCopperBlock)
         else -> {}

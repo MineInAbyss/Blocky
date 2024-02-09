@@ -16,7 +16,6 @@ import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
-import com.mineinabyss.idofront.messaging.broadcast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
@@ -35,7 +34,13 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
+import kotlin.Int
+import kotlin.apply
+import kotlin.let
+import kotlin.run
+import kotlin.takeIf
 import kotlin.time.Duration
+import kotlin.to
 
 class BlockyGenericListener : Listener {
 
@@ -230,6 +235,7 @@ class BlockyGenericListener : Listener {
         }
 
         blockPlaced.blockData = newData
+        CopperHelpers.setFakeWaxedCopper(blockPlaced, true)
         player.swingMainHand()
     }
 
