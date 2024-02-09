@@ -16,11 +16,14 @@ import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcast
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.Block
+import org.bukkit.block.data.type.Slab
+import org.bukkit.block.data.type.Stairs
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -202,10 +205,7 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
-        val materialSet = mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).apply {
-            this += CopperHelpers.BLOCKY_SLABS
-            this += CopperHelpers.BLOCKY_STAIRS
-        }
+        val materialSet = setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).plus(CopperHelpers.BLOCKY_SLABS).plus(CopperHelpers.BLOCKY_STAIRS)
 
         when {
             itemInHand.type !in materialSet -> return
@@ -218,14 +218,18 @@ class BlockyGenericListener : Listener {
             !blocky.config.stairBlocks.isEnabled && itemInHand.type in CopperHelpers.BLOCKY_STAIRS -> return
         }
 
-        val material = when (itemInHand.type) {
-            Material.STRING -> Material.TRIPWIRE
-            in CopperHelpers.BLOCKY_SLABS -> CopperHelpers.COPPER_SLABS.elementAt(CopperHelpers.BLOCKY_SLABS.indexOf(itemInHand.type))
-            in CopperHelpers.BLOCKY_STAIRS -> CopperHelpers.COPPER_STAIRS.elementAt(CopperHelpers.BLOCKY_STAIRS.indexOf(itemInHand.type))
-            else -> itemInHand.type
+        val newData = when (itemInHand.type) {
+            Material.STRING -> Material.TRIPWIRE.createBlockData()
+            in CopperHelpers.BLOCKY_SLABS -> CopperHelpers.COPPER_SLABS.elementAt(CopperHelpers.BLOCKY_SLABS.indexOf(itemInHand.type)).createBlockData {
+                (it as Slab to blockPlaced.blockData as Slab).let { (new, old) -> new.type = old.type }
+            }
+            in CopperHelpers.BLOCKY_STAIRS -> CopperHelpers.COPPER_STAIRS.elementAt(CopperHelpers.BLOCKY_STAIRS.indexOf(itemInHand.type)).createBlockData {
+                (it as Stairs to blockPlaced.blockData as Stairs).let { (new, old) -> new.facing = old.facing; new.half = old.half }
+            }
+            else -> itemInHand.type.createBlockData()
         }
 
-        block.blockData = material.createBlockData()
+        blockPlaced.blockData = newData
         player.swingMainHand()
     }
 
