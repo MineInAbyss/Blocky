@@ -8,6 +8,8 @@ import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.idofront.events.call
+import com.mineinabyss.idofront.messaging.broadcast
+import com.mineinabyss.idofront.messaging.broadcastVal
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
 import org.bukkit.block.Block
@@ -22,9 +24,12 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockDropItemEvent
 import org.bukkit.event.block.BlockFormEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.EquipmentSlot
+import org.bukkit.inventory.ItemStack
 
 class BlockyCopperListener {
     class BlockySlabListener : Listener {
@@ -146,6 +151,16 @@ class BlockyCopperListener {
                 isCancelled = true
         }
 
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        fun BlockBreakEvent.onBreakFakeCopperSlab() {
+            if (!CopperHelpers.isFakeWaxedCopper(block)) return
+            val index = CopperHelpers.COPPER_SLABS.indexOf(block.type)
+            val waxedType = CopperHelpers.BLOCKY_SLABS.elementAt(index)
+            isDropItems = false
+            block.customBlockData.clear()
+            block.world.dropItemNaturally(block.location, ItemStack(waxedType))
+        }
+
     }
 
 
@@ -218,7 +233,6 @@ class BlockyCopperListener {
                 CopperHelpers.setFakeWaxedCopper(block, true)
         }
 
-
         @EventHandler(priority = EventPriority.LOWEST)
         fun PlayerInteractEvent.onUnwaxCopperStair() {
             val block = clickedBlock ?: return
@@ -239,6 +253,16 @@ class BlockyCopperListener {
         fun BlockFormEvent.onOxidizedCopperStair() {
             if (newState.type in CopperHelpers.BLOCKY_STAIRS || CopperHelpers.isFakeWaxedCopper(block))
                 isCancelled = true
+        }
+
+        @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+        fun BlockBreakEvent.onBreakFakeCopperStair() {
+            if (!CopperHelpers.isFakeWaxedCopper(block)) return
+            val index = CopperHelpers.COPPER_STAIRS.indexOf(block.type)
+            val waxedType = CopperHelpers.BLOCKY_STAIRS.elementAt(index)
+            isDropItems = false
+            block.customBlockData.clear()
+            block.world.dropItemNaturally(block.location, ItemStack(waxedType))
         }
 
         private fun BlockFace.getStairHalf(player: Player): Bisected.Half {
