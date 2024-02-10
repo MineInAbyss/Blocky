@@ -5,8 +5,8 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
 import com.mineinabyss.blocky.systems.BlockyQuery
+import com.mineinabyss.blocky.systems.BlockyQuery.prefabKey
 import com.mineinabyss.blocky.systems.blockyModelEngineQuery
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
@@ -19,8 +19,10 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
+import com.mineinabyss.idofront.util.toColor
 import org.bukkit.Color
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
@@ -76,10 +78,9 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     item.editItemMeta {
-                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed."))
-                            .color = color.toColor
+                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed.")).color = color.toColor()
                     }
-                    player.success("Dyed item to <$color>$color")
+                    player.success("Dyed item to $color")
                 }
             }
             "menu" {
@@ -101,11 +102,10 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             when (args.size) {
                 1 -> listOf("reload", "give", "dye", "menu").filter { it.startsWith(args[0]) }
                 2 -> when (args[0]) {
-                    "give" -> BlockyQuery.toList { it }.filter {
-                        val arg = args[1].lowercase()
-                        (it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)) &&
-                                it.entity.get<BlockyDirectional>()?.isParentBlock != false
-                    }.map { it.prefabKey.toString() }
+                    "give" -> BlockyQuery.toList { it.prefabKey }.asSequence()
+                        .filter { it.key.startsWith(args[1]) || it.full.startsWith(args[1]) }
+                        .filter { it.toEntityOrNull()?.get<BlockyDirectional>()?.isParentBlock != false }
+                        .map { it.full }.take(20).toList()
 
                     else -> emptyList()
                 }.filter { it.startsWith(args[1]) }
@@ -119,27 +119,4 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             }
         } else emptyList()
     }
-
-    private val String.toColor: Color
-        get() {
-            return when {
-                this.startsWith("#") -> return Color.fromRGB(this.substring(1).toInt(16))
-                this.startsWith("0x") -> return Color.fromRGB(this.substring(2).toInt(16))
-                "," in this -> {
-                    val colorString = this.replace(" ", "").split(",")
-                    if (colorString.any { it.toIntOrNull() == null }) return Color.WHITE
-                    try {
-                        Color.fromRGB(
-                            minOf(colorString[0].toInt(), 255),
-                            minOf(colorString[1].toInt(), 255),
-                            minOf(colorString[2].toInt(), 255)
-                        )
-                    } catch (e: NumberFormatException) {
-                        Color.WHITE
-                    }
-                }
-                //TODO Make this support text, probably through minimessage
-                else -> return Color.WHITE
-            }
-        }
 }

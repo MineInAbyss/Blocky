@@ -2,6 +2,7 @@ package com.mineinabyss.blocky.api
 
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import org.bukkit.Location
@@ -44,13 +45,18 @@ object BlockyBlocks {
     fun placeBlockyBlock(location: Location, prefabKey: PrefabKey): Boolean {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return false
         val blockyBlock = gearyEntity.get<SetBlock>() ?: return false
-
-        location.block.blockData = when (blockyBlock.blockType) {
+        val blockData = when (blockyBlock.blockType) {
             SetBlock.BlockType.NOTEBLOCK -> gearyEntity.blockyNoteBlock()
             SetBlock.BlockType.WIRE -> blockyBlock.blockyTripWire()
             SetBlock.BlockType.CAVEVINE -> CaveVineHelpers.blockyCaveVine(blockyBlock)
             else -> return false
         }
+        return placeBlockyBlock(location, blockData)
+    }
+
+    internal fun placeBlockyBlock(location: Location, data: BlockData): Boolean {
+        if (gearyBlocks.block2Prefab[data]?.toEntityOrNull()?.has<SetBlock>() != true) return false
+        location.block.blockData = data
 
         //TODO Handle light via packets for blocks
         return true

@@ -34,7 +34,6 @@ import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Fence
 import org.bukkit.block.data.type.Stairs
 import org.bukkit.enchantments.Enchantment
-import org.bukkit.entity.Entity
 import org.bukkit.entity.ExperienceOrb
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
@@ -109,12 +108,10 @@ fun placeBlockyBlock(
 
     // if new block is a blocky block, place it via API
     // if not it is a vanilla block placed against a blocky block, and we place it via NMS methods
-    newData.toGearyOrNull()?.get<PrefabKey>()
-        ?.let {
-            BlockyBlocks.placeBlockyBlock(targetBlock.location, it)
-            if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
-        }
-        ?: BlockStateCorrection.placeItemAsBlock(player, hand, item)
+    if (newData.toGearyOrNull()?.has<PrefabKey>() == true) {
+        BlockyBlocks.placeBlockyBlock(targetBlock.location, newData)
+        if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
+    } else BlockStateCorrection.placeItemAsBlock(player, hand, item)
 
     targetBlock.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, targetBlock.location.toVector())
 }

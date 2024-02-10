@@ -16,7 +16,6 @@ import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.accessors.Pointer
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-//TODO See if this can be done without requiring BlockyInfo, but block || furniture
 object BlockyQuery : GearyQuery() {
     val Pointer.prefabKey by get<PrefabKey>()
     val Pointer.isPrefab by family {
@@ -70,5 +69,6 @@ object BlockyFurnitureQuery : GearyQuery() {
 
 val blockyFurnitureQuery get() = BlockyFurnitureQuery.toList { it }.sortedBy { it.prefabKey.key }
 
+@OptIn(UnsafeAccessors::class)
 val blockyModelEngineQuery =
     BlockyFurnitureQuery.toList { it }.filter { it.entity.isModelEngineFurniture }.map { it.prefabKey.toString() }
