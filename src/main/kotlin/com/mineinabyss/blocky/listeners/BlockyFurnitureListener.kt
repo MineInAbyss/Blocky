@@ -145,7 +145,7 @@ class BlockyFurnitureListener : Listener {
 
     init {
         if (Plugins.isEnabled("ModelEngine")) {
-            logSuccess("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
+            blocky.logger.iSuccess("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
             Bukkit.getPluginManager().registerEvents(object : Listener {
                 @EventHandler
                 fun BaseEntityInteractEvent.onModelEngineInteract() {

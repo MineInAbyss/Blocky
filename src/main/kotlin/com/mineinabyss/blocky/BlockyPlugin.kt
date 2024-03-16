@@ -69,14 +69,14 @@ class BlockyPlugin : JavaPlugin() {
         blocky.config.run {
             if (noteBlocks.isEnabled) {
                 if (!GlobalConfiguration.get().blockUpdates.disableNoteblockUpdates) {
-                    logError("Due to the disable-noteblock-updates being disabled in paper-global.yml, NoteBlock-BlockTypes have been disabled...")
-                    logError("This setting is required for Blocky to function properly.")
+                    blocky.logger.e("Due to the disable-noteblock-updates being disabled in paper-global.yml, NoteBlock-BlockTypes have been disabled...")
+                    blocky.logger.e("This setting is required for Blocky to function properly.")
                 } else listeners(BlockyNoteBlockListener())
             }
             if (tripWires.isEnabled) {
                 if (!GlobalConfiguration.get().blockUpdates.disableTripwireUpdates) {
-                    logError("Due to the disable-tripwire-updates being disabled in paper-global.yml, Wire-BlockTypes have been disabled...")
-                    logError("This setting is required for Blocky to function properly.")
+                    blocky.logger.e("Due to the disable-tripwire-updates being disabled in paper-global.yml, Wire-BlockTypes have been disabled...")
+                    blocky.logger.e("This setting is required for Blocky to function properly.")
                 } else listeners(BlockyWireListener())
 
             }
