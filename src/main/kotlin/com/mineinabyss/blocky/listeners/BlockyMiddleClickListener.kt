@@ -17,13 +17,14 @@ import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.ClickType
 import org.bukkit.event.inventory.InventoryCreativeEvent
+import org.bukkit.event.inventory.InventoryType
 
 class BlockyMiddleClickListener : Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     fun InventoryCreativeEvent.middleClickBlockyItem() {
-        val player = inventory.holder as? Player ?: return
+        val player = clickedInventory?.holder as? Player ?: return
         when {
-            click != ClickType.CREATIVE -> return
+            click != ClickType.CREATIVE || slotType != InventoryType.SlotType.QUICKBAR -> return
             (cursor.type in mutableSetOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES, Material.BARRIER, Material.PETRIFIED_OAK_SLAB)
                 .apply { addAll(CopperHelpers.BLOCKY_SLABS).apply { addAll(CopperHelpers.BLOCKY_STAIRS) } }) -> {
                 val lookingAtPrefab = player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:

@@ -22,8 +22,6 @@ data class BlockyConfig(
     val stairBlocks: BlockyStairConfig = BlockyStairConfig(),
     @YamlComment("If you wish to use vanilla sounds, set this to true", "Keep in mind it disables all custom sounds from place/break/hit etc")
     val disableCustomSounds: Boolean = false,
-    @YamlComment("This is for generating the Json files needed for MoreCreativeTabs", "A mod that lets you customize the creative tabs in Minecraft", "This will generate a resource-pack that will include tabs for all Blocky Blocks and Furniture")
-    val MoreCreativeTabsMod: MoreCreativeTabsModConfig = MoreCreativeTabsModConfig(),
 ) {
 
     @Serializable
@@ -35,7 +33,6 @@ data class BlockyConfig(
     )
 
     @Serializable data class BlockyMenu(val title: String = "", val height: Int = 6)
-    @Serializable data class MoreCreativeTabsModConfig(val generateJsonForMod: Boolean = false)
     @Serializable data class BlockyNoteBlockConfig(val isEnabled: Boolean = true)
     @Serializable data class BlockyTripwireConfig(val isEnabled: Boolean = true)
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)

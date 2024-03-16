@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky
 
-import com.mineinabyss.blocky.assets_generation.MoreCreativeTabsGeneration
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
@@ -97,7 +96,6 @@ class BlockyPlugin : JavaPlugin() {
     fun runStartupFunctions() {
         registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
-        MoreCreativeTabsGeneration().generateModAssets()
     }
 
     private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
