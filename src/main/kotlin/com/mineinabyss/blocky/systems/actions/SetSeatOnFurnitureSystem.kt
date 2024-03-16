@@ -17,6 +17,11 @@ fun GearyModule.createFurnitureSeatSetter() = listener(
         val seat by source.get<BlockySeat>()
     }
 ).exec {
+    // Save for scheduled task
+    val display = display
+    val furniture = furniture
+    val seat = seat
+
     val yaw = display.location.yaw
     FurnitureHelpers.clearFurnitureSeats(display)
     Bukkit.getScheduler().scheduleSyncDelayedTask(blocky.plugin, {

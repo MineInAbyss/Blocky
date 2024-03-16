@@ -3,6 +3,7 @@
 package com.mineinabyss.blocky.helpers
 
 import com.comphenix.protocol.events.PacketContainer
+import com.comphenix.protocol.wrappers.BlockPosition
 import com.mineinabyss.blocky.api.BlockyFurnitures
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
@@ -56,7 +57,7 @@ object FurniturePacketHelpers {
     const val INTERACTION_HEIGHT_ID = 9
     const val ITEM_DISPLAY_ITEMSTACK_ID = 23
 
-    private val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
+    private val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPosition>>()
     private val interactionHitboxIdMap = mutableSetOf<FurnitureInteractionHitboxIds>()
     private val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, MutableSet<FurnitureInteractionHitboxPacket>>()
     private val hitboxOutlineIdMap = mutableMapOf<FurnitureUUID, IntList>()
@@ -65,7 +66,7 @@ object FurniturePacketHelpers {
     fun getBaseFurnitureFromInteractionEntity(id: Int) =
         interactionHitboxIdMap.firstOrNull { id in it.entityIds }?.furniture
 
-    fun getBaseFurnitureFromCollisionHitbox(pos: BlockPos) =
+    fun getBaseFurnitureFromCollisionHitbox(pos: BlockPosition) =
         collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key?.toEntity() as? ItemDisplay
 
     internal fun registerPacketListeners() {
@@ -86,7 +87,7 @@ object FurniturePacketHelpers {
             // Cancelled so client doesn't remove the "Ghost Block"
             onReceive<ServerboundUseItemOnPacketWrap> { wrap ->
                 Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
-                    getBaseFurnitureFromCollisionHitbox(wrap.blockHit.blockPos)?.let { baseFurniture ->
+                    getBaseFurnitureFromCollisionHitbox(BlockPosition.getConverter().getSpecific(wrap.blockHit.blockPos))?.let { baseFurniture ->
                         val clickedRelativePosition = Vector(wrap.blockHit.location.x, wrap.blockHit.location.y, wrap.blockHit.location.z)
                 isCancelled = true
 
@@ -221,8 +222,8 @@ object FurniturePacketHelpers {
         player.sendMultiBlockChange(positions)
         positions.map { it.key.toBlock() }.forEach {
             collisionHitboxPosMap.compute(baseEntity.uniqueId) { _, blockPos ->
-                blockPos?.plus(BlockPos(it.blockX(), it.blockY(), it.blockZ()))?.toMutableSet()
-                    ?: mutableSetOf(BlockPos(it.blockX(), it.blockY(), it.blockZ()))
+                blockPos?.plus(BlockPosition(it.blockX(), it.blockY(), it.blockZ()))?.toMutableSet()
+                    ?: mutableSetOf(BlockPosition(it.blockX(), it.blockY(), it.blockZ()))
             }
         }
     }

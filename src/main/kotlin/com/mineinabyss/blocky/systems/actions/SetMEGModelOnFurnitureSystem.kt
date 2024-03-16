@@ -18,6 +18,10 @@ fun GearyModule.createFurnitureMEGModelSetter() = listener(
         val meg by source.get<BlockyModelEngine>()
     }
 ).exec {
+    // Save for scheduled task
+    val display = display
+    val furniture = furniture
+    val meg = meg
     if (!Plugins.isEnabled("ModelEngine")) return@exec
     val activeModel = ModelEngineAPI.createActiveModel(meg.modelId)
     Bukkit.getScheduler().scheduleSyncDelayedTask(blocky.plugin, {
