@@ -2,8 +2,7 @@ package com.mineinabyss.blocky.menus
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
-import com.mineinabyss.blocky.systems.BlockyFurnitureQuery
+import com.mineinabyss.blocky.systems.furniturePrefabs
 import com.mineinabyss.guiy.components.Grid
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
@@ -12,9 +11,8 @@ import com.mineinabyss.guiy.modifiers.size
 @Composable
 fun BlockyUIScope.BlockyFurnitureMenu() {
     Grid(Modifier.size(9, 5)) {
-        remember {
-            BlockyFurnitureQuery.toList { it }
-        }.sortedBy { it.prefabKey.key }.forEach { HandleMenuClicks(it.prefabKey, player) }
+        remember { furniturePrefabs.sortedBy { it.prefabKey.key } }
+            .forEach { HandleMenuClicks(it.prefabKey, player) }
     }
     BackButton(Modifier.at(4, 5))
 }

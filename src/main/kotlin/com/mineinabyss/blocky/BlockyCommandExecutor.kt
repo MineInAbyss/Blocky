@@ -5,9 +5,8 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
-import com.mineinabyss.blocky.systems.BlockyQuery
-import com.mineinabyss.blocky.systems.BlockyQuery.prefabKey
-import com.mineinabyss.blocky.systems.blockyModelEngineQuery
+import com.mineinabyss.blocky.systems.blockPrefabs
+import com.mineinabyss.blocky.systems.megFurniturePrefabs
 import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -19,11 +18,9 @@ import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
 import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.items.editItemMeta
-import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.idofront.util.toColor
-import org.bukkit.Color
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
@@ -39,15 +36,15 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     blocky.plugin.createBlockyContext()
                     blocky.plugin.runStartupFunctions()
                     blocky.plugin.launch {
-                        BlockyQuery.forEach { prefabs.loader.reload(it.entity) }
+                        blocky.prefabQuery.entities().forEach { prefabs.loader.reload(it) }
                     }
                     sender.success("Blocky has been reloaded!")
 
                 }
             }
             "give" {
-                val type by optionArg(options = BlockyQuery.toList { it }
-                    .filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
+                val type by optionArg(options = blockPrefabs
+                    .filter { it.directional?.isParentBlock != false }
                     .map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }
@@ -78,7 +75,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     }
 
                     item.editItemMeta {
-                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed.")).color = color.toColor()
+                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed.")).color =
+                            color.toColor()
                     }
                     player.success("Dyed item to $color")
                 }
@@ -102,7 +100,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             when (args.size) {
                 1 -> listOf("reload", "give", "dye", "menu").filter { it.startsWith(args[0]) }
                 2 -> when (args[0]) {
-                    "give" -> BlockyQuery.toList { it.prefabKey }.asSequence()
+                    "give" -> blocky.prefabQuery.map { prefabKey }.asSequence()
                         .filter { it.key.startsWith(args[1]) || it.full.startsWith(args[1]) }
                         .filter { it.toEntityOrNull()?.get<BlockyDirectional>()?.isParentBlock != false }
                         .map { it.full }.take(20).toList()
@@ -111,7 +109,10 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                 }.filter { it.startsWith(args[1]) }
 
                 3 -> when (args[0]) {
-                    "modelengine" -> blockyModelEngineQuery.filter { it.startsWith(args[2]) }
+                    "modelengine" -> megFurniturePrefabs
+                        .map { it.prefabKey.toString() }
+                        .filter { it.startsWith(args[2]) }
+
                     else -> emptyList()
                 }.filter { it.startsWith(args[2]) }
 

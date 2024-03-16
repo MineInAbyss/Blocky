@@ -1,20 +1,14 @@
 package com.mineinabyss.blocky.assets_generation
 
-import com.google.gson.JsonObject
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
-import com.mineinabyss.blocky.helpers.CopperHelpers
-import com.mineinabyss.blocky.systems.BlockyBlockQuery
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.block
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.sk89q.worldedit.world.block.BlockType
 import net.kyori.adventure.key.Key
-import okio.Path.Companion.toPath
 import org.bukkit.Instrument
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -24,7 +18,6 @@ import org.bukkit.block.data.type.Tripwire
 import team.unnamed.creative.ResourcePack
 import team.unnamed.creative.blockstate.BlockState
 import team.unnamed.creative.blockstate.MultiVariant
-import team.unnamed.creative.blockstate.Selector
 import team.unnamed.creative.blockstate.Variant
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter
 
@@ -39,11 +32,13 @@ class ResourcepackGeneration {
 
     private fun blockState(blockType: SetBlock.BlockType): BlockState {
         val multiVariant = gearyBlocks.block2Prefab.blockMap[blockType]?.mapIndexed { index, blockData ->
-            val query = BlockyBlockQuery.toList { it }.firstOrNull { it.block.blockId == index } ?: return@mapIndexed null
-            blockData.toStringData() to (MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build()) ?: return@mapIndexed null)
+            val query = blockPrefabs.firstOrNull { it.block.blockId == index } ?: return@mapIndexed null
+            blockData.toStringData() to (MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build())
+                ?: return@mapIndexed null)
         }?.filterNotNull()?.toMap()?.toMutableMap() ?: mutableMapOf()
         return BlockState.of(blockType.blockStateKey(), multiVariant)
     }
+
     private fun SetBlock.BlockType.blockStateKey() = when (this) {
         SetBlock.BlockType.NOTEBLOCK -> Key.key("noteblock")
         SetBlock.BlockType.WIRE -> Key.key("tripwire")
@@ -59,8 +54,10 @@ class ResourcepackGeneration {
         return when {
             directional?.parentBlock?.toEntityOrNull() != null ->
                 this.directionalVariant(prefabKey, directional.parentBlock.toEntity())
+
             directional?.isParentBlock != false ->
                 this.model(blockyInfo?.blockModel)
+
             else -> null
         }
     }
@@ -76,6 +73,7 @@ class ResourcepackGeneration {
                     it.x(90)
                     it.y(90)
                 }
+
                 parentBlock.xBlock -> it.x(90)
                 parentBlock.southBlock -> it.y(180)
                 parentBlock.westBlock -> it.y(270)
@@ -103,6 +101,7 @@ class ResourcepackGeneration {
             this.isPowered
         )
     }
+
     private fun getInstrument(id: Instrument): String {
         when (id) {
             Instrument.BASS_DRUM -> return "basedrum"
@@ -139,7 +138,6 @@ class ResourcepackGeneration {
             isPowered
         )
     }
-
 
 
 }

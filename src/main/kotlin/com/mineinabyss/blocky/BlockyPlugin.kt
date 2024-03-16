@@ -6,18 +6,17 @@ import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.listeners.*
-import com.mineinabyss.blocky.systems.AttemptSpawnFurnitureSystem
-import com.mineinabyss.blocky.systems.FurnitureOutlineSystem
-import com.mineinabyss.blocky.systems.actions.SetItemOnFurnitureSystem
-import com.mineinabyss.blocky.systems.actions.SetMEGModelOnFurnitureSystem
-import com.mineinabyss.blocky.systems.actions.SetSeatOnFurnitureSystem
+import com.mineinabyss.blocky.systems.*
+import com.mineinabyss.blocky.systems.actions.*
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.systems.builders.cachedQuery
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.logError
+import com.mineinabyss.idofront.messaging.observeLogger
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
 import com.sk89q.worldedit.WorldEdit
@@ -31,6 +30,7 @@ import org.bukkit.plugin.java.JavaPlugin
 
 var prefabMap = mapOf<BlockData, PrefabKey>()
 var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
+
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
         geary {
@@ -39,6 +39,7 @@ class BlockyPlugin : JavaPlugin() {
             }
         }
     }
+
     override fun onEnable() {
         createBlockyContext()
 
@@ -49,13 +50,14 @@ class BlockyPlugin : JavaPlugin() {
 
         BlockyCommandExecutor()
 
-        geary.pipeline.addSystems(
-            AttemptSpawnFurnitureSystem(),
-            SetItemOnFurnitureSystem(),
-            SetSeatOnFurnitureSystem(),
-            SetMEGModelOnFurnitureSystem(),
-            FurnitureOutlineSystem()
-        )
+        geary.run {
+            createFurnitureSpawner()
+            createFurnitureItemSetter()
+            createFurnitureSeatSetter()
+            createFurnitureMEGModelSetter()
+
+            createFurnitureOutlineSystem()
+        }
         FurniturePacketHelpers.registerPacketListeners()
 
         listeners(
@@ -85,7 +87,7 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
-        geary{
+        geary {
             on(GearyPhase.ENABLE) {
                 runStartupFunctions()
             }
@@ -119,7 +121,11 @@ class BlockyPlugin : JavaPlugin() {
         DI.remove<BlockyContext>()
         val blockyContext = object : BlockyContext {
             override val plugin = this@BlockyPlugin
+            override val logger by plugin.observeLogger()
             override val config: BlockyConfig by config("config", dataFolder.toPath(), BlockyConfig())
+            override val prefabQuery = geary.cachedQuery(BlockyQuery())
+            override val blockQuery = geary.cachedQuery(BlockyBlockQuery())
+            override val furnitureQuery = geary.cachedQuery(BlockyFurnitureQuery())
         }
         DI.add<BlockyContext>(blockyContext)
     }

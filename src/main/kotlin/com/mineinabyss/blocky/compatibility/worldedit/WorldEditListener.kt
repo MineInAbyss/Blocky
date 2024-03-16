@@ -3,8 +3,7 @@ package com.mineinabyss.blocky.compatibility.worldedit
 import com.destroystokyo.paper.event.server.AsyncTabCompleteEvent
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.prefabMap
-import com.mineinabyss.blocky.systems.BlockyBlockQuery
-import com.mineinabyss.blocky.systems.BlockyBlockQuery.prefabKey
+import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.prefabKey
 import com.sk89q.worldedit.WorldEditException
 import com.sk89q.worldedit.bukkit.BukkitAdapter
@@ -63,7 +62,7 @@ class WorldEditListener : Listener {
         if (!buffer.startsWith("//") || !isCommand) return
         val arg = buffer.substringAfterLast(" ").lowercase()
 
-        completions.addAll(BlockyBlockQuery.toList { it }.filter {
+        completions.addAll(blockPrefabs.filter {
             it.prefabKey.key.startsWith(arg) || it.prefabKey.full.startsWith(arg)
         }.map { it.prefabKey.toString() })
     }

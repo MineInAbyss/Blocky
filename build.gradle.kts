@@ -1,14 +1,14 @@
 import net.minecrell.pluginyml.paper.PaperPluginDescription
 
 plugins {
-    alias(libs.plugins.mia.kotlin.jvm)
-    alias(libs.plugins.kotlinx.serialization)
-    alias(libs.plugins.mia.papermc)
-    alias(libs.plugins.mia.nms)
-    alias(libs.plugins.mia.copyjar)
-    alias(libs.plugins.mia.publication)
-    alias(libs.plugins.mia.autoversion)
-    alias(libs.plugins.compose)
+    alias(idofrontLibs.plugins.mia.kotlin.jvm)
+    alias(idofrontLibs.plugins.kotlinx.serialization)
+    alias(idofrontLibs.plugins.mia.papermc)
+    alias(idofrontLibs.plugins.mia.nms)
+    alias(idofrontLibs.plugins.mia.copyjar)
+    alias(idofrontLibs.plugins.mia.publication)
+    alias(idofrontLibs.plugins.mia.autoversion)
+    alias(idofrontLibs.plugins.compose)
     id("net.minecrell.plugin-yml.paper") version "0.6.0"
 }
 
@@ -27,29 +27,29 @@ repositories {
 
 dependencies {
     // MineInAbyss platform
-    compileOnly(libs.bundles.idofront.core)
-    compileOnly(libs.idofront.nms)
-    compileOnly(libs.kotlinx.serialization.json)
-    compileOnly(libs.kotlinx.serialization.kaml)
-    compileOnly(libs.kotlinx.coroutines)
-    compileOnly(libs.minecraft.mccoroutine)
+    compileOnly(idofrontLibs.bundles.idofront.core)
+    compileOnly(idofrontLibs.idofront.nms)
+    compileOnly(idofrontLibs.kotlinx.serialization.json)
+    compileOnly(idofrontLibs.kotlinx.serialization.kaml)
+    compileOnly(idofrontLibs.kotlinx.coroutines)
+    compileOnly(idofrontLibs.minecraft.mccoroutine)
 
     // Geary platform
-    compileOnly(blockyLibs.geary.papermc)
-    compileOnly(blockyLibs.guiy)
-    compileOnly(blockyLibs.protocolburrito)
+    compileOnly(libs.geary.papermc)
+    compileOnly(libs.guiy)
+    compileOnly(libs.protocolburrito)
 
     // Other plugins
-    compileOnly(libs.minecraft.plugin.modelengine)
-    compileOnly(libs.minecraft.plugin.protocollib)
-    compileOnly(libs.minecraft.plugin.fawe.core)
-    compileOnly(libs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
-    compileOnly(libs.minecraft.anvilgui)
-    compileOnly(libs.creative.api)
-    compileOnly(libs.creative.serializer.minecraft)
+    compileOnly(idofrontLibs.minecraft.plugin.modelengine)
+    compileOnly(idofrontLibs.minecraft.plugin.protocollib)
+    compileOnly(idofrontLibs.minecraft.plugin.fawe.core)
+    compileOnly(idofrontLibs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
+    compileOnly(idofrontLibs.minecraft.anvilgui)
+    compileOnly(idofrontLibs.creative.api)
+    compileOnly(idofrontLibs.creative.serializer.minecraft)
 
-    implementation(blockyLibs.minecraft.plugin.protectionlib)
-    implementation(blockyLibs.minecraft.plugin.customblockdata)
+    implementation(libs.minecraft.plugin.protectionlib)
+    implementation(libs.minecraft.plugin.customblockdata)
 }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
