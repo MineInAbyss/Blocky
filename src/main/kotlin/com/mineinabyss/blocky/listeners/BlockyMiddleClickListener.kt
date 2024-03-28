@@ -29,7 +29,7 @@ class BlockyMiddleClickListener : Listener {
                 .apply { addAll(CopperHelpers.BLOCKY_SLABS).apply { addAll(CopperHelpers.BLOCKY_STAIRS) } }) -> {
                 val lookingAtPrefab = player.getTargetBlockExact(5, FluidCollisionMode.NEVER)?.prefabKey ?:
                     player.getTargetEntity(5)?.prefabKey ?: player.getTargetBlockExact(5)?.toBlockPos()
-                    ?.let { FurniturePacketHelpers.getBaseFurnitureFromCollisionHitbox(it) }?.prefabKey ?: return
+                    ?.let { FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(it) }?.prefabKey ?: return
                 val prefabKey = lookingAtPrefab.toEntityOrNull()?.get<BlockyDirectional>()?.parentBlock ?: lookingAtPrefab
 
                 val existingSlot = (0..8).firstOrNull {

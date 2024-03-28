@@ -57,7 +57,6 @@ class BlockyPlugin : JavaPlugin() {
 
             createFurnitureOutlineSystem()
         }
-        FurniturePacketHelpers.registerPacketListeners()
 
         listeners(
             BlockyGenericListener(),

@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.api.events.furniture
 
+import org.bukkit.Location
 import org.bukkit.entity.Entity
 import org.bukkit.entity.Player
 import org.bukkit.event.Cancellable
@@ -13,7 +14,7 @@ class BlockyFurnitureInteractEvent(
     val player: Player,
     val hand: EquipmentSlot,
     val itemInHand: ItemStack,
-    val clickedRelativePosition: Vector?,
+    val interactionPoint: Location = entity.location,
 ) : BlockyFurnitureEvent(entity), Cancellable {
 
     private var cancelled = false

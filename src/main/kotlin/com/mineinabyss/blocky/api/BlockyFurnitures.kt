@@ -51,9 +51,9 @@ object BlockyFurnitures {
     val Block.blockyFurniture get() = this.toGearyOrNull()?.get<BlockyFurniture>()
 
     val Block.baseFurniture: ItemDisplay?
-        get() = FurniturePacketHelpers.getBaseFurnitureFromCollisionHitbox(this.toBlockPos())
+        get() = FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(this.toBlockPos())
     val Interaction.baseFurniture: ItemDisplay?
-        get() = FurniturePacketHelpers.getBaseFurnitureFromInteractionEntity(this.entityId)
+        get() = FurniturePacketHelpers.baseFurnitureFromInteractionHitbox(this.entityId)
 
     val ItemDisplay.seats: List<Entity>
         get() = this.toGearyOrNull()?.get<BlockyAssociatedSeats>()?.seats ?: emptyList()

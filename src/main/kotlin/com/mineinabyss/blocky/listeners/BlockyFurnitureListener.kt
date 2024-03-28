@@ -16,8 +16,6 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.events.GearyEntityAddToWorldEvent
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.idofront.messaging.broadcastVal
-import com.mineinabyss.idofront.messaging.logSuccess
 import com.mineinabyss.idofront.plugin.Plugins
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
@@ -34,6 +32,8 @@ import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
+import org.bukkit.event.block.BlockBreakEvent
+import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
@@ -132,27 +132,50 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler
     fun PlayerUseUnknownEntityEvent.onInteract() {
-        val baseFurniture = FurniturePacketHelpers.getBaseFurnitureFromInteractionEntity(entityId) ?: return
+        val baseFurniture = FurniturePacketHelpers.baseFurnitureFromInteractionHitbox(entityId) ?: return
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
             when {
                 isAttack -> BlockyFurnitures.removeFurniture(baseFurniture, player)
                 else -> BlockyFurnitureInteractEvent(
-                    baseFurniture, player, hand, player.inventory.itemInMainHand, clickedRelativePosition
+                    baseFurniture, player, hand, player.inventory.itemInMainHand, baseFurniture.location.add(clickedRelativePosition ?: Vector())
                 ).callEvent()
             }
         }
     }
 
+    @EventHandler
+    fun PlayerInteractEvent.onInteract() {
+        val baseFurniture = FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(interactionPoint?.block?.toBlockPos() ?: return) ?: return
+        BlockyFurnitureInteractEvent(baseFurniture, player, hand!!, player.inventory.itemInMainHand, interactionPoint ?: baseFurniture.location).callEvent()
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun BlockDamageEvent.onCollisionHitboxDamage() {
+        //TODO Implement custom break speed logic for this
+        // Should work no issues
+        FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(block.toBlockPos())?.let {
+            BlockyFurnitures.removeFurniture(it, player)
+        }
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST)
+    fun BlockBreakEvent.onCollisionHitboxBreak() {
+        // Mainly for players in creative-mode
+        FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(block.toBlockPos())?.let {
+            BlockyFurnitures.removeFurniture(it, player)
+        }
+    }
+
     init {
         if (Plugins.isEnabled("ModelEngine")) {
-            blocky.logger.iSuccess("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
+            blocky.logger.s("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
             Bukkit.getPluginManager().registerEvents(object : Listener {
                 @EventHandler
                 fun BaseEntityInteractEvent.onModelEngineInteract() {
                     val baseEntity = (baseEntity.original as? ItemDisplay)?.takeIf { it.isBlockyFurniture } ?: return
                     when {
                         action == BaseEntityInteractEvent.Action.ATTACK -> BlockyFurnitures.removeFurniture(baseEntity, player)
-                        else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, clickedPosition).callEvent()
+                        else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, baseEntity.location.add(clickedPosition ?: Vector())).callEvent()
                     }
                 }
             }, blocky.plugin)
@@ -163,7 +186,7 @@ class BlockyFurnitureListener : Listener {
     fun BlockyFurnitureInteractEvent.onSitting() {
         if (!ProtectionLib.canInteract(player, entity.location) || player.isSneaking) return
 
-        player.sitOnBlockySeat(baseEntity, baseEntity.location.add(clickedRelativePosition ?: Vector()))
+        player.sitOnBlockySeat(baseEntity, interactionPoint)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)

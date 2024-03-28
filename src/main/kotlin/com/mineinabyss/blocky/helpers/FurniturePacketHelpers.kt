@@ -4,11 +4,8 @@ package com.mineinabyss.blocky.helpers
 
 import com.comphenix.protocol.events.PacketContainer
 import com.comphenix.protocol.wrappers.BlockPosition
-import com.mineinabyss.blocky.api.BlockyFurnitures
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
-import com.mineinabyss.blocky.api.events.furniture.BlockyFurnitureInteractEvent
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
@@ -16,30 +13,22 @@ import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxPositions
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import com.mineinabyss.protocolburrito.dsl.protocolManager
 import com.mineinabyss.protocolburrito.dsl.sendTo
-import com.mineinabyss.protocolburrito.packets.ServerboundPlayerActionPacketWrap
-import com.mineinabyss.protocolburrito.packets.ServerboundUseItemOnPacketWrap
 import com.ticxo.modelengine.api.ModelEngineAPI
 import it.unimi.dsi.fastutil.ints.IntList
-import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
 import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
 import net.minecraft.network.protocol.game.ClientboundSetEntityDataPacket
-import net.minecraft.network.protocol.game.ServerboundPlayerActionPacket
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.entity.Entity
 import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.Vec3
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.block.data.type.Light
 import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
-import org.bukkit.inventory.EquipmentSlot
-import org.bukkit.util.Vector
 import org.joml.Vector3f
 import java.util.*
 
@@ -63,39 +52,11 @@ object FurniturePacketHelpers {
     private val hitboxOutlineIdMap = mutableMapOf<FurnitureUUID, IntList>()
     private val outlinePlayerMap = mutableMapOf<UUID, UUID>()
 
-    fun getBaseFurnitureFromInteractionEntity(id: Int) =
+    fun baseFurnitureFromInteractionHitbox(id: Int) =
         interactionHitboxIdMap.firstOrNull { id in it.entityIds }?.furniture
 
-    fun getBaseFurnitureFromCollisionHitbox(pos: BlockPosition) =
+    fun baseFurnitureFromCollisionHitbox(pos: BlockPosition) =
         collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key?.toEntity() as? ItemDisplay
-
-    internal fun registerPacketListeners() {
-
-        protocolManager(blocky.plugin) {
-            // Handles left-clicks with Collision Barrier hitbox
-            onReceive<ServerboundPlayerActionPacketWrap> { wrap ->
-                Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
-                    getBaseFurnitureFromCollisionHitbox(wrap.pos)?.let { baseFurniture ->
-                        isCancelled = true
-                        if ((wrap.handle as ServerboundPlayerActionPacket).action == ServerboundPlayerActionPacket.Action.START_DESTROY_BLOCK)
-                            BlockyFurnitures.removeFurniture(baseFurniture, player)
-                    }
-
-                }
-            }
-            // Handles right-clicks with Collision Barrier hitbox
-            // Cancelled so client doesn't remove the "Ghost Block"
-            onReceive<ServerboundUseItemOnPacketWrap> { wrap ->
-                Bukkit.getScheduler().callSyncMethod(blocky.plugin) {
-                    getBaseFurnitureFromCollisionHitbox(BlockPosition.getConverter().getSpecific(wrap.blockHit.blockPos))?.let { baseFurniture ->
-                        val clickedRelativePosition = Vector(wrap.blockHit.location.x, wrap.blockHit.location.y, wrap.blockHit.location.z)
-                isCancelled = true
-
-                    BlockyFurnitureInteractEvent(baseFurniture, player, EquipmentSlot.HAND, player.inventory.itemInMainHand, clickedRelativePosition).callEvent()}
-                }
-            }
-        }
-    }
 
     /**
      * Sends a packet to show the interaction hitbox of the given furniture to the given player.
