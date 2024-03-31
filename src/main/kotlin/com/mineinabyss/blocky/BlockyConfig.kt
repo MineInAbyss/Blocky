@@ -1,12 +1,21 @@
 package com.mineinabyss.blocky
 
 import com.charleskorn.kaml.YamlComment
+import com.mineinabyss.blocky.helpers.FurnitureOutlineType
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.toSerializable
 import com.mineinabyss.idofront.textcomponents.miniMsg
+import com.ticxo.modelengine.api.entity.Hitbox
 import kotlinx.serialization.Serializable
+import net.minecraft.core.registries.BuiltInRegistries
+import net.minecraft.network.syncher.EntityDataSerializers
+import net.minecraft.network.syncher.SynchedEntityData
+import net.minecraft.world.level.block.Block
+import net.minecraft.world.level.block.Blocks
 import org.bukkit.Material
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack
+import org.bukkit.entity.EntityType
 import org.bukkit.inventory.ItemStack
 
 @Serializable
@@ -38,7 +47,34 @@ data class BlockyConfig(
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockySlabConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyStairConfig(val isEnabled: Boolean = false)
-    @Serializable data class BlockyFurnitureConfig(val showHitboxOutline: Boolean = false, val worldEdit: Boolean = false)
+    @Serializable data class BlockyFurnitureConfig(
+        val hitboxOutlines: HitboxOutline = HitboxOutline(),
+        val worldEdit: Boolean = false
+    ) {
+        fun showOutlines() = hitboxOutlines.type != FurnitureOutlineType.NONE
+        @Serializable
+        data class HitboxOutline(
+            val type: FurnitureOutlineType = FurnitureOutlineType.ITEM,
+            val item: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()
+        ) {
+            fun entityType(): net.minecraft.world.entity.EntityType<*>? {
+                return when (type) {
+                    FurnitureOutlineType.ITEM -> net.minecraft.world.entity.EntityType.ITEM_DISPLAY
+                    FurnitureOutlineType.BLOCK -> net.minecraft.world.entity.EntityType.BLOCK_DISPLAY
+                    else -> null
+                }
+            }
+            fun outlineContent(): SynchedEntityData.DataValue<*>? {
+                return when (type) {
+                    FurnitureOutlineType.ITEM ->
+                        SynchedEntityData.DataValue(23, EntityDataSerializers.ITEM_STACK, CraftItemStack.asNMSCopy(item.toItemStack()))
+                    FurnitureOutlineType.BLOCK ->
+                        SynchedEntityData.DataValue(23, EntityDataSerializers.BLOCK_STATE, Block.byItem(CraftItemStack.asNMSCopy(item.toItemStack()).item).defaultBlockState())
+                    else -> null
+                }
+            }
+        }
+    }
     @Serializable data class DefaultBlockyMenu(
         val title: String = "",
         val height: Int = 5,

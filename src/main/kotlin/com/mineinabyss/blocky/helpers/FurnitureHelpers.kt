@@ -51,7 +51,7 @@ object FurnitureHelpers {
         center: Location,
         hitbox: Set<BlockyFurniture.InteractionHitbox>
     ): List<Location> =
-        hitbox.map { c -> c.originOffset.groundRotate(rotation).add(center) }
+        hitbox.map { i -> center.clone().add(i.offset(rotation)) }
 
     fun rotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
         val furniture = nullFurniture ?: BlockyFurniture()

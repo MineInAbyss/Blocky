@@ -1,19 +1,19 @@
 package com.mineinabyss.blocky.components.core
 
+import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.serializers.BrightnessSerializer
-import com.mineinabyss.idofront.serialization.ColorSerializer
-import com.mineinabyss.idofront.serialization.SerializableItemStack
-import com.mineinabyss.idofront.serialization.Vector3fSerializer
-import com.mineinabyss.idofront.serialization.toSerializable
+import com.mineinabyss.idofront.serialization.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Location
 import org.bukkit.Material
 import org.bukkit.entity.Display.Billboard
 import org.bukkit.entity.Display.Brightness
+import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.BoundingBox
+import org.bukkit.util.Vector
 import org.joml.Vector3f
 import kotlin.math.cos
 import kotlin.math.round
@@ -30,11 +30,26 @@ data class BlockyFurniture(
     @Serializable
     @SerialName("blocky:interaction_hitbox")
     data class InteractionHitbox(
-        val originOffset: BlockLocation = BlockLocation(),
+        val offset: @Serializable(VectorSerializer::class) Vector = Vector(),
         val width: Float,
         val height: Float,
         val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()) {
         fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
+        fun location(furniture: ItemDisplay): Location {
+            return furniture.location.toBlockCenterLocation().add(offset(furniture.yaw))
+        }
+
+        fun offset(furnitureYaw: Float): Vector {
+            val angleRad = Math.toRadians(furnitureYaw.toDouble())
+
+
+            // Get the coordinates relative to the local y-axis
+            val x = cos(angleRad) * offset.x + sin(angleRad) * offset.z
+            val y = offset.y
+            val z = sin(angleRad) * offset.x + cos(angleRad) * offset.z
+
+            return Vector(x, y, z)
+        }
     }
 
     @JvmInline

@@ -6,11 +6,11 @@ import com.comphenix.protocol.events.PacketContainer
 import com.comphenix.protocol.wrappers.BlockPosition
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
 import com.mineinabyss.blocky.api.BlockyFurnitures.isModelEngineFurniture
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyLight
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxPositions
-import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.protocolburrito.dsl.sendTo
@@ -36,10 +36,10 @@ import java.util.*
  * Typealias to make it clear that this is a UUID for a furniture entity.
  */
 typealias FurnitureUUID = UUID
-data class FurnitureInteractionHitboxIds(val furnitureUUID: FurnitureUUID, val entityIds: IntList) {
+data class FurnitureSubEntity(val furnitureUUID: FurnitureUUID, val entityIds: IntList) {
     val furniture get() = furnitureUUID.toEntity() as? ItemDisplay
 }
-data class FurnitureInteractionHitboxPacket(val entityId: Int, val addEntity: ClientboundAddEntityPacket, val metadata: ClientboundSetEntityDataPacket)
+data class FurnitureSubEntityPacket(val entityId: Int, val addEntity: ClientboundAddEntityPacket, val metadata: ClientboundSetEntityDataPacket)
 object FurniturePacketHelpers {
 
     const val INTERACTION_WIDTH_ID = 8
@@ -47,13 +47,14 @@ object FurniturePacketHelpers {
     const val ITEM_DISPLAY_ITEMSTACK_ID = 23
 
     private val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPosition>>()
-    private val interactionHitboxIdMap = mutableSetOf<FurnitureInteractionHitboxIds>()
-    private val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, MutableSet<FurnitureInteractionHitboxPacket>>()
-    private val hitboxOutlineIdMap = mutableMapOf<FurnitureUUID, IntList>()
+    private val interactionHitboxIds = mutableSetOf<FurnitureSubEntity>()
+    private val interactionHitboxPacketMap = mutableMapOf<FurnitureUUID, MutableSet<FurnitureSubEntityPacket>>()
+    private val outlineIds = mutableSetOf<FurnitureSubEntity>()
+    private val outlinePacketMap = mutableMapOf<FurnitureUUID, MutableSet<FurnitureSubEntityPacket>>()
     private val outlinePlayerMap = mutableMapOf<UUID, UUID>()
 
     fun baseFurnitureFromInteractionHitbox(id: Int) =
-        interactionHitboxIdMap.firstOrNull { id in it.entityIds }?.furniture
+        interactionHitboxIds.firstOrNull { id in it.entityIds }?.furniture
 
     fun baseFurnitureFromCollisionHitbox(pos: BlockPosition) =
         collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key?.toEntity() as? ItemDisplay
@@ -72,14 +73,13 @@ object FurniturePacketHelpers {
         }
 
         val interactionHitboxes = furniture.toGeary().get<BlockyFurniture>()?.interactionHitbox ?: return
-        val baseLoc = furniture.location.toBlockCenterLocation()
             interactionHitboxPacketMap.computeIfAbsent(furniture.uniqueId) {
-                val entityIds = interactionHitboxIdMap.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: List(interactionHitboxes.size) { Entity.nextEntityId() }.apply {
-                    interactionHitboxIdMap.add(FurnitureInteractionHitboxIds(furniture.uniqueId, IntList.of(*toIntArray())))
+                val entityIds = interactionHitboxIds.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: List(interactionHitboxes.size) { Entity.nextEntityId() }.apply {
+                    interactionHitboxIds += FurnitureSubEntity(furniture.uniqueId, IntList.of(*toIntArray()))
                 }
-                mutableSetOf<FurnitureInteractionHitboxPacket>().apply {
+                mutableSetOf<FurnitureSubEntityPacket>().apply {
                     interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
-                        val loc = hitbox.originOffset.groundRotate(furniture.yaw).add(baseLoc)
+                        val loc = hitbox.location(furniture)
                         val addEntityPacket = ClientboundAddEntityPacket(
                             entityId, UUID.randomUUID(),
                             loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
@@ -93,7 +93,7 @@ object FurniturePacketHelpers {
                             )
                         )
 
-                        add(FurnitureInteractionHitboxPacket(entityId, addEntityPacket, metadataPacket))
+                        add(FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket))
                     }
                 }
             }.forEach {
@@ -110,7 +110,7 @@ object FurniturePacketHelpers {
         furniture.world.players.forEach { player ->
             removeInteractionHitboxPacket(furniture, player)
         }
-        interactionHitboxIdMap.removeIf { it.furnitureUUID == furniture.uniqueId }
+        interactionHitboxIds.removeIf { it.furnitureUUID == furniture.uniqueId }
         interactionHitboxPacketMap.remove(furniture.uniqueId)
     }
 
@@ -119,7 +119,7 @@ object FurniturePacketHelpers {
      * @param furniture The furniture to remove the interaction hitbox of.
      */
     fun removeInteractionHitboxPacket(furniture: ItemDisplay, player: Player) {
-        val entityIds = interactionHitboxIdMap.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: return
+        val entityIds = interactionHitboxIds.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: return
         PacketContainer.fromPacket(ClientboundRemoveEntitiesPacket(*entityIds.toIntArray())).sendTo(player)
     }
 
@@ -129,25 +129,39 @@ object FurniturePacketHelpers {
         outlinePlayerMap[player.uniqueId] = furniture.uniqueId
 
         val interactionHitboxes = furniture.toGeary().get<BlockyFurniture>()?.interactionHitbox ?: return
-        val entityIds = hitboxOutlineIdMap.computeIfAbsent(furniture.uniqueId) { IntList.of(*IntArray(interactionHitboxes.size) { Entity.nextEntityId() }) }
-        val baseLoc = furniture.location.toBlockCenterLocation()
+        val outlineType = blocky.config.furniture.hitboxOutlines.entityType() ?: return
+        val outlineContent = blocky.config.furniture.hitboxOutlines.outlineContent() ?: return
+        val entityIds = outlineIds.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: List(interactionHitboxes.size) { Entity.nextEntityId() }.apply {
+            outlineIds += FurnitureSubEntity(furniture.uniqueId, IntList.of(*toIntArray()))
+        }
 
-        interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
-            val loc = hitbox.originOffset.groundRotate(furniture.yaw).add(baseLoc).apply { y += hitbox.height / 2 }
-            val displayEntityPacket = ClientboundAddEntityPacket(
-                entityId, UUID.randomUUID(),
-                loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
-                EntityType.ITEM_DISPLAY, 0, Vec3.ZERO, 0.0
-            )
-            PacketContainer.fromPacket(displayEntityPacket).sendTo(player)
-            val metadataPacket = ClientboundSetEntityDataPacket(
-                entityId, listOf(
-                    SynchedEntityData.DataValue(12, EntityDataSerializers.VECTOR3, Vector3f(hitbox.width, hitbox.height, hitbox.width)),
-                    SynchedEntityData.DataValue(23, EntityDataSerializers.ITEM_STACK, CraftItemStack.asNMSCopy(hitbox.outline.toItemStack())),
-                    SynchedEntityData.DataValue(24, EntityDataSerializers.INT, furniture.itemDisplayTransform.ordinal)
-                )
-            )
-            PacketContainer.fromPacket(metadataPacket).sendTo(player)
+        outlinePacketMap.computeIfAbsent(furniture.uniqueId) {
+            mutableSetOf<FurnitureSubEntityPacket>().apply {
+                interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
+                    val loc = hitbox.location(furniture).add(0.0,hitbox.height / 2.0, 0.0).apply {
+                        if (blocky.config.furniture.hitboxOutlines.type == FurnitureOutlineType.BLOCK)
+                            toBlockLocation()
+                    }
+                    val addEntityPacket = ClientboundAddEntityPacket(
+                        entityId, UUID.randomUUID(),
+                        loc.x, loc.y, loc.z, 0.0f, 0.0f,
+                        outlineType, 0, Vec3.ZERO, 0.0
+                    )
+
+                    val metadataPacket = ClientboundSetEntityDataPacket(
+                        entityId, listOf(
+                            outlineContent,
+                            SynchedEntityData.DataValue(12, EntityDataSerializers.VECTOR3, Vector3f(hitbox.width, hitbox.height, hitbox.width)),
+                            SynchedEntityData.DataValue(24, EntityDataSerializers.INT, furniture.itemDisplayTransform.ordinal)
+                        )
+                    )
+
+                    add(FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket))
+                }
+            }
+        }.forEach {
+            PacketContainer.fromPacket(it.addEntity).sendTo(player)
+            PacketContainer.fromPacket(it.metadata).sendTo(player)
         }
     }
 
@@ -158,15 +172,15 @@ object FurniturePacketHelpers {
     }
 
     fun removeHitboxOutlinePacket(furniture: ItemDisplay, player: Player) {
-        val displayEntityPacket = ClientboundRemoveEntitiesPacket(hitboxOutlineIdMap[furniture.uniqueId] ?: return)
+        val displayEntityPacket = ClientboundRemoveEntitiesPacket(outlineIds.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: return)
         PacketContainer.fromPacket(displayEntityPacket).sendTo(player)
-        hitboxOutlineIdMap.remove(furniture.uniqueId)
+        outlineIds.removeIf { it.furnitureUUID == furniture.uniqueId }
         outlinePlayerMap.remove(player.uniqueId)
     }
 
     fun removeHitboxOutlinePacket(player: Player) {
-        val furniture = outlinePlayerMap[player.uniqueId]?.toEntity() ?: return
-        val displayEntityPacket = ClientboundRemoveEntitiesPacket(hitboxOutlineIdMap[furniture.uniqueId] ?: return)
+        val entityIds = outlineIds.firstOrNull { it.furnitureUUID == (outlinePlayerMap[player.uniqueId] ?: return) }?.entityIds ?: return
+        val displayEntityPacket = ClientboundRemoveEntitiesPacket(entityIds)
         PacketContainer.fromPacket(displayEntityPacket).sendTo(player)
         outlinePlayerMap.remove(player.uniqueId)
     }
