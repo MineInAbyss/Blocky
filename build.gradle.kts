@@ -51,14 +51,6 @@ dependencies {
     implementation(libs.minecraft.plugin.customblockdata)
 }
 
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    kotlinOptions {
-        freeCompilerArgs = listOf(
-            "-Xcontext-receivers",
-        )
-    }
-}
-
 tasks {
     shadowJar {
         relocate("com.jeff_media.customblockdata", "com.mineinabyss.shaded.customblockdata")

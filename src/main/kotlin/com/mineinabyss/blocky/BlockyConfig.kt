@@ -14,7 +14,7 @@ import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.level.block.Block
 import net.minecraft.world.level.block.Blocks
 import org.bukkit.Material
-import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack
+import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.EntityType
 import org.bukkit.inventory.ItemStack
 

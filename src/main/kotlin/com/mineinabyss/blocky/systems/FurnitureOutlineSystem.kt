@@ -13,7 +13,7 @@ import net.minecraft.world.entity.EntitySelector
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
 import org.bukkit.Location
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer
+import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.Entity
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -34,8 +34,7 @@ fun GearyModule.createFurnitureOutlineSystem() = system(
 
 private fun findTargetFurnitureHitbox(player: Player, maxDistance: Double): ItemDisplay? {
     if (maxDistance < 1 || maxDistance > 120) return null
-    val craftPlayer = player as CraftPlayer
-    val nmsPlayer: net.minecraft.world.entity.player.Player = craftPlayer.handle
+    val nmsPlayer = (player as CraftPlayer).handle
     val start = nmsPlayer.getEyePosition(1.0f)
     val direction = nmsPlayer.lookAngle
     val distanceDirection = Vec3(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance)

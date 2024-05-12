@@ -33,7 +33,7 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
-import org.bukkit.potion.PotionEffectType.SLOW_DIGGING
+import org.bukkit.potion.PotionEffectType.MINING_FATIGUE
 import kotlin.Int
 import kotlin.apply
 import kotlin.let
@@ -51,7 +51,7 @@ class BlockyGenericListener : Listener {
         }.run { call(); this }
         this.stopMiningJob()
 
-        removePotionEffect(SLOW_DIGGING)
+        removePotionEffect(MINING_FATIGUE)
         block.location.getNearbyPlayers(16.0).forEach {
             it.sendBlockChange(block.location, block.blockData)
             it.sendBlockDamage(block.location, 0f, block.location.hashCode())
@@ -83,7 +83,7 @@ class BlockyGenericListener : Listener {
         blocky.plugin.launch {
             mining.miningTask = this.coroutineContext.job
             var stage = 0
-            player.addPotionEffect(PotionEffect(SLOW_DIGGING, -1, Int.MAX_VALUE, false, false, false))
+            player.addPotionEffect(PotionEffect(MINING_FATIGUE, -1, Int.MAX_VALUE, false, false, false))
 
             do {
                 block.location.getNearbyPlayers(16.0).forEach { p ->
@@ -97,7 +97,7 @@ class BlockyGenericListener : Listener {
 
         mining.miningTask?.invokeOnCompletion {
             if (player.toGeary().has(mining::class)) {
-                player.removePotionEffect(SLOW_DIGGING)
+                player.removePotionEffect(MINING_FATIGUE)
                 attemptBreakBlockyBlock(block, player)
                 block.location.getNearbyPlayers(16.0).forEach { p ->
                     p.sendBlockDamage(block.location, 0f, block.location.hashCode())
