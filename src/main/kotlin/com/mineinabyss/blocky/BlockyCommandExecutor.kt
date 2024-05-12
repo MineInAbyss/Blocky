@@ -100,10 +100,10 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             when (args.size) {
                 1 -> listOf("reload", "give", "dye", "menu").filter { it.startsWith(args[0]) }
                 2 -> when (args[0]) {
-                    "give" -> blocky.prefabQuery.map { prefabKey }.asSequence()
-                        .filter { it.key.startsWith(args[1]) || it.full.startsWith(args[1]) }
-                        .filter { it.toEntityOrNull()?.get<BlockyDirectional>()?.isParentBlock != false }
-                        .map { it.full }.take(20).toList()
+                    "give" -> blocky.prefabQuery.mapWithEntity { prefabKey }.asSequence()
+                        .filter { it.data.key.startsWith(args[1]) || it.data.full.startsWith(args[1]) }
+                        .filter { it.entity.get<BlockyDirectional>()?.isParentBlock != false }
+                        .map { it.data.full }.take(20).toList()
 
                     else -> emptyList()
                 }.filter { it.startsWith(args[1]) }

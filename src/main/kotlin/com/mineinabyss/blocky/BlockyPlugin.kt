@@ -11,7 +11,7 @@ import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.systems.builders.cachedQuery
+import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.logError
@@ -120,9 +120,9 @@ class BlockyPlugin : JavaPlugin() {
             override val plugin = this@BlockyPlugin
             override val logger by plugin.observeLogger()
             override val config: BlockyConfig by config("config", dataFolder.toPath(), BlockyConfig())
-            override val prefabQuery = geary.cachedQuery(BlockyQuery())
-            override val blockQuery = geary.cachedQuery(BlockyBlockQuery())
-            override val furnitureQuery = geary.cachedQuery(BlockyFurnitureQuery())
+            override val prefabQuery = geary.cache(BlockyQuery())
+            override val blockQuery = geary.cache(BlockyBlockQuery())
+            override val furnitureQuery = geary.cache(BlockyFurnitureQuery())
         }
         DI.add<BlockyContext>(blockyContext)
     }

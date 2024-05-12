@@ -6,31 +6,25 @@ import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.systems.builders.system
-import com.mineinabyss.geary.systems.query.ListenerQuery
-import com.mineinabyss.idofront.nms.aliases.toNMS
+import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.idofront.time.ticks
 import net.minecraft.world.entity.EntitySelector
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
-import org.bukkit.Location
 import org.bukkit.craftbukkit.entity.CraftPlayer
-import org.bukkit.entity.Entity
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import java.util.*
 
 
-fun GearyModule.createFurnitureOutlineSystem() = system(
-    object : ListenerQuery() {
-        val player by get<Player>()
-    }
-).every(1.ticks).exec {
-    if (!blocky.config.furniture.showOutlines() || !player.isConnected) return@exec
-    findTargetFurnitureHitbox(player, 5.0)?.let {
-        FurniturePacketHelpers.sendHitboxOutlinePacket(it, player)
-    } ?: FurniturePacketHelpers.removeHitboxOutlinePacket(player)
+fun GearyModule.createFurnitureOutlineSystem() =
+    system(query<Player>()).every(1.ticks).exec { (player) ->
+        if (!blocky.config.furniture.showOutlines() || !player.isConnected) return@exec
+        findTargetFurnitureHitbox(player, 5.0)?.let {
+            FurniturePacketHelpers.sendHitboxOutlinePacket(it, player)
+        } ?: FurniturePacketHelpers.removeHitboxOutlinePacket(player)
 
-}
+    }
 
 private fun findTargetFurnitureHitbox(player: Player, maxDistance: Double): ItemDisplay? {
     if (maxDistance < 1 || maxDistance > 120) return null
@@ -61,9 +55,14 @@ private fun findTargetFurnitureHitbox(player: Player, maxDistance: Double): Item
                 val bukkitEntity = entity.bukkitEntity as? ItemDisplay ?: continue
                 // If entity is furniture, check all interactionHitboxes if their "bounding box" is colliding
                 bukkitEntity.toGearyOrNull()?.get<BlockyFurniture>()?.interactionHitbox?.firstOrNull { hitbox ->
-                    val hitboxLoc = hitbox.location(bukkitEntity).add(0.0,hitbox.height / 2.0, 0.0)
+                    val hitboxLoc = hitbox.location(bukkitEntity).add(0.0, hitbox.height / 2.0, 0.0)
                     val hitboxVec = Vec3(hitboxLoc.x(), hitboxLoc.y(), hitboxLoc.z())
-                    val hitboxAABB = AABB.ofSize(hitboxVec, hitbox.width.toDouble(), hitbox.height.toDouble(), hitbox.width.toDouble())
+                    val hitboxAABB = AABB.ofSize(
+                        hitboxVec,
+                        hitbox.width.toDouble(),
+                        hitbox.height.toDouble(),
+                        hitbox.width.toDouble()
+                    )
                     rayTraceResult = hitboxAABB.clip(start, end)
                     rayTraceResult.isPresent
                 }

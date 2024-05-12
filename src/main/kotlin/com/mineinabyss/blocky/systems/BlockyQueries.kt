@@ -56,25 +56,25 @@ class BlockyFurnitureQuery : GearyQuery() {
 
 val allBlockyPrefabs
     get() = blocky.prefabQuery
-        .map { BlockyPrefabs.from(prefabKey, block, directional, modelEngine) }
+        .map { BlockyPrefabs.from(it.prefabKey, it.block, it.directional, it.modelEngine) }
         .filterNotNull()
         .sortedBy { it.prefabKey.key }
 val blockPrefabs
     get() = blocky.blockQuery
-        .map { BlockyPrefabs.Block.from(prefabKey, block, directional) }
+        .map { BlockyPrefabs.Block.from(it.prefabKey, it.block, it.directional) }
         .filterNotNull()
         .sortedBy { it.prefabKey.key }
 
 val plantPrefabs
     get() = blocky.blockQuery
-        .map { BlockyPrefabs.Plant.from(prefabKey, block, directional) }
+        .map { BlockyPrefabs.Plant.from(it.prefabKey, it.block, it.directional) }
         .filterNotNull()
         .sortedBy { it.prefabKey.key }
 
 val furniturePrefabs
     get() = blocky
         .furnitureQuery
-        .map { BlockyPrefabs.Furniture.from(key, modelEngine) }
+        .map { BlockyPrefabs.Furniture.from(it.key, it.modelEngine) }
         .sortedBy { it.prefabKey.key }
 
 val megFurniturePrefabs = furniturePrefabs.filter { it.isModelEngine }

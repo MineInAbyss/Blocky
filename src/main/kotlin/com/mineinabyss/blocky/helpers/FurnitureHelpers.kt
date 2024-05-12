@@ -8,6 +8,7 @@ import com.mineinabyss.geary.papermc.tracking.entities.helpers.spawnFromPrefab
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.geary.serialization.getOrSetPersisting
 import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.spawning.spawn
 import io.papermc.paper.math.Position
@@ -92,9 +93,7 @@ object FurnitureHelpers {
 
         val color = item?.itemMeta?.asColorable()?.color
 
-        return spawnLoc.spawnFromPrefab(prefabKey, initEvent = {
-            if (color != null) set(BlockyFurniture.Color(color))
-        }).getOrThrow() as ItemDisplay
+        return spawnLoc.spawnFromPrefab(prefabKey).getOrNull() as? ItemDisplay
     }
 
     //TODO Fix seat breaking below 0.0 offset and remove max() check here
