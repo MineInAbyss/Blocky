@@ -37,7 +37,6 @@ dependencies {
     // Geary platform
     compileOnly(libs.geary.papermc)
     compileOnly(libs.guiy)
-    compileOnly(libs.protocolburrito)
 
     // Other plugins
     compileOnly(idofrontLibs.minecraft.plugin.modelengine)
@@ -69,11 +68,6 @@ paper {
 
     serverDependencies {
         register("Geary") {
-            required = true
-            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
-            joinClasspath = true
-        }
-        register("ProtocolBurrito") {
             required = true
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
             joinClasspath = true
