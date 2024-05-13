@@ -11,7 +11,7 @@ import com.mineinabyss.blocky.api.events.furniture.BlockyFurniturePlaceEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
-import com.mineinabyss.blocky.components.features.furniture.BlockySeat
+import com.mineinabyss.blocky.components.features.furniture.BlockySeats
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.events.GearyEntityAddToWorldEvent
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
@@ -191,7 +191,7 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun PlayerQuitEvent.onQuit() {
-        (player.vehicle as? ArmorStand)?.toGearyOrNull()?.get<BlockySeat>() ?: return
+        (player.vehicle as? ArmorStand)?.toGearyOrNull()?.get<BlockySeats>() ?: return
         player.leaveVehicle()
     }
 

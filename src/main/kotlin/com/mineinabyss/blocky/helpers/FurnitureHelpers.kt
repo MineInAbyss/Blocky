@@ -3,13 +3,12 @@ package com.mineinabyss.blocky.helpers
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
-import com.mineinabyss.blocky.components.features.furniture.BlockySeat
+import com.mineinabyss.blocky.components.features.furniture.BlockySeats
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.helpers.spawnFromPrefab
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.serialization.getOrSetPersisting
 import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.spawning.spawn
@@ -27,7 +26,6 @@ import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
-import kotlin.math.max
 
 object FurnitureHelpers {
     fun targetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
@@ -98,16 +96,22 @@ object FurnitureHelpers {
         }.getOrThrow() as? ItemDisplay
     }
 
-    fun spawnFurnitureSeat(furniture: ItemDisplay, seat: BlockySeat) {
-        furniture.location.add(seat.offset).spawn<ArmorStand> {
-            isPersistent = false
-            isVisible = false
-            isMarker = true
-            isSilent = true
-            isSmall = true
-            setGravity(false)
-            setRotation(furniture.yaw, 0F)
-        }?.let { furniture.toGeary().getOrSetPersisting { BlockyAssociatedSeats() }._seats.add(it.uniqueId) }
+    fun spawnFurnitureSeat(furniture: ItemDisplay, seats: BlockySeats) {
+        furniture.toGeary().setPersisting(
+            BlockyAssociatedSeats(
+                seats.offsets.mapNotNull { seatOffset ->
+                    furniture.location.add(seatOffset).spawn<ArmorStand> {
+                        isPersistent = false
+                        isVisible = false
+                        isMarker = true
+                        isSilent = true
+                        isSmall = true
+                        setGravity(false)
+                        setRotation(furniture.yaw, 0F)
+                    }?.uniqueId
+                }.toMutableList()
+            )
+        )
     }
 
     fun clearFurnitureSeats(furniture: ItemDisplay) {
