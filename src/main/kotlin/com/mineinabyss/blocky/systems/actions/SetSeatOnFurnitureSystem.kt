@@ -13,13 +13,13 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.ItemDisplay
 
 fun GearyModule.createFurnitureSeatSetter() = observe<OnSet>()
-    .involving(query<BukkitEntity, BlockyFurniture, BlockySeats>())
-    .exec { (entity, _, seats) ->
-        val display = entity as? ItemDisplay ?: return@exec
+    .involving(query<ItemDisplay, BlockyFurniture, BlockySeats>())
+    .exec { (itemDisplay, _, seats) ->
+        val itemDisplay = itemDisplay
         val seats = seats
 
-        FurnitureHelpers.clearFurnitureSeats(display)
+        FurnitureHelpers.clearFurnitureSeats(itemDisplay)
         Bukkit.getScheduler().scheduleSyncDelayedTask(blocky.plugin, {
-            FurnitureHelpers.spawnFurnitureSeat(display, seats)
+            FurnitureHelpers.spawnFurnitureSeat(itemDisplay, seats)
         }, 1L)
     }

@@ -7,6 +7,7 @@ import com.mineinabyss.geary.papermc.features.entities.sounds.Sounds
 import com.mineinabyss.geary.papermc.tracking.entities.components.AttemptSpawn
 import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.geary.systems.builders.observeWithData
+import com.mineinabyss.geary.systems.query.Query
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.typealiases.BukkitEntity
@@ -14,11 +15,12 @@ import org.bukkit.entity.ItemDisplay
 
 @OptIn(DangerousComponentOperation::class)
 fun GearyModule.createFurnitureSpawner() = observeWithData<AttemptSpawn>()
-    .exec(query<BlockyFurniture/*, BlockyFurniture.Color*/>()) { (furniture/*, color*/) ->
-        val spawnLoc = event.location
-
-        spawnLoc.spawn<ItemDisplay> {
-            val props = furniture.properties
+    .exec(object : Query() {
+        val furniture by get<BlockyFurniture>()
+        val color by get<BlockyFurniture.Color>().orNull()
+    }) {
+        event.location.spawn<ItemDisplay> {
+            val props = it.furniture.properties
 
             isPersistent = props.persistent
             itemDisplayTransform = props.displayTransform
@@ -31,7 +33,7 @@ fun GearyModule.createFurnitureSpawner() = observeWithData<AttemptSpawn>()
             props.shadowStrength?.let { shadowStrength = it }
             transformation = transformation.apply { scale.set(props.scale) }
 
-            //color.let { entity.setPersisting(it) }
+            it.color?.let { entity.setPersisting(it) }
             entity.set<BukkitEntity>(this)
         }
     }
