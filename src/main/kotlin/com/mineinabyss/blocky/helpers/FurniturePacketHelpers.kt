@@ -12,7 +12,6 @@ import com.mineinabyss.blocky.helpers.FurnitureHelpers.collisionHitboxPositions
 import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.ticxo.modelengine.api.ModelEngineAPI
-import io.papermc.paper.math.BlockPosition
 import it.unimi.dsi.fastutil.ints.IntList
 import net.minecraft.core.BlockPos
 import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
@@ -153,7 +152,7 @@ object FurniturePacketHelpers {
                         entityId, listOf(
                             outlineContent,
                             SynchedEntityData.DataValue(12, EntityDataSerializers.VECTOR3, Vector3f(hitbox.width, hitbox.height, hitbox.width)),
-                            SynchedEntityData.DataValue(24, EntityDataSerializers.INT, furniture.itemDisplayTransform.ordinal)
+                            SynchedEntityData.DataValue(24, EntityDataSerializers.BYTE, furniture.itemDisplayTransform.ordinal.toByte())
                         )
                     )
 
