@@ -94,7 +94,7 @@ object FurnitureHelpers {
         val color = item?.itemMeta?.asColorable()?.color
         return spawnLoc.spawnFromPrefab(prefabKey) {
             if (color != null) set(BlockyFurniture.Color(color))
-        }.getOrNull() as? ItemDisplay
+        }.getOrThrow() as? ItemDisplay
     }
 
     //TODO Fix seat breaking below 0.0 offset and remove max() check here

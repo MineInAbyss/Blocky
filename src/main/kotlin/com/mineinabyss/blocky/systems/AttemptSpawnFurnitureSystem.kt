@@ -14,8 +14,7 @@ import org.bukkit.entity.ItemDisplay
 
 @OptIn(DangerousComponentOperation::class)
 fun GearyModule.createFurnitureSpawner() = observeWithData<AttemptSpawn>()
-    .involving(query<BlockyFurniture, BlockyFurniture.Color>())
-    .exec { (furniture, color) ->
+    .exec(query<BlockyFurniture/*, BlockyFurniture.Color*/>()) { (furniture/*, color*/) ->
         val spawnLoc = event.location
 
         spawnLoc.spawn<ItemDisplay> {
@@ -32,7 +31,7 @@ fun GearyModule.createFurnitureSpawner() = observeWithData<AttemptSpawn>()
             props.shadowStrength?.let { shadowStrength = it }
             transformation = transformation.apply { scale.set(props.scale) }
 
-            color.let { entity.setPersisting(it) }
+            //color.let { entity.setPersisting(it) }
             entity.set<BukkitEntity>(this)
         }
     }

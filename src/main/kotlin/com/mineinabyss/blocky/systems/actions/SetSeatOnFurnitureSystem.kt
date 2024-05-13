@@ -5,17 +5,18 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.FurnitureHelpers
 import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.systems.builders.observeWithData
 import com.mineinabyss.geary.systems.query.query
+import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.Bukkit
 import org.bukkit.entity.ItemDisplay
 
-fun GearyModule.createFurnitureSeatSetter() = observeWithData<BlockySeat>()
-    .involving(query<ItemDisplay, BlockyFurniture>())
-    .exec { (entity, furniture) ->
-        val display = entity
+fun GearyModule.createFurnitureSeatSetter() = observeWithData<OnSet>()
+    .exec(query<BukkitEntity, BlockyFurniture, BlockySeat>()) { (entity, furniture, seat) ->
+        val display = entity as? ItemDisplay ?: return@exec
         val furniture = furniture
-        val seat = event
+        val seat = seat
         val yaw = display.location.yaw
 
         FurnitureHelpers.clearFurnitureSeats(display)
