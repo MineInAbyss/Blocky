@@ -14,13 +14,13 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.ItemDisplay
 
 fun GearyModule.createFurnitureMEGModelSetter() = observeWithData<OnSet>()
-    .involving(query<BukkitEntity, BlockyFurniture, BlockyModelEngine>())
-    .exec { (entity, _, modelengine) ->
+    .involving(query<ItemDisplay, BlockyFurniture, BlockyModelEngine>())
+    .exec { (itemDisplay, _, modelengine) ->
         // Save for scheduled task
         if (!Plugins.isEnabled("ModelEngine")) return@exec
         val activeModel = ModelEngineAPI.createActiveModel(modelengine.modelId)
         Bukkit.getScheduler().scheduleSyncDelayedTask(blocky.plugin, {
-            ModelEngineAPI.getOrCreateModeledEntity(entity).apply {
+            ModelEngineAPI.getOrCreateModeledEntity(itemDisplay).apply {
                 models.forEach {
                     removeModel(it.key)
                     it.value.destroy()
