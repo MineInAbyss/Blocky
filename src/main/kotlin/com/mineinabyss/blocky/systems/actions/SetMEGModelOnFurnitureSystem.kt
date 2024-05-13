@@ -14,7 +14,8 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.ItemDisplay
 
 fun GearyModule.createFurnitureMEGModelSetter() = observeWithData<OnSet>()
-    .exec(query<BukkitEntity, BlockyFurniture, BlockyModelEngine>()) { (entity, furniture, modelengine) ->
+    .involving(query<BukkitEntity, BlockyFurniture, BlockyModelEngine>())
+    .exec { (entity, _, modelengine) ->
         // Save for scheduled task
         if (!Plugins.isEnabled("ModelEngine")) return@exec
         val activeModel = ModelEngineAPI.createActiveModel(modelengine.modelId)

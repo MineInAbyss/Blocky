@@ -13,7 +13,8 @@ import org.bukkit.Bukkit
 import org.bukkit.entity.ItemDisplay
 
 fun GearyModule.createFurnitureSeatSetter() = observeWithData<OnSet>()
-    .exec(query<BukkitEntity, BlockyFurniture, BlockySeat>()) { (entity, furniture, seat) ->
+    .involving(query<BukkitEntity, BlockyFurniture, BlockySeat>())
+    .exec { (entity, furniture, seat) ->
         val display = entity as? ItemDisplay ?: return@exec
         val furniture = furniture
         val seat = seat
