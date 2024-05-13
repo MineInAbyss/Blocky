@@ -3,6 +3,7 @@ package com.mineinabyss.blocky.helpers
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
+import com.mineinabyss.blocky.components.features.furniture.BlockySeat
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.geary.papermc.tracking.entities.helpers.spawnFromPrefab
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
@@ -97,20 +98,17 @@ object FurnitureHelpers {
         }.getOrThrow() as? ItemDisplay
     }
 
-    //TODO Fix seat breaking below 0.0 offset and remove max() check here
-    fun spawnFurnitureSeat(furniture: ItemDisplay, location: Location, yaw: Float, height: Double = 0.0) =
-        location.toBlockCenterLocation().apply { y += max(0.0, height) }.spawn<ArmorStand> {
+    fun spawnFurnitureSeat(furniture: ItemDisplay, seat: BlockySeat) {
+        furniture.location.add(seat.offset).spawn<ArmorStand> {
+            isPersistent = false
             isVisible = false
             isMarker = true
             isSilent = true
             isSmall = true
             setGravity(false)
-            setRotation(yaw, 0F)
-        }?.let { seat ->
-            seat.isPersistent = false
-            furniture.toGeary().getOrSetPersisting { BlockyAssociatedSeats() }._seats.add(seat.uniqueId)
-            seat
-        }
+            setRotation(furniture.yaw, 0F)
+        }?.let { furniture.toGeary().getOrSetPersisting { BlockyAssociatedSeats() }._seats.add(it.uniqueId) }
+    }
 
     fun clearFurnitureSeats(furniture: ItemDisplay) {
         val gearyFurniture = furniture.toGearyOrNull() ?: return
