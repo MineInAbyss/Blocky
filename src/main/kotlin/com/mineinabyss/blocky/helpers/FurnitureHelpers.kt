@@ -94,7 +94,7 @@ object FurnitureHelpers {
         // Try to get held item's color, used to dye furniture
         val color = item?.itemMeta?.asColorable()?.color
         return spawnLoc.spawnFromPrefab(prefabKey) {
-            if (color != null) set(BlockyFurniture.Color(color))
+            color?.let { set(BlockyFurniture.Color(it)) }
         }.getOrThrow() as? ItemDisplay
     }
 
