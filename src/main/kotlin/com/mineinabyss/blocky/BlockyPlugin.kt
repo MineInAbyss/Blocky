@@ -55,6 +55,8 @@ class BlockyPlugin : JavaPlugin() {
             createFurnitureSeatSetter()
             createFurnitureMEGModelSetter()
 
+            furnitureHitboxSetter()
+
             createFurnitureOutlineSystem()
         }
 

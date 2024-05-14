@@ -43,6 +43,7 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataContainer
 import org.bukkit.util.BoundingBox
 import java.util.*
+import kotlin.math.pow
 import kotlin.random.Random
 
 const val VANILLA_STONE_PLACE = "blocky.stone.place"
@@ -144,6 +145,8 @@ fun handleBlockyDrops(block: Block, player: Player) {
 }
 
 object GenericHelpers {
+
+    val simulationDistance = (Bukkit.getServer().simulationDistance * 16.0).pow(2)
 
     fun blockStandingOn(entity: LivingEntity): Block {
         val block = entity.location.block

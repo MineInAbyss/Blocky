@@ -51,22 +51,6 @@ class BlockyFurnitureListener : Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
-    fun GearyEntityAddToWorldEvent.onAddFurniture() {
-        val furniture = entity as? ItemDisplay ?: return
-        val simulationDistance = (Bukkit.getServer().simulationDistance * 16.0).pow(2)
-        blocky.plugin.server.onlinePlayers.filterNotNull().filter {
-            it.world == entity.world && it.location.distanceSquared(entity.location) < simulationDistance
-        }.forEach { player ->
-            blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
-                delay(1)
-                FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
-                FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
-                FurniturePacketHelpers.sendLightPacket(furniture, player)
-            }
-        }
-    }
-
     @EventHandler
     fun PlayerChunkUnloadEvent.onUnloadChunk() {
         chunk.entities.filterIsInstance<ItemDisplay>().forEach {
