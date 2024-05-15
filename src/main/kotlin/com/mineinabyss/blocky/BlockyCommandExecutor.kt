@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.gearyInventory
@@ -33,10 +34,8 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             "reload" {
                 action {
                     blocky.plugin.createBlockyContext()
-                    blocky.plugin.runStartupFunctions()
-                    blocky.plugin.launch {
-                        blocky.prefabQuery.entities().forEach { prefabs.loader.reload(it) }
-                    }
+                    blocky.plugin.launch { blocky.prefabQuery.entities().forEach { prefabs.loader.reload(it) } }
+                    ResourcepackGeneration().generateDefaultAssets()
                     sender.success("Blocky has been reloaded!")
 
                 }

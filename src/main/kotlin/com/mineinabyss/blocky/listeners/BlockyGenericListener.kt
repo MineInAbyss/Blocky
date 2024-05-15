@@ -33,9 +33,7 @@ import kotlin.to
 class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockDamageEvent.onDamage() {
-        player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED)?.value.broadcastVal("<red>" + player.name + ": ")
-
+    fun BlockDamageEvent.onDamageCustomBlock() {
         player.miningAttribute?.removeModifier(player)
         if (player.gameMode == GameMode.CREATIVE) return
 
@@ -44,9 +42,13 @@ class BlockyGenericListener : Listener {
             player.toGearyOrNull()?.set(it)
             it.addTransientModifier(player)
         }
-        player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED)?.value.broadcastVal("<green>" + player.name + ": ")
 
         if (!BlockyBlockDamageEvent(block, player).callEvent()) isCancelled = true
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockDamageEvent.onDamageVanillaBlock() {
+
     }
 
     @EventHandler(priority = EventPriority.LOWEST)
@@ -56,7 +58,7 @@ class BlockyGenericListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockBreakEvent.onBreakBlockyBlock() {
+    fun BlockBreakEvent.onBreakCustomBlock() {
         if (!block.isBlockyBlock) return
         attemptBreakBlockyBlock(block, player) || return
         isDropItems = false

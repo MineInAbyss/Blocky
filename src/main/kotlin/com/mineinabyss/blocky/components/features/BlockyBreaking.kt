@@ -43,7 +43,7 @@ data class BlockyBreaking(
                 "uuid" to UUID.nameUUIDFromBytes(block.toString().toByteArray()).toString(),
                 "name" to "blocky:custom_break_speed",
                 "operation" to AttributeModifier.Operation.MULTIPLY_SCALAR_1.ordinal,
-                "amount" to (defaultBlockHardness(block) / hardness) - 1 + player.blockStateModifiers().broadcastVal("<aqua>")
+                "amount" to (defaultBlockHardness(block) / hardness) - 1 + player.blockStateModifiers()
             )
         )
     }
@@ -53,7 +53,7 @@ data class BlockyBreaking(
 
         modifier += modifiers.heldTypes.find { it.toolType.contains(inventory.itemInMainHand) }?.value ?: 0.0
         modifier += modifiers.heldItems.find {
-            if (it.item.prefab != null) it.item.prefab == inventory.itemInMainHand.toSerializable().prefab.broadcastVal("<light_purple>")
+            if (it.item.prefab != null) it.item.prefab == inventory.itemInMainHand.toSerializable().prefab
             else it.item.type == inventory.itemInMainHand.type
         }?.value ?: 0.0
 
