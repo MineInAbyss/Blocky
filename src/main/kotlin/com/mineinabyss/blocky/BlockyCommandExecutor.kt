@@ -27,7 +27,6 @@ import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 
-@OptIn(UnsafeAccessors::class)
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
@@ -44,7 +43,6 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             }
             "give" {
                 val type by optionArg(options = blockPrefabs
-                    .filter { it.directional?.isParentBlock != false }
                     .map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }

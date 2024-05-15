@@ -87,11 +87,7 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
-        geary {
-            on(GearyPhase.ENABLE) {
-                runStartupFunctions()
-            }
-        }
+        runStartupFunctions()
     }
 
     fun runStartupFunctions() {
