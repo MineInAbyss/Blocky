@@ -16,7 +16,6 @@ import org.bukkit.entity.ItemDisplay
 fun GearyModule.furnitureHitboxSetter() = observe<OnSet>()
     .involving(query<ItemDisplay, BlockyFurniture>())
     .exec { (itemDisplay, _) ->
-        val itemDisplay = itemDisplay
 
         blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
             delay(1)

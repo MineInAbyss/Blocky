@@ -34,11 +34,6 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.potion.PotionEffect
 import org.bukkit.potion.PotionEffectType.MINING_FATIGUE
-import kotlin.Int
-import kotlin.apply
-import kotlin.let
-import kotlin.run
-import kotlin.takeIf
 import kotlin.time.Duration
 import kotlin.to
 
