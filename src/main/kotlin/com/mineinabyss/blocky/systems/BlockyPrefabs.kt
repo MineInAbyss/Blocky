@@ -29,7 +29,7 @@ sealed interface BlockyPrefabs {
         companion object {
             fun from(prefabKey: PrefabKey, block: SetBlock, directional: BlockyDirectional?): Block? {
                 if (block.blockType in setOf(SetBlock.BlockType.WIRE, SetBlock.BlockType.CAVEVINE)) return null
-                if (directional?.isParentBlock != false) return null
+                if (directional != null && !directional.isParentBlock) return null
                 return Block(prefabKey, block, directional)
             }
         }
