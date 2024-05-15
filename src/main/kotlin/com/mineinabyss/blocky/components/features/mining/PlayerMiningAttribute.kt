@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.components.features.mining
 
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.serialization.AttributeModifierSerializer
 import kotlinx.serialization.Serializable
 import org.bukkit.attribute.Attribute

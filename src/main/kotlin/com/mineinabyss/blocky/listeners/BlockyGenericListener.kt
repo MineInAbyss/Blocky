@@ -15,14 +15,10 @@ import com.mineinabyss.blocky.helpers.to
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.idofront.messaging.broadcast
-import com.mineinabyss.idofront.messaging.broadcastVal
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.attribute.Attribute
 import org.bukkit.block.data.type.Slab
 import org.bukkit.block.data.type.Stairs
-import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -44,11 +40,6 @@ class BlockyGenericListener : Listener {
         }
 
         if (!BlockyBlockDamageEvent(block, player).callEvent()) isCancelled = true
-    }
-
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockDamageEvent.onDamageVanillaBlock() {
-
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

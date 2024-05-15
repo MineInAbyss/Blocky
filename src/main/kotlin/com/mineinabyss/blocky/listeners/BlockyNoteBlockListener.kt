@@ -6,29 +6,42 @@ import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
 import com.mineinabyss.blocky.components.features.blocks.BlockyBurnable
+import com.mineinabyss.blocky.components.features.mining.PlayerMiningAttribute
+import com.mineinabyss.blocky.components.features.mining.miningAttribute
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.datastore.has
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
+import com.mineinabyss.idofront.messaging.broadcastVal
 import org.bukkit.Material
+import org.bukkit.attribute.Attribute
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
-import org.bukkit.event.block.Action
-import org.bukkit.event.block.BlockBurnEvent
-import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.block.NotePlayEvent
+import org.bukkit.event.block.*
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.world.ChunkLoadEvent
 import org.bukkit.inventory.EquipmentSlot
 
 class BlockyNoteBlockListener : Listener {
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun BlockDamageEvent.onDamageVanillaBlock() {
+        player.miningAttribute?.removeModifier(player)
+
+        if (!block.isVanillaNoteBlock) return
+
+        val mining = PlayerMiningAttribute(NoteBlockHelpers.vanillaBreakingComponent.createBreakingModifier(player, block))
+        player.toGearyOrNull()?.set(mining)
+        mining.addTransientModifier(player)
+    }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
