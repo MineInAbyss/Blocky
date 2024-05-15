@@ -15,12 +15,14 @@ import com.mineinabyss.blocky.helpers.to
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.idofront.messaging.broadcast
 import com.mineinabyss.idofront.messaging.broadcastVal
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.data.type.Slab
 import org.bukkit.block.data.type.Stairs
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -30,7 +32,7 @@ import kotlin.to
 
 class BlockyGenericListener : Listener {
 
-    @EventHandler(ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamage() {
         player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED)?.value.broadcastVal("<red>" + player.name + ": ")
 
@@ -38,14 +40,13 @@ class BlockyGenericListener : Listener {
         if (player.gameMode == GameMode.CREATIVE) return
 
         val breaking = block.toGearyOrNull()?.get<BlockyBreaking>() ?: return
-        PlayerMiningAttribute(breaking.createBreakingModifier(block)).let {
+        PlayerMiningAttribute(breaking.createBreakingModifier(player, block)).let {
             player.toGearyOrNull()?.set(it)
             it.addTransientModifier(player)
         }
         player.getAttribute(Attribute.PLAYER_BLOCK_BREAK_SPEED)?.value.broadcastVal("<green>" + player.name + ": ")
 
-        isCancelled = true
-        BlockyBlockDamageEvent(block, player).callEvent()
+        if (!BlockyBlockDamageEvent(block, player).callEvent()) isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.LOWEST)

@@ -1,13 +1,19 @@
 package com.mineinabyss.blocky.components.features
 
+import com.mineinabyss.blocky.api.BlockyFurnitures.prefabKey
 import com.mineinabyss.blocky.components.features.mining.ToolType
+import com.mineinabyss.blocky.helpers.gearyInventory
+import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.serialization.DurationSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
+import com.mineinabyss.idofront.serialization.toSerializable
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.bukkit.Material
 import org.bukkit.attribute.AttributeModifier
 import org.bukkit.block.Block
+import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlotGroup
 import java.util.UUID
 import kotlin.time.Duration
@@ -30,16 +36,28 @@ data class BlockyBreaking(
      * This method takes into account the base-value of the PLAYER_BLOCK_BREAKING_SPEED attribute, as well as any existing modifiers
      * It then handles it based on the default hardness of the block
      */
-    fun createBreakingModifier(block: Block): AttributeModifier {
+    fun createBreakingModifier(player: Player, block: Block): AttributeModifier {
         return AttributeModifier.deserialize(
             mapOf(
                 "slot" to EquipmentSlotGroup.HAND,
                 "uuid" to UUID.nameUUIDFromBytes(block.toString().toByteArray()).toString(),
                 "name" to "blocky:custom_break_speed",
                 "operation" to AttributeModifier.Operation.MULTIPLY_SCALAR_1.ordinal,
-                "amount" to (defaultBlockHardness(block) / hardness) - 1
+                "amount" to (defaultBlockHardness(block) / hardness) - 1 + player.blockStateModifiers().broadcastVal("<aqua>")
             )
         )
+    }
+
+    private fun Player.blockStateModifiers(): Double {
+        var modifier = 0.0
+
+        modifier += modifiers.heldTypes.find { it.toolType.contains(inventory.itemInMainHand) }?.value ?: 0.0
+        modifier += modifiers.heldItems.find {
+            if (it.item.prefab != null) it.item.prefab == inventory.itemInMainHand.toSerializable().prefab.broadcastVal("<light_purple>")
+            else it.item.type == inventory.itemInMainHand.type
+        }?.value ?: 0.0
+
+        return modifier
     }
 
     @Serializable
@@ -47,7 +65,6 @@ data class BlockyBreaking(
     data class BlockyModifiers(
         val heldItems: Set<BlockySerializableItemModifier> = setOf(),
         val heldTypes: Set<BlockyToolModifier> = setOf(),
-        val states: Set<BlockyStateModifier> = setOf(),
     ) {
         @Serializable
         data class BlockySerializableItemModifier(
@@ -60,20 +77,5 @@ data class BlockyBreaking(
             val toolType: ToolType,
             val value: Double
         )
-
-        @Serializable
-        data class BlockyStateModifier(
-            val state: BlockyStateType,
-            val value: Double,
-            val operation: Operation = Operation.SUBTRACT
-        )
-
-        enum class Operation {
-            ADD, SUBTRACT, MULTIPLY, DIVIDE
-        }
-
-        enum class BlockyStateType {
-            HASTE, MINING_FATIGUE, IN_WATER, IN_WATER_NO_AFFINITY, NOT_ON_GROUND, IS_SNEAKING
-        }
     }
 }
