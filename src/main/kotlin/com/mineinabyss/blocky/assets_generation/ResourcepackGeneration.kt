@@ -23,7 +23,7 @@ import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter
 
 class ResourcepackGeneration {
 
-    val resourcePack = ResourcePack.resourcePack()
+    private val resourcePack = ResourcePack.resourcePack()
     fun generateDefaultAssets() {
         resourcePack.blockState(blockState(SetBlock.BlockType.NOTEBLOCK))
         resourcePack.blockState(blockState(SetBlock.BlockType.WIRE))
@@ -33,14 +33,25 @@ class ResourcepackGeneration {
     private fun blockState(blockType: SetBlock.BlockType): BlockState {
         val multiVariant = gearyBlocks.block2Prefab.blockMap[blockType]?.mapIndexed { index, blockData ->
             val query = blockPrefabs.firstOrNull { it.block.blockId == index } ?: return@mapIndexed null
-            blockData.toStringData() to (MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build())
-                ?: return@mapIndexed null)
+            val variant = MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build()) ?: return@mapIndexed null
+            blockData.toStringData() to variant
         }?.filterNotNull()?.toMap()?.toMutableMap() ?: mutableMapOf()
+
+        // Add the vanilla block to the blockstate file
+        val (vanillaMaterial, vanillaVariant) = when (blockType) {
+            SetBlock.BlockType.NOTEBLOCK -> Material.NOTE_BLOCK to (Key.key("block/note_block"))
+            SetBlock.BlockType.WIRE -> Material.TRIPWIRE to Key.key("block/barrier")
+            else -> Material.AIR to Key.key("nothing")
+        }
+
+        multiVariant[vanillaMaterial.createBlockData().toStringData()] =
+            MultiVariant.of(Variant.builder().model(vanillaVariant).build())
+
         return BlockState.of(blockType.blockStateKey(), multiVariant)
     }
 
     private fun SetBlock.BlockType.blockStateKey() = when (this) {
-        SetBlock.BlockType.NOTEBLOCK -> Key.key("noteblock")
+        SetBlock.BlockType.NOTEBLOCK -> Key.key("note_block")
         SetBlock.BlockType.WIRE -> Key.key("tripwire")
         else -> Key.key("nothing")
     }
@@ -85,58 +96,36 @@ class ResourcepackGeneration {
     }
 
     private fun BlockData.toStringData(): String {
-        return when (this.material) {
-            Material.NOTE_BLOCK -> this.noteBlockData()
-            Material.TRIPWIRE -> this.tripwireData()
+        return when (this) {
+            is NoteBlock -> this.noteBlockData()
+            is Tripwire -> this.tripwireData()
             else -> ""
         }
     }
 
-    private fun BlockData.noteBlockData(): String {
-        this as NoteBlock
+    private fun NoteBlock.noteBlockData(): String {
         return String.format(
             "instrument=%s,note=%s,powered=%s",
             getInstrument(this.instrument),
-            (gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]?.indexOf(this)?.minus(1))?.mod(25) ?: 0,
+            gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]?.indexOf(this)?.mod(25) ?: 0,
             this.isPowered
         )
     }
 
-    private fun getInstrument(id: Instrument): String {
-        when (id) {
-            Instrument.BASS_DRUM -> return "basedrum"
-            Instrument.STICKS -> return "hat"
-            Instrument.SNARE_DRUM -> return "snare"
-            Instrument.PIANO -> return "harp"
-            Instrument.BASS_GUITAR -> return "bass"
-            Instrument.FLUTE -> return "flute"
-            Instrument.BELL -> return "bell"
-            Instrument.GUITAR -> return "guitar"
-            Instrument.CHIME -> return "chime"
-            Instrument.XYLOPHONE -> return "xylophone"
-            Instrument.IRON_XYLOPHONE -> return "iron_xylophone"
-            Instrument.COW_BELL -> return "cow_bell"
-            Instrument.DIDGERIDOO -> return "didgeridoo"
-            Instrument.BIT -> return "bit"
-            Instrument.BANJO -> return "banjo"
-            Instrument.PLING -> return "pling"
-            else -> return "hat"
+    private fun getInstrument(instrument: Instrument): String {
+        return when (instrument) {
+            Instrument.BASS_DRUM -> "basedrum"
+            Instrument.PIANO -> "harp"
+            Instrument.SNARE_DRUM -> "snare"
+            Instrument.STICKS -> "hat"
+            Instrument.BASS_GUITAR -> "bass"
+            else -> instrument.name.lowercase()
         }
     }
 
 
-    private fun BlockData.tripwireData(): String {
-        this as Tripwire
-        return String.format(
-            "north=%s,south=%s,west=%s,east=%s,attached=%s,disarmed=%s,powered=%s",
-            hasFace(BlockFace.NORTH),
-            hasFace(BlockFace.SOUTH),
-            hasFace(BlockFace.WEST),
-            hasFace(BlockFace.EAST),
-            isAttached,
-            isDisarmed,
-            isPowered
-        )
+    private fun Tripwire.tripwireData(): String {
+        return "north=${hasFace(BlockFace.NORTH)},south=${hasFace(BlockFace.SOUTH)},west=${hasFace(BlockFace.WEST)},east=${hasFace(BlockFace.EAST)},attached=$isAttached,disarmed=$isDisarmed,powered=$isPowered"
     }
 
 
