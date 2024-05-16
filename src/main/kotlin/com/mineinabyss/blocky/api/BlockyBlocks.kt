@@ -61,9 +61,4 @@ object BlockyBlocks {
         //TODO Handle light via packets for blocks
         return true
     }
-
-    fun removeBlockyBlock(location: Location): Boolean {
-        location.blockyBlock ?: return false
-        return attemptBreakBlockyBlock(location.block)
-    }
 }

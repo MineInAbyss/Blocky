@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
+import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageAbortEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockDamageEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
@@ -8,13 +9,13 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerMiningAttribute
 import com.mineinabyss.blocky.components.features.mining.miningAttribute
-import com.mineinabyss.blocky.helpers.CopperHelpers
-import com.mineinabyss.blocky.helpers.attemptBreakBlockyBlock
+import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.to
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.data.type.Slab
@@ -50,17 +51,21 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockBreakEvent.onBreakCustomBlock() {
+        player.miningAttribute?.removeModifier(player)
         if (!block.isBlockyBlock) return
-        attemptBreakBlockyBlock(block, player) || return
+        if (!BlockyBlockBreakEvent(block, player).callEvent()) isCancelled = true
+        if (!ProtectionLib.canBreak(player, block.location)) isCancelled = true
+        if (isCancelled) return
+
+        if (player.gameMode != GameMode.CREATIVE) player.inventory.itemInMainHand.damage(1, player)
+        handleBlockyDrops(block, player)
         isDropItems = false
     }
 
+    private val materialSet = setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES)
+        .plus(CopperHelpers.BLOCKY_SLABS).plus(CopperHelpers.BLOCKY_STAIRS)
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
-        val materialSet =
-            setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).plus(CopperHelpers.BLOCKY_SLABS)
-                .plus(CopperHelpers.BLOCKY_STAIRS)
-
         when {
             itemInHand.type !in materialSet -> return
             blockPlaced.isBlockyBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() == true -> return
@@ -97,7 +102,6 @@ class BlockyGenericListener : Listener {
 
         blockPlaced.blockData = newData
         CopperHelpers.setFakeWaxedCopper(blockPlaced, true)
-        player.swingMainHand()
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

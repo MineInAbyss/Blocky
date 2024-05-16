@@ -121,26 +121,6 @@ fun placeBlockyBlock(
     targetBlock.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, targetBlock.location.toVector())
 }
 
-internal fun attemptBreakBlockyBlock(block: Block, player: Player? = null): Boolean {
-    player?.let {
-        if (!BlockyBlockBreakEvent(block, player).callEvent()) return false
-        if (!ProtectionLib.canBreak(it, block.location)) return false
-        if (player.gameMode != GameMode.CREATIVE)
-            player.inventory.itemInMainHand.damage(1, player)
-        handleBlockyDrops(block, player)
-
-        player.miningAttribute?.removeModifier(player)
-    }
-
-    block.toGearyOrNull() ?: return false
-
-    block.customBlockData.clear()
-    block.type = Material.AIR
-    block.world.playEffect(block.location, Effect.STEP_SOUND, block.blockData)
-    block.world.sendGameEvent(null, GameEvent.BLOCK_DESTROY, block.location.toVector())
-    return true
-}
-
 fun handleBlockyDrops(block: Block, player: Player) {
     val gearyBlock = block.toGearyOrNull() ?: return
     val drop = gearyBlock.get<BlockyDrops>() ?: return
