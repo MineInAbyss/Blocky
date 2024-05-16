@@ -66,38 +66,32 @@ class BlockyGenericListener : Listener {
         .plus(CopperHelpers.BLOCKY_SLABS).plus(CopperHelpers.BLOCKY_STAIRS)
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
+        val heldType = itemInHand.type
+        val placedData = blockPlaced.blockData
+
         when {
-            itemInHand.type !in materialSet -> return
+            heldType !in materialSet -> return
             blockPlaced.isBlockyBlock && player.gearyInventory?.get(hand)?.has<SetBlock>() == true -> return
             // TODO Are these even needed?
-            !blocky.config.noteBlocks.isEnabled && itemInHand.type == Material.NOTE_BLOCK -> return
-            !blocky.config.tripWires.isEnabled && itemInHand.type == Material.STRING -> return
-            !blocky.config.caveVineBlocks.isEnabled && itemInHand.type == Material.CAVE_VINES -> return
-            !blocky.config.slabBlocks.isEnabled && itemInHand.type in CopperHelpers.BLOCKY_SLABS -> return
-            !blocky.config.stairBlocks.isEnabled && itemInHand.type in CopperHelpers.BLOCKY_STAIRS -> return
+            !blocky.config.noteBlocks.isEnabled && heldType == Material.NOTE_BLOCK -> return
+            !blocky.config.tripWires.isEnabled && heldType == Material.STRING -> return
+            !blocky.config.caveVineBlocks.isEnabled && heldType == Material.CAVE_VINES -> return
+            !blocky.config.slabBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_SLABS -> return
+            !blocky.config.stairBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_STAIRS -> return
         }
 
-        val newData = when (itemInHand.type) {
-            Material.STRING -> Material.TRIPWIRE.createBlockData()
-            in CopperHelpers.BLOCKY_SLABS -> CopperHelpers.COPPER_SLABS.elementAt(
-                CopperHelpers.BLOCKY_SLABS.indexOf(
-                    itemInHand.type
-                )
-            ).createBlockData {
-                (it as Slab to blockPlaced.blockData as Slab).let { (new, old) -> new.type = old.type }
+        val newData = when (heldType) {
+            Material.STRING -> Material.TRIPWIRE
+            in CopperHelpers.BLOCKY_SLABS -> CopperHelpers.COPPER_SLABS.elementAt(CopperHelpers.BLOCKY_SLABS.indexOf(heldType))
+            in CopperHelpers.BLOCKY_STAIRS -> CopperHelpers.COPPER_STAIRS.elementAt(CopperHelpers.BLOCKY_STAIRS.indexOf(heldType))
+            else -> heldType
+        }.createBlockData {
+            if (it is Slab && placedData is Slab) it.type = placedData.type
+            else if (it is Stairs && placedData is Stairs) {
+                it.facing = placedData.facing
+                it.half = placedData.half
+                it.shape = placedData.shape
             }
-
-            in CopperHelpers.BLOCKY_STAIRS -> CopperHelpers.COPPER_STAIRS.elementAt(
-                CopperHelpers.BLOCKY_STAIRS.indexOf(
-                    itemInHand.type
-                )
-            ).createBlockData {
-                (it as Stairs to blockPlaced.blockData as Stairs).let { (new, old) ->
-                    new.facing = old.facing; new.half = old.half
-                }
-            }
-
-            else -> itemInHand.type.createBlockData()
         }
 
         blockPlaced.blockData = newData
