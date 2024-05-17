@@ -8,7 +8,6 @@ import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.blocky.systems.megFurniturePrefabs
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
@@ -34,10 +33,20 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             "reload" {
                 action {
                     blocky.plugin.createBlockyContext()
-                    blocky.plugin.launch { blocky.prefabQuery.entities().forEach { prefabs.loader.reload(it) } }
+                    blocky.plugin.launch {
+                        val blockyPrefabs = blocky.prefabQuery.entities()
+                        val inheritedPrefabs = blockyPrefabs.asSequence().flatMap { it.prefabs }
+                            .filter { it !in blockyPrefabs }.toSet().sortedBy { it.prefabs.size }
+
+                        // Reload all prefabs that arent blockyPrefabs
+                        inheritedPrefabs.forEach { prefabs.loader.reload(it) }
+
+                        // Reload all blockyPrefabs that aren't in inheritedPrefabs
+                        blockyPrefabs.filter { it !in inheritedPrefabs }.sortedBy { it.prefabs.size }
+                            .forEach { prefabs.loader.reload(it) }
+                    }
                     ResourcepackGeneration().generateDefaultAssets()
                     sender.success("Blocky has been reloaded!")
-
                 }
             }
             "give" {
