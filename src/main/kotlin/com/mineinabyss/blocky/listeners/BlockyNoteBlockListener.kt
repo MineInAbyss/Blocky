@@ -17,6 +17,7 @@ import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
 import com.mineinabyss.idofront.messaging.broadcastVal
+import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.attribute.Attribute
 import org.bukkit.block.data.type.NoteBlock
@@ -34,9 +35,11 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamageVanillaBlock() {
+        // Return before removing as this is handled by BlockyGenericListener
+        if (block.isBlockyBlock) return
         player.miningAttribute?.removeModifier(player)
 
-        if (!block.isVanillaNoteBlock) return
+        if (player.gameMode == GameMode.CREATIVE || !block.isVanillaNoteBlock) return
 
         val mining = PlayerMiningAttribute(NoteBlockHelpers.vanillaBreakingComponent.createBreakingModifier(player, block))
         player.toGearyOrNull()?.set(mining)

@@ -31,6 +31,9 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamageCustomBlock() {
+        // Return before removing as BlockyNoteBlockListener handles this scenario
+        if (block.isVanillaNoteBlock) return
+
         player.miningAttribute?.removeModifier(player)
         if (player.gameMode == GameMode.CREATIVE) return
 
