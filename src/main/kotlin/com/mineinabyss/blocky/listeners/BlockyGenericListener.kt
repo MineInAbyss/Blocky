@@ -31,7 +31,7 @@ class BlockyGenericListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockDamageEvent.onDamageCustomBlock() {
-        player.miningAttribute?.removeModifier(player)
+        player.miningAttribute?.takeUnless { block.isVanillaNoteBlock }?.removeModifier(player)
         if (player.gameMode == GameMode.CREATIVE) return
 
         val breaking = block.toGearyOrNull()?.get<BlockyBreaking>() ?: return
