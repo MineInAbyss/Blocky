@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.gearyInventory
@@ -27,24 +28,20 @@ import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 
-@OptIn(UnsafeAccessors::class)
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
         ("blocky")(desc = "Commands related to Blocky-plugin") {
             "reload" {
                 action {
                     blocky.plugin.createBlockyContext()
-                    blocky.plugin.runStartupFunctions()
-                    blocky.plugin.launch {
-                        blocky.prefabQuery.entities().forEach { prefabs.loader.reload(it) }
-                    }
+                    blocky.plugin.launch { blocky.prefabQuery.entities().forEach { prefabs.loader.reload(it) } }
+                    ResourcepackGeneration().generateDefaultAssets()
                     sender.success("Blocky has been reloaded!")
 
                 }
             }
             "give" {
                 val type by optionArg(options = blockPrefabs
-                    .filter { it.directional?.isParentBlock != false }
                     .map { it.prefabKey.toString() }) {
                     parseErrorMessage = { "No such block: $passed" }
                 }

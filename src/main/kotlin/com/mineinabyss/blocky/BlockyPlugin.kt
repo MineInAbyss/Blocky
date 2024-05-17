@@ -28,7 +28,6 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.plugin.java.JavaPlugin
 
 var prefabMap = mapOf<BlockData, PrefabKey>()
-var registryTagMap = mapOf<ResourceLocation, IntArrayList>()
 
 class BlockyPlugin : JavaPlugin() {
     override fun onLoad() {
@@ -41,6 +40,7 @@ class BlockyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         createBlockyContext()
+        BlockyDatapacks.generateDatapack()
 
         if (Plugins.isEnabled("WorldEdit")) {
             WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
@@ -64,7 +64,6 @@ class BlockyPlugin : JavaPlugin() {
             BlockyGenericListener(),
             BlockyFurnitureListener(),
             BlockyMiddleClickListener(),
-            BlockyNMSListener(),
         )
 
         blocky.config.run {
@@ -87,32 +86,7 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
-        geary {
-            on(GearyPhase.ENABLE) {
-                runStartupFunctions()
-            }
-        }
-    }
-
-    fun runStartupFunctions() {
-        registryTagMap = createTagRegistryMap()
         ResourcepackGeneration().generateDefaultAssets()
-    }
-
-    private fun createTagRegistryMap(): Map<ResourceLocation, IntArrayList> {
-
-        return BuiltInRegistries.BLOCK.tags.map { pair ->
-            pair.first.location to IntArrayList(pair.second.size()).apply {
-                // If the tag is MINEABLE_WITH_AXE, don't add noteblock, if it's MINEABLE_WITH_PICKAXE, don't add petrified oak slab
-                pair.second.filter {
-                    it.value().descriptionId != when (pair.first.location) {
-                        BlockTags.MINEABLE_WITH_AXE.location -> "block.minecraft.note_block"
-                        BlockTags.MINEABLE_WITH_PICKAXE.location -> "block.minecraft.petrified_oak_slab"
-                        else -> it.value().descriptionId
-                    }
-                }.forEach { add(BuiltInRegistries.BLOCK.getId(it.value())) }
-            }
-        }.toList().toMap()
     }
 
 
