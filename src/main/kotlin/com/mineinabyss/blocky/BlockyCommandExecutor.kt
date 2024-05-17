@@ -68,25 +68,6 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
                     player.inventory.addItem(item)
                 }
             }
-            "dye" {
-                val color by stringArg()
-                playerAction {
-                    val player = sender as? Player ?: return@playerAction
-                    val item = player.inventory.itemInMainHand
-                    val furniture = player.gearyInventory?.get(EquipmentSlot.HAND)?.get<BlockyFurniture>()
-
-                    if (furniture == null) {
-                        player.error("This command only supports furniture.")
-                        return@playerAction
-                    }
-
-                    item.editItemMeta {
-                        (asColorable() ?: return@playerAction player.error("This item cannot be dyed.")).color =
-                            color.toColor()
-                    }
-                    player.success("Dyed item to $color")
-                }
-            }
             "menu" {
                 playerAction {
                     val player = sender as Player
@@ -104,7 +85,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     ): List<String> {
         return if (command.name == "blocky") {
             when (args.size) {
-                1 -> listOf("reload", "give", "dye", "menu").filter { it.startsWith(args[0]) }
+                1 -> listOf("reload", "give", "menu").filter { it.startsWith(args[0]) }
                 2 -> when (args[0]) {
                     "give" -> blocky.prefabQuery.mapWithEntity { prefabKey }.asSequence()
                         .filter { it.data.key.startsWith(args[1]) || it.data.full.startsWith(args[1]) }
