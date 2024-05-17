@@ -20,6 +20,10 @@ class BlockyQuery : GearyQuery() {
 
     override fun ensure() = this {
         has<Prefab>()
+        or {
+            has<BlockyFurniture>()
+            has<SetBlock>()
+        }
     }
 }
 
