@@ -19,7 +19,6 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
-    maven("https://repo.codemc.io/repository/maven-snapshots/") // AnvilGUI
     maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
     maven("https://repo.oraxen.com/releases") // ProtectionLib
     mavenLocal()
@@ -42,7 +41,6 @@ dependencies {
     compileOnly(idofrontLibs.minecraft.plugin.modelengine)
     compileOnly(idofrontLibs.minecraft.plugin.fawe.core)
     compileOnly(idofrontLibs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
-    compileOnly(idofrontLibs.minecraft.anvilgui)
     compileOnly(idofrontLibs.creative.api)
     compileOnly(idofrontLibs.creative.serializer.minecraft)
 
