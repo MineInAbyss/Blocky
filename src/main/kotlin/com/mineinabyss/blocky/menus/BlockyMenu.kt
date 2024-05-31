@@ -8,7 +8,7 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.at
-import com.mineinabyss.guiy.modifiers.clickable
+import com.mineinabyss.guiy.modifiers.click.clickable
 import org.bukkit.entity.Player
 import org.bukkit.event.inventory.ClickType
 
@@ -33,7 +33,7 @@ fun BlockyUIScope.BlockyMenu() {
 fun HandleMenuClicks(key: PrefabKey, player: Player) {
     val block = gearyItems.createItem(key)
     Item(block, Modifier.clickable {
-        when (clickType) {
+        /*when (clickType) {
             ClickType.LEFT -> {
                 if (cursor == null) cursor = block
                 else if (player.gearyInventory?.itemOnCursor == key.toEntity()) cursor?.add(1)
@@ -49,6 +49,6 @@ fun HandleMenuClicks(key: PrefabKey, player: Player) {
             ClickType.DROP -> block?.let { player.world.dropItemNaturally(player.location, it) }
             ClickType.CONTROL_DROP -> block?.asQuantity(block.maxStackSize)?.let { player.world.dropItemNaturally(player.location, it) }
             else -> return@clickable
-        }
+        }*/
     })
 }
