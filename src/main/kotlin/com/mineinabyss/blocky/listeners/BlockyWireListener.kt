@@ -4,6 +4,7 @@ import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.idofront.util.to
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode

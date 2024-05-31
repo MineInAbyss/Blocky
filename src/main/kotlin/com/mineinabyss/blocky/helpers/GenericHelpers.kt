@@ -77,7 +77,6 @@ val Block.persistentDataContainer get() = customBlockData as PersistentDataConta
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 fun Block.toBlockPos() = BlockPos(this.x, this.y, this.z)
 
-internal infix fun <A, B, C> Pair<A, B>.to(that: C): Triple<A, B, C> = Triple(this.first, this.second, that)
 internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta?.persistentDataContainer?.decode()
 internal val Player.gearyInventory get() = inventory.toGeary()
 

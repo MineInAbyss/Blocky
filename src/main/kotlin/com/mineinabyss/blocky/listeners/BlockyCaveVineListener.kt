@@ -4,8 +4,8 @@ import com.mineinabyss.blocky.helpers.CaveVineHelpers
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.placeBlockyBlock
-import com.mineinabyss.blocky.helpers.to
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.idofront.util.to
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace

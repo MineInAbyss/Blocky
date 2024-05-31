@@ -3,6 +3,7 @@ package com.mineinabyss.blocky.listeners
 import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent
 import com.destroystokyo.paper.event.player.PlayerUseUnknownEntityEvent
 import com.github.shynixn.mccoroutine.bukkit.launch
+import com.mineinabyss.idofront.util.to
 import com.github.shynixn.mccoroutine.bukkit.minecraftDispatcher
 import com.mineinabyss.blocky.api.BlockyFurnitures
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture

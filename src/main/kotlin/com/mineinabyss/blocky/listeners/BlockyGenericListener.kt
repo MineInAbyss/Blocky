@@ -11,7 +11,7 @@ import com.mineinabyss.blocky.components.features.mining.PlayerMiningAttribute
 import com.mineinabyss.blocky.components.features.mining.miningAttribute
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.gearyInventory
-import com.mineinabyss.blocky.helpers.to
+import com.mineinabyss.idofront.util.to
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
