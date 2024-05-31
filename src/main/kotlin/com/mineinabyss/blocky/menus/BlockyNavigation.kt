@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.helpers.composables.Button
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.components.canvases.Chest
 import com.mineinabyss.guiy.inventory.GuiyOwner
+import com.mineinabyss.guiy.inventory.LocalGuiyOwner
 import com.mineinabyss.guiy.modifiers.Modifier
 import com.mineinabyss.guiy.modifiers.height
 import com.mineinabyss.guiy.navigation.Navigator
@@ -30,9 +31,10 @@ class BlockyUIScope(val player: Player) {
 }
 
 @Composable
-fun GuiyOwner.BlockyMainMenu(player: Player) {
+fun BlockyMainMenu(player: Player) {
+    val owner = LocalGuiyOwner.current
     BlockyUIScope(player).apply {
-        nav.withScreen(setOf(player), onEmpty = ::exit) { screen ->
+        nav.withScreen(setOf(player), onEmpty = owner::exit) { screen ->
             Chest(setOf(player), screen.title,
                 Modifier.height(screen.height),
                 onClose = { player.closeInventory() }) {
