@@ -2,9 +2,7 @@ package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
-import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
-import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.blocky.systems.megFurniturePrefabs
@@ -13,19 +11,14 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.prefabs
 import com.mineinabyss.guiy.inventory.guiy
 import com.mineinabyss.idofront.commands.arguments.optionArg
-import com.mineinabyss.idofront.commands.arguments.stringArg
 import com.mineinabyss.idofront.commands.execution.IdofrontCommandExecutor
 import com.mineinabyss.idofront.commands.extensions.actions.playerAction
-import com.mineinabyss.idofront.items.asColorable
-import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
-import com.mineinabyss.idofront.util.toColor
 import org.bukkit.command.Command
 import org.bukkit.command.CommandSender
 import org.bukkit.command.TabCompleter
 import org.bukkit.entity.Player
-import org.bukkit.inventory.EquipmentSlot
 
 class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
     override val commands = commands(blocky.plugin) {
@@ -70,8 +63,7 @@ class BlockyCommandExecutor : IdofrontCommandExecutor(), TabCompleter {
             }
             "menu" {
                 playerAction {
-                    val player = sender as Player
-                    guiy { BlockyMainMenu(player) }
+                    guiy { BlockyMainMenu(sender as Player) }
                 }
             }
         }
