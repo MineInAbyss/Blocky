@@ -47,7 +47,7 @@ class BlockyPlugin : JavaPlugin() {
             listeners(WorldEditListener())
         }
 
-        BlockyCommandExecutor()
+        BlockyBrigadierCommands.registerCommands()
 
         geary.run {
             createFurnitureSpawner()
