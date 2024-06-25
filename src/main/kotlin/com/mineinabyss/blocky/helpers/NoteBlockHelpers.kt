@@ -17,8 +17,10 @@ import org.bukkit.Material
 import org.bukkit.Note
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
+import org.bukkit.block.Skull
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
+import org.bukkit.craftbukkit.block.CraftBlockState
 import org.bukkit.entity.Player
 
 /**
@@ -52,44 +54,11 @@ fun Block.updateBlockyNote() {
 
 fun Block.blockyNote() = Note(this.persistentDataContainer.decode<VanillaNoteBlock>()?.note ?: 0)
 
-fun Block.blockyInstrument(): Instrument {
-    return instrumentList.firstOrNull {
-        getRelative(BlockFace.DOWN).type.toString().lowercase() in it.types
-    }?.instrument ?: Instrument.PIANO
+fun Block.blockyInstrument() : Instrument {
+    val instrumentAbove = (getRelative(BlockFace.UP).state as CraftBlockState).handle.instrument().takeIf { it.worksAboveNoteBlock() }
+    val instrumentBelow = (getRelative(BlockFace.DOWN).state as CraftBlockState).handle.instrument().takeUnless { it.worksAboveNoteBlock() }
+    return Instrument.entries.find { it.name == (instrumentAbove?.name ?: instrumentBelow?.name) } ?: Instrument.PIANO
 }
-
-private class InstrumentMap(val instrument: Instrument, vararg types: String) {
-    val types: List<String> = types.toList()
-}
-
-private val instrumentList = listOf(
-    InstrumentMap(Instrument.BELL, "gold_block"),
-    InstrumentMap(Instrument.FLUTE, "clay"),
-    InstrumentMap(Instrument.CHIME, "packed_ice"),
-    InstrumentMap(Instrument.GUITAR, "wool"),
-    InstrumentMap(Instrument.XYLOPHONE, "bone_block"),
-    InstrumentMap(Instrument.IRON_XYLOPHONE, "iron_block"),
-    InstrumentMap(Instrument.COW_BELL, "soul_sand"),
-    InstrumentMap(Instrument.DIDGERIDOO, "pumpkin"),
-    InstrumentMap(Instrument.BIT, "emerald_block"),
-    InstrumentMap(Instrument.BANJO, "hay_bale"),
-    InstrumentMap(Instrument.PLING, "glowstone"),
-    InstrumentMap(Instrument.BELL, "gold_block"),
-    InstrumentMap(
-        Instrument.BASS_DRUM,
-        "stone",
-        "netherrack",
-        "bedrock",
-        "observer",
-        "coral",
-        "obsidian",
-        "anchor",
-        "quartz"
-    ),
-    InstrumentMap(Instrument.BASS_GUITAR, "wood"),
-    InstrumentMap(Instrument.SNARE_DRUM, "sand", "gravel", "concrete_powder", "soul_soil"),
-    InstrumentMap(Instrument.STICKS, "glass", "sea_lantern", "beacon"),
-)
 
 object NoteBlockHelpers {
 
