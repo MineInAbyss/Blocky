@@ -5,7 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("blocky:sound")
-class BlockySound (
+class BlockySound(
     val placeSound: String? = null,
     val breakSound: String? = null,
     val hitSound: String? = null,

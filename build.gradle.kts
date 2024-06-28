@@ -19,7 +19,6 @@ repositories {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
-    maven("https://hub.jeff-media.com/nexus/repository/jeff-media-public/") //CustomBlockData
     maven("https://repo.oraxen.com/releases") // ProtectionLib
     mavenLocal()
 }
@@ -41,17 +40,16 @@ dependencies {
     compileOnly(idofrontLibs.minecraft.plugin.modelengine)
     compileOnly(idofrontLibs.minecraft.plugin.fawe.core)
     compileOnly(idofrontLibs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
+    compileOnly(idofrontLibs.minecraft.customblockdata)
     compileOnly(idofrontLibs.creative.api)
     compileOnly(idofrontLibs.creative.serializer.minecraft)
 
     implementation(libs.minecraft.plugin.protectionlib)
-    implementation(libs.minecraft.plugin.customblockdata)
 }
 
 tasks {
     shadowJar {
-        relocate("com.jeff_media.customblockdata", "com.mineinabyss.shaded.customblockdata")
-        relocate("com.jeff_media.morepersistentdatatypes", "com.mineinabyss.shaded.morepersistentdatatypes")
+        relocate("io.th0rgal.protectionlib", "com.mineinabyss.shaded.protectionlib")
     }
 }
 

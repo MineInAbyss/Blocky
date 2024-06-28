@@ -3,6 +3,7 @@ package com.mineinabyss.blocky.menus
 import androidx.compose.runtime.*
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.helpers.composables.Button
+import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.blocky.systems.furniturePrefabs
 import com.mineinabyss.blocky.systems.plantPrefabs
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
@@ -22,11 +23,12 @@ import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.guiy.navigation.Navigator
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.miniMsg
+import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
-sealed class BlockyScreen(val title: String, val height: Int) {
+sealed class BlockyScreen(val title: Component, val height: Int) {
     class Default : BlockyScreen(blocky.config.menus.defaultMenu.title, blocky.config.menus.defaultMenu.height)
     class Block : BlockyScreen(blocky.config.menus.blockMenu.title, blocky.config.menus.blockMenu.height)
     class Wire : BlockyScreen(blocky.config.menus.wireMenu.title, blocky.config.menus.wireMenu.height)
@@ -53,7 +55,7 @@ fun BlockyMainMenu(player: Player) {
                         var line by remember(screen) { mutableStateOf(0) }
                         val items = remember(screen) {
                             when (screen) {
-                                is BlockyScreen.Block -> return@remember Material.entries.drop(1).map { ItemStack(it) }
+                                is BlockyScreen.Block -> blockPrefabs
                                 is BlockyScreen.Wire -> plantPrefabs
                                 is BlockyScreen.Furniture -> furniturePrefabs
                                 else -> return@remember emptyList()
@@ -79,14 +81,13 @@ fun BlockyMainMenu(player: Player) {
     }
 }
 
-private fun BlockyScreen.handleTitle(page: Int): String {
+private fun BlockyScreen.handleTitle(page: Int): Component {
     if (this is BlockyScreen.Default) return title
-    return buildString {
-        append(title)
+    return Component.textOfChildren(title, buildString {
         append(":space_-26:")
         if (page > 0) append(":blocky_scrolling_up::space_-18:")
         append(":blocky_scrolling_down:")
-    }
+    }.miniMsg())
 }
 
 @Composable

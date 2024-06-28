@@ -17,10 +17,8 @@ import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.idofront.messaging.broadcastVal
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.attribute.Attribute
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
@@ -48,9 +46,7 @@ class BlockyNoteBlockListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun NotePlayEvent.cancelBlockyNotes() {
-        if (!block.isVanillaNoteBlock) isCancelled = true
-        note = block.blockyNote()
-        instrument = block.blockyInstrument()
+        isCancelled = true
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -65,7 +61,6 @@ class BlockyNoteBlockListener : Listener {
         if (hand != EquipmentSlot.HAND || !rightClicked) return
 
         if (block.isBlockyBlock) setUseInteractedBlock(Event.Result.DENY)
-        else if (block.isVanillaNoteBlock && rightClicked) block.updateBlockyNote()
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

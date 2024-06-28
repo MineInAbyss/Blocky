@@ -21,8 +21,9 @@ fun GearyModule.createFurnitureItemSetter() = observe<OnSet>()
     }) {
         val itemStack = it.furniture.properties.itemStack?.toItemStackOrNull() ?: it.setItem.item.toItemStack()
         val furnitureItem = itemStack.clone().editItemMeta {
+            itemName(Component.empty())
             displayName(Component.empty())
             it.color?.color?.let { c -> asColorable()?.color = c }
         }
-        it.itemDisplay.itemStack = furnitureItem
+        it.itemDisplay.setItemStack(furnitureItem)
     }

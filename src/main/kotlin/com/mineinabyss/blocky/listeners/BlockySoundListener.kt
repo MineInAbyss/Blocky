@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.components.features.BlockySound
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
+import com.mineinabyss.idofront.messaging.broadcast
 import io.papermc.paper.event.block.BlockBreakProgressUpdateEvent
 import org.bukkit.*
 import org.bukkit.entity.LivingEntity
@@ -26,6 +27,7 @@ class BlockySoundListener : Listener {
         val soundGroup = block.blockSoundGroup.placeSound
         if (soundGroup != Sound.BLOCK_WOOD_PLACE && soundGroup != Sound.BLOCK_STONE_PLACE) return
         val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: ("blocky:" + soundGroup.key.asMinimalString())
+        broadcast(sound)
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 

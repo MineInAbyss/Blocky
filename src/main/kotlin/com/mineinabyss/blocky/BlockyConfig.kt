@@ -3,11 +3,14 @@ package com.mineinabyss.blocky
 import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.blocky.helpers.FurnitureOutlineType
 import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.idofront.serialization.MiniMessageSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.toSerializable
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.ticxo.modelengine.api.entity.Hitbox
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.Transient
+import net.kyori.adventure.text.Component
 import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
@@ -41,8 +44,8 @@ data class BlockyConfig(
         val furnitureMenu: BlockyMenu = BlockyMenu(),
     )
 
-    @Serializable data class BlockyMenu(val title: String = "", val height: Int = 6)
-    @Serializable data class BlockyNoteBlockConfig(val isEnabled: Boolean = true)
+    @Serializable data class BlockyMenu(val title: @Serializable(MiniMessageSerializer::class) Component = Component.empty(), val height: Int = 6)
+    @Serializable data class BlockyNoteBlockConfig(val isEnabled: Boolean = true, val restoreVanillaFunctionality: Boolean = false)
     @Serializable data class BlockyTripwireConfig(val isEnabled: Boolean = true)
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockySlabConfig(val isEnabled: Boolean = false)
@@ -51,11 +54,13 @@ data class BlockyConfig(
         val hitboxOutlines: HitboxOutline = HitboxOutline(),
         val worldEdit: Boolean = false
     ) {
-        fun showOutlines() = hitboxOutlines.type != FurnitureOutlineType.NONE
+        @Transient val showOutlines = hitboxOutlines.type != FurnitureOutlineType.NONE
+
         @Serializable
         data class HitboxOutline(
+            @YamlComment("Valid typed are ITEM, BLOCK, NONE")
             val type: FurnitureOutlineType = FurnitureOutlineType.ITEM,
-            val item: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()
+            val item: SerializableItemStack = SerializableItemStack(type = Material.PAPER)
         ) {
             fun entityType(): net.minecraft.world.entity.EntityType<*>? {
                 return when (type) {
@@ -76,10 +81,10 @@ data class BlockyConfig(
         }
     }
     @Serializable data class DefaultBlockyMenu(
-        val title: String = "",
+        val title: @Serializable(MiniMessageSerializer::class) Component = Component.empty(),
         val height: Int = 5,
-        val blockButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); displayName("<gradient:gold:yellow>Block Menu".miniMsg()) }.toSerializable(),
-        val wireButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); displayName("<gradient:gold:yellow>Wire Menu".miniMsg()) }.toSerializable(),
-        val furnitureButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); displayName("<gradient:gold:yellow>Furniture Menu".miniMsg()) }.toSerializable(),
+        val blockButton: SerializableItemStack = SerializableItemStack(type = Material.PAPER, customModelData = 1, itemName = "<gradient:gold:yellow>Block Menu".miniMsg()),
+        val wireButton: SerializableItemStack = SerializableItemStack(type = Material.PAPER, customModelData = 1, itemName = "<gradient:gold:yellow>Wire Menu".miniMsg()),
+        val furnitureButton: SerializableItemStack = SerializableItemStack(type = Material.PAPER, customModelData = 1, itemName = "<gradient:gold:yellow>Furniture Menu".miniMsg()),
     )
 }
