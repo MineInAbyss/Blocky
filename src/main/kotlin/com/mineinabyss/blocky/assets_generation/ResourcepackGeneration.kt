@@ -16,19 +16,89 @@ import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.block.data.type.Tripwire
 import team.unnamed.creative.ResourcePack
+import team.unnamed.creative.base.Writable
 import team.unnamed.creative.blockstate.BlockState
 import team.unnamed.creative.blockstate.MultiVariant
 import team.unnamed.creative.blockstate.Variant
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter
+import team.unnamed.creative.sound.Sound
+import team.unnamed.creative.sound.SoundEntry
+import team.unnamed.creative.sound.SoundEvent
+import team.unnamed.creative.sound.SoundRegistry
 
-class ResourcepackGeneration {
+object ResourcepackGeneration {
 
     private val resourcePack = ResourcePack.resourcePack()
     fun generateDefaultAssets() {
         resourcePack.blockState(blockState(SetBlock.BlockType.NOTEBLOCK))
         resourcePack.blockState(blockState(SetBlock.BlockType.WIRE))
+
+        registerRequiredSounds()
+
         MinecraftResourcePackWriter.minecraft().writeToDirectory(blocky.plugin.dataFolder.resolve("pack"), resourcePack)
     }
+
+    private fun registerRequiredSounds() {
+        if (blocky.config.disableCustomSounds) return
+
+        val soundRegistry = resourcePack.soundRegistry("minecraft") ?: SoundRegistry.soundRegistry("minecraft", emptyList())
+
+        SoundRegistry.soundRegistry(soundRegistry.namespace(), soundRegistry.sounds().plus(listOf(
+            SoundEvent.soundEvent(Key.key("minecraft:block.stone.place"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.stone.break"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.stone.hit"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.stone.fall"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.stone.step"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.wood.place"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.wood.break"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.wood.hit"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.wood.fall"), true, null,  listOf()),
+            SoundEvent.soundEvent(Key.key("minecraft:block.wood.step"), true, null,  listOf())
+        ))).let(resourcePack::soundRegistry)
+
+        val blockyRegistry = resourcePack.soundRegistry("blocky") ?: SoundRegistry.soundRegistry("blocky", emptyList())
+        SoundRegistry.soundRegistry(blockyRegistry.namespace(), blockyRegistry.sounds().plus(listOf(
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.place"), false, "subtitles.block.generic.place", stoneDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.break"), false, "subtitles.block.generic.break", stoneDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.hit"), false, "subtitles.block.generic.hit", stoneStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.fall"), false, "subtitles.block.generic.fall", stoneStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.step"), false, "subtitles.block.generic.step", stoneStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.place"), false, "subtitles.block.generic.place", woodDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.break"), false, "subtitles.block.generic.break", woodDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.hit"), false, "subtitles.block.generic.hit", woodStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.fall"), false, "subtitles.block.generic.fall", woodStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.step"), false, "subtitles.block.generic.step", woodStep)
+        ))).let(resourcePack::soundRegistry)
+    }
+
+    private val stoneDig = listOf(
+        SoundEntry.soundEntry().key(Key.key("dig/stone1")).build(),
+        SoundEntry.soundEntry().key(Key.key("dig/stone2")).build(),
+        SoundEntry.soundEntry().key(Key.key("dig/stone3")).build(),
+        SoundEntry.soundEntry().key(Key.key("dig/stone4")).build()
+    )
+    private val stoneStep = listOf(
+        SoundEntry.soundEntry().key(Key.key("step/stone1")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/stone2")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/stone3")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/stone4")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/stone5")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/stone6")).build(),
+    )
+    private val woodDig = listOf(
+        SoundEntry.soundEntry().key(Key.key("dig/wood1")).build(),
+        SoundEntry.soundEntry().key(Key.key("dig/wood2")).build(),
+        SoundEntry.soundEntry().key(Key.key("dig/wood3")).build(),
+        SoundEntry.soundEntry().key(Key.key("dig/wood4")).build()
+    )
+    private val woodStep = listOf(
+        SoundEntry.soundEntry().key(Key.key("step/wood1")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/wood2")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/wood3")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/wood4")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/wood5")).build(),
+        SoundEntry.soundEntry().key(Key.key("step/wood6")).build(),
+    )
 
     private fun blockState(blockType: SetBlock.BlockType): BlockState {
         val multiVariant = gearyBlocks.block2Prefab.blockMap[blockType]?.mapIndexed { index, blockData ->
@@ -127,6 +197,5 @@ class ResourcepackGeneration {
     private fun Tripwire.tripwireData(): String {
         return "north=${hasFace(BlockFace.NORTH)},south=${hasFace(BlockFace.SOUTH)},west=${hasFace(BlockFace.WEST)},east=${hasFace(BlockFace.EAST)},attached=$isAttached,disarmed=$isDisarmed,powered=$isPowered"
     }
-
 
 }

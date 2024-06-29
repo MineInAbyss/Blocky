@@ -90,7 +90,7 @@ class BlockyPlugin : JavaPlugin() {
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 
-        ResourcepackGeneration().generateDefaultAssets()
+        ResourcepackGeneration.generateDefaultAssets()
     }
 
 

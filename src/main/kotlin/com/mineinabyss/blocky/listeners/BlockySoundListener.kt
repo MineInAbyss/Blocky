@@ -6,7 +6,6 @@ import com.mineinabyss.blocky.components.features.BlockySound
 import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
-import com.mineinabyss.idofront.messaging.broadcast
 import io.papermc.paper.event.block.BlockBreakProgressUpdateEvent
 import org.bukkit.*
 import org.bukkit.entity.LivingEntity
@@ -23,11 +22,9 @@ class BlockySoundListener : Listener {
 
     @EventHandler
     fun BlockPlaceEvent.onPlace() {
-        if (player.gameMode == GameMode.CREATIVE) return
         val soundGroup = block.blockSoundGroup.placeSound
         if (soundGroup != Sound.BLOCK_WOOD_PLACE && soundGroup != Sound.BLOCK_STONE_PLACE) return
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: ("blocky:" + soundGroup.key.asMinimalString())
-        broadcast(sound)
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: ("blocky:${soundGroup.key.key}")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
@@ -36,16 +33,15 @@ class BlockySoundListener : Listener {
         if ((entity as? Player)?.gameMode == GameMode.CREATIVE) return
         val soundGroup = block.blockSoundGroup.hitSound
         if (soundGroup != Sound.BLOCK_WOOD_HIT && soundGroup != Sound.BLOCK_STONE_HIT) return
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.hitSound ?: ("blocky:" + soundGroup.key.asMinimalString())
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.hitSound ?: ("blocky:${soundGroup.key.key}")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
     @EventHandler
     fun BlockBreakEvent.onBreak() {
-        if (player.gameMode == GameMode.CREATIVE) return
         val soundGroup = block.blockSoundGroup.breakSound
         if (soundGroup != Sound.BLOCK_WOOD_BREAK && soundGroup != Sound.BLOCK_STONE_BREAK) return
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.breakSound ?: ("blocky:" + soundGroup.key.asMinimalString())
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.breakSound ?: ("blocky:${soundGroup.key.key}")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
@@ -68,7 +64,7 @@ class BlockySoundListener : Listener {
             GameEvent.STEP -> blockySound?.stepSound
             GameEvent.HIT_GROUND -> blockySound?.fallSound
             else -> return
-        } ?: ("blocky:" + soundGroup.key.asMinimalString())
+        } ?: ("blocky:${soundGroup.key.key}")
 
         val (volume, pitch) = when (event) {
             GameEvent.STEP -> DEFAULT_STEP_VOLUME to DEFAULT_STEP_PITCH
