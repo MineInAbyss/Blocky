@@ -32,6 +32,9 @@ data class BlockyConfig(
     val caveVineBlocks: BlockyCaveVineConfig = BlockyCaveVineConfig(),
     val slabBlocks: BlockySlabConfig = BlockySlabConfig(),
     val stairBlocks: BlockyStairConfig = BlockyStairConfig(),
+    val doorBlocks: BlockyDoorConfig = BlockyDoorConfig(),
+    val trapdoorBlocks: BlockyTrapDoorConfig = BlockyTrapDoorConfig(),
+    val grateBlocks: BlockyGrateConfig = BlockyGrateConfig(),
     @YamlComment("If you wish to use vanilla sounds, set this to true", "Keep in mind it disables all custom sounds from place/break/hit etc")
     val disableCustomSounds: Boolean = false,
 ) {
@@ -50,6 +53,9 @@ data class BlockyConfig(
     @Serializable data class BlockyCaveVineConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockySlabConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyStairConfig(val isEnabled: Boolean = false)
+    @Serializable data class BlockyDoorConfig(val isEnabled: Boolean = false)
+    @Serializable data class BlockyTrapDoorConfig(val isEnabled: Boolean = false)
+    @Serializable data class BlockyGrateConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyFurnitureConfig(
         val hitboxOutlines: HitboxOutline = HitboxOutline(),
         val worldEdit: Boolean = false

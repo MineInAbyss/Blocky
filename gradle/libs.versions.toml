@@ -1,10 +1,9 @@
 [versions]
-gearyPaper = "0.30.3"
+gearyPaper = "0.30-dev"
 guiy="0.12.1"
 
 [libraries]
 geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "gearyPaper" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 
-minecraft-plugin-customblockdata = "com.jeff-media:custom-block-data:2.2.2"
 minecraft-plugin-protectionlib = "io.th0rgal:protectionlib:1.5.8"

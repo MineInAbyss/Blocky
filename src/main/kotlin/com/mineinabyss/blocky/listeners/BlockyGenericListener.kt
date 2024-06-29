@@ -18,8 +18,10 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.Material
+import org.bukkit.block.data.type.Door
 import org.bukkit.block.data.type.Slab
 import org.bukkit.block.data.type.Stairs
+import org.bukkit.block.data.type.TrapDoor
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
@@ -78,19 +80,40 @@ class BlockyGenericListener : Listener {
             !blocky.config.caveVineBlocks.isEnabled && heldType == Material.CAVE_VINES -> return
             !blocky.config.slabBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_SLABS -> return
             !blocky.config.stairBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_STAIRS -> return
+            !blocky.config.doorBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_DOORS -> return
+            !blocky.config.trapdoorBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_TRAPDOORS -> return
+            !blocky.config.grateBlocks.isEnabled && heldType in CopperHelpers.BLOCKY_GRATE -> return
         }
 
         val newData = when (heldType) {
             Material.STRING -> Material.TRIPWIRE
             in CopperHelpers.BLOCKY_SLABS -> CopperHelpers.COPPER_SLABS.elementAt(CopperHelpers.BLOCKY_SLABS.indexOf(heldType))
             in CopperHelpers.BLOCKY_STAIRS -> CopperHelpers.COPPER_STAIRS.elementAt(CopperHelpers.BLOCKY_STAIRS.indexOf(heldType))
+            in CopperHelpers.BLOCKY_DOORS -> CopperHelpers.COPPER_DOORS.elementAt(CopperHelpers.BLOCKY_DOORS.indexOf(heldType))
+            in CopperHelpers.BLOCKY_TRAPDOORS -> CopperHelpers.COPPER_TRAPDOORS.elementAt(CopperHelpers.BLOCKY_TRAPDOORS.indexOf(heldType))
+            in CopperHelpers.BLOCKY_GRATE -> CopperHelpers.COPPER_GRATE.elementAt(CopperHelpers.BLOCKY_GRATE.indexOf(heldType))
             else -> heldType
         }.createBlockData {
-            if (it is Slab && placedData is Slab) it.type = placedData.type
-            else if (it is Stairs && placedData is Stairs) {
-                it.facing = placedData.facing
-                it.half = placedData.half
-                it.shape = placedData.shape
+            when {
+                it is Slab && placedData is Slab -> it.type = placedData.type
+                it is Stairs && placedData is Stairs -> {
+                    it.facing = placedData.facing
+                    it.half = placedData.half
+                    it.shape = placedData.shape
+                }
+                it is Door && placedData is Door -> {
+                    it.facing = placedData.facing
+                    it.half = placedData.half
+                    it.hinge = placedData.hinge
+                    it.isPowered = placedData.isPowered
+                    it.isOpen = placedData.isOpen
+                }
+                it is TrapDoor && placedData is TrapDoor -> {
+                    it.facing = placedData.facing
+                    it.half = placedData.half
+                    it.isPowered = placedData.isPowered
+                    it.isOpen = placedData.isOpen
+                }
             }
         }
 

@@ -17,14 +17,17 @@ import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.PlayerMiningAttribute
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.blocky.components.features.mining.miningAttribute
+import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.nms.nbt.fastPDC
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
@@ -77,7 +80,8 @@ val Block.persistentDataContainer get() = customBlockData as PersistentDataConta
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 fun Block.toBlockPos() = BlockPos(this.x, this.y, this.z)
 
-internal inline fun <reified T> ItemStack.decode(): T? = this.itemMeta?.persistentDataContainer?.decode()
+internal inline fun ItemStack.toGearyOrNull(): GearyEntity? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)
+internal inline fun <reified T : Component> ItemStack.decode(): T? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)?.get<T>()
 internal val Player.gearyInventory get() = inventory.toGeary()
 
 fun placeBlockyBlock(

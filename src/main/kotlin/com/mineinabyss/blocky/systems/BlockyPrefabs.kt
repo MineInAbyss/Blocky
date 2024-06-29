@@ -15,7 +15,7 @@ sealed interface BlockyPrefabs {
             modelEngine: BlockyModelEngine?
         ): BlockyPrefabs? {
             if(block != null) {
-                return Plant.from(prefabKey, block, directional)
+                return Plant.from(prefabKey, block)
                     ?: Block.from(prefabKey, block, directional)
             }
             return Furniture.from(prefabKey, modelEngine)
@@ -37,13 +37,12 @@ sealed interface BlockyPrefabs {
 
     data class Plant private constructor(
         override val prefabKey: PrefabKey,
-        val block: SetBlock,
-        val directional: BlockyDirectional?
+        val block: SetBlock
     ): BlockyPrefabs {
         companion object {
-            fun from(prefabKey: PrefabKey, block: SetBlock, directional: BlockyDirectional?): Plant? {
+            fun from(prefabKey: PrefabKey, block: SetBlock): Plant? {
                 if (block.blockType !in setOf(SetBlock.BlockType.WIRE, SetBlock.BlockType.CAVEVINE)) return null
-                return Plant(prefabKey, block, directional)
+                return Plant(prefabKey, block)
             }
         }
     }

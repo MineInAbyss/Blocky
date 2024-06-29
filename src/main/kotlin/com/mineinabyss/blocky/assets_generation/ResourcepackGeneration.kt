@@ -1,27 +1,28 @@
 package com.mineinabyss.blocky.assets_generation
 
+import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration.multiVariant
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
+import com.mineinabyss.blocky.helpers.CopperHelpers
 import com.mineinabyss.blocky.systems.blockPrefabs
+import com.mineinabyss.blocky.systems.plantPrefabs
 import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.messaging.broadcastVal
 import net.kyori.adventure.key.Key
-import org.bukkit.Instrument
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.NoteBlock
-import org.bukkit.block.data.type.Tripwire
 import team.unnamed.creative.ResourcePack
-import team.unnamed.creative.base.Writable
 import team.unnamed.creative.blockstate.BlockState
 import team.unnamed.creative.blockstate.MultiVariant
 import team.unnamed.creative.blockstate.Variant
+import team.unnamed.creative.model.Model
+import team.unnamed.creative.model.ModelTexture
+import team.unnamed.creative.model.ModelTextures
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter
-import team.unnamed.creative.sound.Sound
 import team.unnamed.creative.sound.SoundEntry
 import team.unnamed.creative.sound.SoundEvent
 import team.unnamed.creative.sound.SoundRegistry
@@ -30,8 +31,10 @@ object ResourcepackGeneration {
 
     private val resourcePack = ResourcePack.resourcePack()
     fun generateDefaultAssets() {
+        resourcePack.models().clear()
         resourcePack.blockState(blockState(SetBlock.BlockType.NOTEBLOCK))
         resourcePack.blockState(blockState(SetBlock.BlockType.WIRE))
+        handleCopperModelOverrides()
 
         registerRequiredSounds()
 
@@ -100,12 +103,64 @@ object ResourcepackGeneration {
         SoundEntry.soundEntry().key(Key.key("step/wood6")).build(),
     )
 
+    private val BlockData.propertiesAsString get() = this.asString.substringAfter("[").substringBeforeLast("]")
+    private fun handleCopperModelOverrides() {
+        CopperHelpers.COPPER_STAIRS.forEachIndexed { index, material ->
+            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.STAIR && it.block.blockId == index + 1 } ?: return@forEachIndexed
+            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
+            val prefix = "block/${material.name.lowercase()}"
+
+            resourcePack.model(model.parent(Key.key("block/stairs")).key(Key.key(prefix)).build())
+            resourcePack.model(model.parent(Key.key("block/inner_stairs")).key(Key.key("${prefix}_inner")).build())
+            resourcePack.model(model.parent(Key.key("block/outer_stairs")).key(Key.key("${prefix}_outer")).build())
+        }
+
+        CopperHelpers.COPPER_SLABS.forEachIndexed { index, material ->
+            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.SLAB && it.block.blockId == index + 1 } ?: return@forEachIndexed
+            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
+            val prefix = "block/${material.name.lowercase()}"
+
+            resourcePack.model(model.parent(Key.key("block/slab")).key(Key.key(prefix)).build())
+            resourcePack.model(model.parent(Key.key("block/slab_top")).key(Key.key("${prefix}_top")).build())
+        }
+
+        CopperHelpers.COPPER_DOORS.forEachIndexed { index, material ->
+            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.DOOR && it.block.blockId == index + 1 } ?: return@forEachIndexed
+            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
+            val prefix = "block/${material.name.lowercase()}"
+
+            resourcePack.model(model.parent(Key.key("block/door_bottom_left")).key(Key.key("${prefix}_bottom_left")).build())
+            resourcePack.model(model.parent(Key.key("block/door_bottom_left_open")).key(Key.key("${prefix}_bottom_left_open")).build())
+            resourcePack.model(model.parent(Key.key("block/door_bottom_right")).key(Key.key("${prefix}_bottom_right")).build())
+            resourcePack.model(model.parent(Key.key("block/door_bottom_right_open")).key(Key.key("${prefix}_bottom_right_open")).build())
+            resourcePack.model(model.parent(Key.key("block/door_top_left")).key(Key.key("${prefix}_top_left")).build())
+            resourcePack.model(model.parent(Key.key("block/door_top_left_open")).key(Key.key("${prefix}_top_left_open")).build())
+            resourcePack.model(model.parent(Key.key("block/door_top_right")).key(Key.key("${prefix}_top_right")).build())
+            resourcePack.model(model.parent(Key.key("block/door_top_right_open")).key(Key.key("${prefix}_top_right_open")).build())
+        }
+
+        CopperHelpers.COPPER_TRAPDOORS.forEachIndexed { index, material ->
+            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.TRAPDOOR && it.block.blockId == index + 1 } ?: return@forEachIndexed
+            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
+            val prefix = "block/${material.name.lowercase()}"
+            val parentPrefix = "block/template_trapdoor"
+
+            resourcePack.model(model.parent(Key.key("${parentPrefix}_bottom")).key(Key.key("${prefix}_bottom")).build())
+            resourcePack.model(model.parent(Key.key("${parentPrefix}_open")).key(Key.key("${prefix}_open")).build())
+            resourcePack.model(model.parent(Key.key("${parentPrefix}_top")).key(Key.key("${prefix}_top")).build())
+        }
+
+        CopperHelpers.COPPER_GRATE.forEachIndexed { index, material ->
+            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.GRATE && it.block.blockId == index + 1 } ?: return@forEachIndexed
+            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
+            val key = Key.key("block/${material.name.lowercase()}")
+
+            resourcePack.model(model.parent(Key.key("block/cube_all")).key(key).build())
+        }
+    }
+
     private fun blockState(blockType: SetBlock.BlockType): BlockState {
-        val multiVariant = gearyBlocks.block2Prefab.blockMap[blockType]?.mapIndexed { index, blockData ->
-            val query = blockPrefabs.firstOrNull { it.block.blockId == index } ?: return@mapIndexed null
-            val variant = MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build()) ?: return@mapIndexed null
-            blockData.toStringData() to variant
-        }?.filterNotNull()?.toMap()?.toMutableMap() ?: mutableMapOf()
+        val multiVariant = blockType.multiVariant()
 
         // Add the vanilla block to the blockstate file
         val (vanillaMaterial, vanillaVariant) = when (blockType) {
@@ -114,16 +169,49 @@ object ResourcepackGeneration {
             else -> Material.AIR to Key.key("nothing")
         }
 
-        multiVariant[vanillaMaterial.createBlockData().toStringData()] =
+        multiVariant[vanillaMaterial.createBlockData().propertiesAsString] =
             MultiVariant.of(Variant.builder().model(vanillaVariant).build())
 
         return BlockState.of(blockType.blockStateKey(), multiVariant)
     }
 
+    private fun SetBlock.BlockType.multiVariant() =
+        gearyBlocks.block2Prefab.blockMap[this]?.mapIndexed { index, blockData ->
+            val query = blockPrefabs.find { gearyBlocks.createBlockData(it.prefabKey) == blockData }
+                ?: plantPrefabs.find { gearyBlocks.createBlockData(it.prefabKey) == blockData }
+                ?: return@mapIndexed null
+            val variant = MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build()) ?: return@mapIndexed null
+            blockData.propertiesAsString to variant
+        }?.filterNotNull()?.toMap()?.toMutableMap() ?: mutableMapOf()
+
     private fun SetBlock.BlockType.blockStateKey() = when (this) {
         SetBlock.BlockType.NOTEBLOCK -> Key.key("note_block")
         SetBlock.BlockType.WIRE -> Key.key("tripwire")
+
         else -> Key.key("nothing")
+    }
+
+    private fun ModelTextures.Builder.properties(prefabKey: PrefabKey): ModelTextures.Builder? {
+        val entity = prefabKey.toEntityOrNull() ?: return this
+        val setBlock = entity.get<SetBlock>() ?: return this
+        val texture = entity.get<BlockyInfo>()?.blockTexture ?: return null
+
+        return variables(
+            when (setBlock.blockType) {
+                SetBlock.BlockType.STAIR, SetBlock.BlockType.SLAB -> mutableMapOf(
+                    "bottom" to ModelTexture.ofKey(texture),
+                    "top" to ModelTexture.ofKey(texture),
+                    "side" to ModelTexture.ofKey(texture),
+                )
+                SetBlock.BlockType.DOOR -> mutableMapOf(
+                    "bottom" to ModelTexture.ofKey(texture),
+                    "top" to ModelTexture.ofKey(texture),
+                )
+                SetBlock.BlockType.TRAPDOOR -> mutableMapOf("texture" to ModelTexture.ofKey(texture))
+                SetBlock.BlockType.GRATE -> mutableMapOf("all" to ModelTexture.ofKey(texture))
+                else -> return this
+            }
+        )
     }
 
     private fun Variant.Builder.properties(prefabKey: PrefabKey): Variant.Builder? {
@@ -136,8 +224,8 @@ object ResourcepackGeneration {
             directional?.parentBlock?.toEntityOrNull() != null ->
                 this.directionalVariant(prefabKey, directional.parentBlock.toEntity())
 
-            directional?.isParentBlock != false ->
-                this.model(blockyInfo?.blockModel)
+            directional?.isParentBlock != false && blockyInfo?.blockModel != null ->
+                this.model(blockyInfo.blockModel)
 
             else -> null
         }
@@ -163,39 +251,6 @@ object ResourcepackGeneration {
                 else -> {}
             }
         }
-    }
-
-    private fun BlockData.toStringData(): String {
-        return when (this) {
-            is NoteBlock -> this.noteBlockData()
-            is Tripwire -> this.tripwireData()
-            else -> ""
-        }
-    }
-
-    private fun NoteBlock.noteBlockData(): String {
-        return String.format(
-            "instrument=%s,note=%s,powered=%s",
-            getInstrument(this.instrument),
-            gearyBlocks.block2Prefab.blockMap[SetBlock.BlockType.NOTEBLOCK]?.indexOf(this)?.mod(25) ?: 0,
-            this.isPowered
-        )
-    }
-
-    private fun getInstrument(instrument: Instrument): String {
-        return when (instrument) {
-            Instrument.BASS_DRUM -> "basedrum"
-            Instrument.PIANO -> "harp"
-            Instrument.SNARE_DRUM -> "snare"
-            Instrument.STICKS -> "hat"
-            Instrument.BASS_GUITAR -> "bass"
-            else -> instrument.name.lowercase()
-        }
-    }
-
-
-    private fun Tripwire.tripwireData(): String {
-        return "north=${hasFace(BlockFace.NORTH)},south=${hasFace(BlockFace.SOUTH)},west=${hasFace(BlockFace.WEST)},east=${hasFace(BlockFace.EAST)},attached=$isAttached,disarmed=$isDisarmed,powered=$isPowered"
     }
 
 }

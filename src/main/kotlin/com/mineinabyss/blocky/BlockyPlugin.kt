@@ -87,6 +87,9 @@ class BlockyPlugin : JavaPlugin() {
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
             if (slabBlocks.isEnabled) listeners(BlockyCopperListener.BlockySlabListener())
             if (stairBlocks.isEnabled) listeners(BlockyCopperListener.BlockyStairListener())
+            if (doorBlocks.isEnabled) listeners(BlockyCopperListener.BlockyDoorListener())
+            if (trapdoorBlocks.isEnabled) listeners(BlockyCopperListener.BlockyTrapDoorListener())
+            if (grateBlocks.isEnabled) listeners(BlockyCopperListener.BlockyGrateListener())
             if (!disableCustomSounds) listeners(BlockySoundListener())
         }
 

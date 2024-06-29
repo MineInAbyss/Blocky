@@ -5,4 +5,4 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @SerialName("blocky:waxed_copper_block")
-object WaxedCopperBlock
+class WaxedCopperBlock

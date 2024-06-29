@@ -71,7 +71,7 @@ val blockPrefabs
 
 val plantPrefabs
     get() = blocky.blockQuery
-        .map { BlockyPrefabs.Plant.from(it.prefabKey, it.block, it.directional) }
+        .map { BlockyPrefabs.Plant.from(it.prefabKey, it.block) }
         .filterNotNull()
         .sortedBy { it.prefabKey.key }
 
