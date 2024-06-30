@@ -12,6 +12,8 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.to
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
+import org.bukkit.block.BlockFace
+import org.bukkit.block.data.type.Slab
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -30,7 +32,7 @@ class BlockyCopperListener {
         fun PlayerInteractEvent.onPlacingBlockySlab() {
             val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
             val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
-            val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
+            val blockData = gearyBlocks.createBlockData(prefabKey) as? Slab ?: return
             player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType == SetBlock.BlockType.SLAB } ?: return
             if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 

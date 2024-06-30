@@ -33,7 +33,7 @@ object BlockStateCorrection {
         val placeContext = when {// Shulker-Boxes are DirectionalPlace based unlike other directional-blocks
             MaterialSetTag.SHULKER_BOXES.isTagged(placedItem.type) ->
                 DirectionalPlaceContext(serverPlayer.level(), hitResult.blockPos, hitResult.direction, nmsStack, hitResult.direction.opposite)
-            else -> BlockPlaceContext(UseOnContext(serverPlayer, hand, hitResult))
+            else -> BlockPlaceContext(serverPlayer.level(), serverPlayer, hand, nmsStack, hitResult)
         }
 
         blockItem?.let {

@@ -1,17 +1,12 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.components.core.WaxedCopperBlock
-import com.mineinabyss.blocky.systems.allBlockyPrefabs
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.datastore.has
 import com.mineinabyss.geary.papermc.datastore.remove
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
-import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.configuration.components.Prefab
-import com.mineinabyss.idofront.nms.nbt.fastPDC
-import com.mineinabyss.idofront.serialization.toSerializable
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.data.BlockData
@@ -22,20 +17,20 @@ import org.bukkit.block.data.type.TrapDoor
 import org.bukkit.inventory.ItemStack
 
 object CopperHelpers {
-    fun convertToFakeType(itemStack: ItemStack): ItemStack = itemStack.takeIf { itemStack.type in blockyCopperMaterial }
-        ?.withType(nonBlockyCopperMaterial.elementAt(blockyCopperMaterial.indexOf(itemStack.type))) ?: itemStack
-    fun isFakeWaxedCopper(block: Block) = (block.type in nonBlockyCopperMaterial) && block.persistentDataContainer.has<WaxedCopperBlock>()
+    fun convertToFakeType(itemStack: ItemStack): ItemStack = itemStack.takeIf { itemStack.type in BLOCKY_COPPER }
+        ?.withType(VANILLA_COPPER.elementAt(BLOCKY_COPPER.indexOf(itemStack.type))) ?: itemStack
+    fun isFakeWaxedCopper(block: Block) = (block.type in VANILLA_COPPER) && block.persistentDataContainer.has<WaxedCopperBlock>()
     fun isFakeWaxedCopper(itemStack: ItemStack) = itemStack.type.name.contains("WAXED") && itemStack.type.isBlock && !isBlockyCopper(itemStack)
     fun setFakeWaxedCopper(block: Block, value: Boolean) = when {
         !value -> block.persistentDataContainer.remove<WaxedCopperBlock>()
-        block.type in nonBlockyCopperMaterial -> block.persistentDataContainer.encode(WaxedCopperBlock())
+        block.type in VANILLA_COPPER -> block.persistentDataContainer.encode(WaxedCopperBlock())
         else -> {}
     }
 
     fun convertToBlockyType(itemStack: ItemStack): ItemStack = itemStack.toGearyOrNull()?.prefabs?.first()?.get<PrefabKey>()
         ?.let(gearyBlocks::createBlockData)?.let { itemStack.withType(it.material) } ?: itemStack
-    fun isBlockyCopper(block: Block) = block.type in blockyCopperMaterial
-    fun isBlockyCopper(blockData: BlockData) = blockData.material in blockyCopperMaterial
+    fun isBlockyCopper(block: Block) = block.type in BLOCKY_COPPER
+    fun isBlockyCopper(blockData: BlockData) = blockData.material in BLOCKY_COPPER
     fun isBlockyCopper(itemStack: ItemStack) = isBlockyStair(itemStack) || isBlockySlab(itemStack) || isBlockyDoor(itemStack) || isBlockyTrapDoor(itemStack) || isBlockyGrate(itemStack)
     fun isBlockyStair(block: Block) = block.blockData is Stairs && block.blockData in gearyBlocks.block2Prefab
     fun isBlockyStair(itemStack: ItemStack) = itemStack.decode<SetBlock>()?.blockType == SetBlock.BlockType.STAIR
@@ -48,7 +43,7 @@ object CopperHelpers {
     fun isBlockyGrate(block: Block) = block.type in BLOCKY_GRATE && block.blockData in gearyBlocks.block2Prefab
     fun isBlockyGrate(itemStack: ItemStack) = itemStack.decode<SetBlock>()?.blockType == SetBlock.BlockType.GRATE
 
-    private val blockyCopperMaterial = setOf(
+    val BLOCKY_COPPER = setOf(
         Material.WAXED_CUT_COPPER_SLAB, Material.WAXED_CUT_COPPER_STAIRS,
         Material.WAXED_EXPOSED_CUT_COPPER_SLAB, Material.WAXED_EXPOSED_CUT_COPPER_STAIRS,
         Material.WAXED_OXIDIZED_CUT_COPPER_SLAB, Material.WAXED_OXIDIZED_CUT_COPPER_STAIRS,
@@ -59,7 +54,7 @@ object CopperHelpers {
         Material.WAXED_WEATHERED_COPPER_DOOR, Material.WAXED_WEATHERED_COPPER_TRAPDOOR, Material.WAXED_WEATHERED_COPPER_GRATE
     )
 
-    private val nonBlockyCopperMaterial = setOf(
+    val VANILLA_COPPER = setOf(
         Material.CUT_COPPER_SLAB, Material.CUT_COPPER_STAIRS,
         Material.EXPOSED_CUT_COPPER_SLAB, Material.EXPOSED_CUT_COPPER_STAIRS,
         Material.OXIDIZED_CUT_COPPER_SLAB, Material.OXIDIZED_CUT_COPPER_STAIRS,
@@ -71,32 +66,32 @@ object CopperHelpers {
     )
 
     val BLOCKY_SLABS: Set<Material>
-        get() = blockyCopperMaterial.filter { it.name.endsWith("_SLAB") }.toSet()
+        get() = BLOCKY_COPPER.filter { it.name.endsWith("_SLAB") }.toSet()
 
     val BLOCKY_STAIRS: Set<Material>
-        get() = blockyCopperMaterial.filter { it.name.endsWith("_STAIRS") }.toSet()
+        get() = BLOCKY_COPPER.filter { it.name.endsWith("_STAIRS") }.toSet()
 
     val BLOCKY_DOORS: Set<Material>
-        get() = blockyCopperMaterial.filter { it.name.endsWith("_DOOR") }.toSet()
+        get() = BLOCKY_COPPER.filter { it.name.endsWith("_DOOR") }.toSet()
 
     val BLOCKY_TRAPDOORS: Set<Material>
-        get() = blockyCopperMaterial.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
+        get() = BLOCKY_COPPER.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
 
     val BLOCKY_GRATE: Set<Material>
-        get() = blockyCopperMaterial.filter { it.name.endsWith("_GRATE") }.toSet()
+        get() = BLOCKY_COPPER.filter { it.name.endsWith("_GRATE") }.toSet()
 
     val COPPER_SLABS: Set<Material>
-        get() = nonBlockyCopperMaterial.filter { it.name.endsWith("_SLAB") }.toSet()
+        get() = VANILLA_COPPER.filter { it.name.endsWith("_SLAB") }.toSet()
 
     val COPPER_STAIRS: Set<Material>
-        get() = nonBlockyCopperMaterial.filter { it.name.endsWith("_STAIRS") }.toSet()
+        get() = VANILLA_COPPER.filter { it.name.endsWith("_STAIRS") }.toSet()
 
     val COPPER_DOORS: Set<Material>
-        get() = nonBlockyCopperMaterial.filter { it.name.endsWith("_DOOR") }.toSet()
+        get() = VANILLA_COPPER.filter { it.name.endsWith("_DOOR") }.toSet()
 
     val COPPER_TRAPDOORS: Set<Material>
-        get() = nonBlockyCopperMaterial.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
+        get() = VANILLA_COPPER.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
 
     val COPPER_GRATE: Set<Material>
-        get() = nonBlockyCopperMaterial.filter { it.name.endsWith("_GRATE") }.toSet()
+        get() = VANILLA_COPPER.filter { it.name.endsWith("_GRATE") }.toSet()
 }

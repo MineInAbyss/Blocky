@@ -9,25 +9,26 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.BlockyBreaking
 import com.mineinabyss.blocky.components.features.mining.PlayerMiningAttribute
 import com.mineinabyss.blocky.components.features.mining.miningAttribute
-import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.CopperHelpers
 import com.mineinabyss.blocky.helpers.gearyInventory
-import com.mineinabyss.idofront.util.to
+import com.mineinabyss.blocky.helpers.handleBlockyDrops
+import com.mineinabyss.blocky.helpers.isVanillaNoteBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
+import com.mineinabyss.idofront.messaging.broadcastVal
+import com.mineinabyss.idofront.util.to
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.block.data.type.Door
+import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Slab
-import org.bukkit.block.data.type.Stairs
-import org.bukkit.block.data.type.TrapDoor
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.*
 import org.bukkit.event.player.PlayerInteractEvent
-import kotlin.to
 
 class BlockyGenericListener : Listener {
 
@@ -65,8 +66,42 @@ class BlockyGenericListener : Listener {
     }
 
     private val materialSet = setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).asSequence()
-        .plus(CopperHelpers.BLOCKY_SLABS).plus(CopperHelpers.BLOCKY_STAIRS).plus(CopperHelpers.BLOCKY_DOORS)
-        .plus(CopperHelpers.BLOCKY_TRAPDOORS).plus(CopperHelpers.BLOCKY_GRATE).toList()
+        .plus(CopperHelpers.BLOCKY_COPPER).plus(CopperHelpers.VANILLA_COPPER)
+
+    // Handles logic for correctly placing fake slabs and real unwaxed slabs
+    // Minor issue with placing when block below is wrong but it would place in same, minor bug not important
+    //TODO Try and swap this to use BlockStateCorrection eventually
+    @EventHandler
+    fun PlayerInteractEvent.onPrePlacingSlab() {
+        val (block, item) = (clickedBlock.takeIf { it?.blockData is Slab } ?: return) to (item ?: return)
+        val relative = block.getRelative(blockFace)
+        if (action != Action.RIGHT_CLICK_BLOCK) return
+
+        if (CopperHelpers.isFakeWaxedCopper(block) && item.type == block.type) {
+            setUseItemInHand(Event.Result.DENY)
+            setUseInteractedBlock(Event.Result.DENY)
+            if (CopperHelpers.isFakeWaxedCopper(relative) && item.type == relative.type) return
+            else if (!relative.canPlace(item.type.createBlockData())) return
+            else {
+                val newDataR = (item.type.createBlockData() as Slab).apply {
+                    if (relative.type == item.type) type = Slab.Type.DOUBLE
+                    else if (relative.isEmpty || relative.isReplaceable)
+                        type = if (blockFace == BlockFace.UP) Slab.Type.BOTTOM else Slab.Type.TOP
+                }
+                if (relative.canPlace(newDataR)) relative.blockData = newDataR
+            }
+        } else if (CopperHelpers.isFakeWaxedCopper(relative) && item.type == relative.type) {
+            val relativeData = relative.blockData as? Slab ?: return
+            if (relativeData.type == Slab.Type.BOTTOM && blockFace == BlockFace.DOWN) {
+                setUseItemInHand(Event.Result.DENY)
+                setUseInteractedBlock(Event.Result.DENY)
+            } else if (relativeData.type == Slab.Type.TOP && blockFace == BlockFace.UP) {
+                setUseItemInHand(Event.Result.DENY)
+                setUseInteractedBlock(Event.Result.DENY)
+            }
+        }
+    }
+
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         val heldType = itemInHand.type
@@ -94,32 +129,10 @@ class BlockyGenericListener : Listener {
             in CopperHelpers.BLOCKY_TRAPDOORS -> CopperHelpers.COPPER_TRAPDOORS.elementAt(CopperHelpers.BLOCKY_TRAPDOORS.indexOf(heldType))
             in CopperHelpers.BLOCKY_GRATE -> CopperHelpers.COPPER_GRATE.elementAt(CopperHelpers.BLOCKY_GRATE.indexOf(heldType))
             else -> heldType
-        }.createBlockData {
-            when {
-                it is Slab && placedData is Slab -> it.type = placedData.type
-                it is Stairs && placedData is Stairs -> {
-                    it.facing = placedData.facing
-                    it.half = placedData.half
-                    it.shape = placedData.shape
-                }
-                it is Door && placedData is Door -> {
-                    it.facing = placedData.facing
-                    it.half = placedData.half
-                    it.hinge = placedData.hinge
-                    it.isPowered = placedData.isPowered
-                    it.isOpen = placedData.isOpen
-                }
-                it is TrapDoor && placedData is TrapDoor -> {
-                    it.facing = placedData.facing
-                    it.half = placedData.half
-                    it.isPowered = placedData.isPowered
-                    it.isOpen = placedData.isOpen
-                }
-            }
-        }
+        }.createBlockData().apply(placedData::copyTo)
 
         blockPlaced.blockData = newData
-        CopperHelpers.setFakeWaxedCopper(blockPlaced, true)
+        if (heldType in CopperHelpers.BLOCKY_COPPER) CopperHelpers.setFakeWaxedCopper(blockPlaced.broadcastVal(), true)
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

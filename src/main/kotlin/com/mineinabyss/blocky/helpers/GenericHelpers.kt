@@ -94,7 +94,7 @@ fun placeBlockyBlock(
 ) {
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return
-    if (!against.isBlockyBlock && !newData.isBlockyBlock) return
+    if (!against.isBlockyBlock && !newData.isBlockyBlock && !CopperHelpers.isBlockyCopper(against) && !CopperHelpers.isBlockyCopper(newData)) return
     if (GenericHelpers.entityStandingInside(targetBlock) || against.isVanillaNoteBlock) return
 
     if (targetBlock.isVanillaNoteBlock)
