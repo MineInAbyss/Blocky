@@ -132,7 +132,7 @@ class BlockyGenericListener : Listener {
         }.createBlockData().apply(placedData::copyTo)
 
         blockPlaced.blockData = newData
-        if (heldType in CopperHelpers.BLOCKY_COPPER) CopperHelpers.setFakeWaxedCopper(blockPlaced.broadcastVal(), true)
+        if (heldType in CopperHelpers.BLOCKY_COPPER) CopperHelpers.setFakeWaxedCopper(blockPlaced, true)
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

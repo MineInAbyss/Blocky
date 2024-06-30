@@ -1,5 +1,6 @@
 package com.mineinabyss.blocky.helpers
 
+import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.WaxedCopperBlock
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.datastore.has
@@ -17,7 +18,19 @@ import org.bukkit.block.data.type.TrapDoor
 import org.bukkit.inventory.ItemStack
 
 object CopperHelpers {
+
+    fun isFeatureEnabled(blockData: BlockData): Boolean {
+        return when (blockData) {
+            is Stairs -> blocky.config.stairBlocks.isEnabled
+            is Slab -> blocky.config.slabBlocks.isEnabled
+            is Door -> blocky.config.doorBlocks.isEnabled
+            is TrapDoor -> blocky.config.trapdoorBlocks.isEnabled
+            else -> blocky.config.grateBlocks.isEnabled.takeIf { blockData.material in BLOCKY_GRATE.plus(COPPER_GRATE) } ?: false
+        }
+    }
+
     fun convertToFakeType(itemStack: ItemStack): ItemStack = itemStack.takeIf { itemStack.type in BLOCKY_COPPER }
+        ?.takeIf { isFeatureEnabled(it.type.createBlockData()) }
         ?.withType(VANILLA_COPPER.elementAt(BLOCKY_COPPER.indexOf(itemStack.type))) ?: itemStack
     fun isFakeWaxedCopper(block: Block) = (block.type in VANILLA_COPPER) && block.persistentDataContainer.has<WaxedCopperBlock>()
     fun isFakeWaxedCopper(itemStack: ItemStack) = itemStack.type.name.contains("WAXED") && itemStack.type.isBlock && !isBlockyCopper(itemStack)
@@ -28,7 +41,7 @@ object CopperHelpers {
     }
 
     fun convertToBlockyType(itemStack: ItemStack): ItemStack = itemStack.toGearyOrNull()?.prefabs?.first()?.get<PrefabKey>()
-        ?.let(gearyBlocks::createBlockData)?.let { itemStack.withType(it.material) } ?: itemStack
+        ?.let(gearyBlocks::createBlockData)?.takeIf { isFeatureEnabled(it) }?.let { itemStack.withType(it.material) } ?: itemStack
     fun isBlockyCopper(block: Block) = block.type in BLOCKY_COPPER
     fun isBlockyCopper(blockData: BlockData) = blockData.material in BLOCKY_COPPER
     fun isBlockyCopper(itemStack: ItemStack) = isBlockyStair(itemStack) || isBlockySlab(itemStack) || isBlockyDoor(itemStack) || isBlockyTrapDoor(itemStack) || isBlockyGrate(itemStack)
