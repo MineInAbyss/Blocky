@@ -13,10 +13,6 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import net.kyori.adventure.key.Key
 import org.bukkit.Material
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.Door
-import org.bukkit.block.data.type.Slab
-import org.bukkit.block.data.type.Stairs
-import org.bukkit.block.data.type.TrapDoor
 import team.unnamed.creative.ResourcePack
 import team.unnamed.creative.blockstate.BlockState
 import team.unnamed.creative.blockstate.MultiVariant
@@ -111,7 +107,7 @@ object ResourcepackGeneration {
 
         fun handleModel(blockType: SetBlock.BlockType, material: Material, index: Int, parent: String, suffix: String) {
             val query = blockPrefabs.find { it.block.blockType == blockType && it.block.blockId == index + 1 } ?: return
-            val model = Model.model().textures(ModelTextures.builder().customProperties(query.prefabKey)?.build() ?: return)
+            val model = Model.model().textures(ModelTextures.builder().customProperties(query.prefabKey).build())
                 .parent(Key.key(parent)).key(Key.key("blocky:block/${material.name.lowercase()}$suffix"))
                 .build()
 
@@ -198,22 +194,7 @@ object ResourcepackGeneration {
         else -> Key.key("nothing")
     }
 
-    private fun ModelTextures.Builder.vanillaProperties(material: Material): ModelTextures.Builder? {
-        val texture = ModelTexture.ofKey(Key.key("block/${material.name.lowercase()}"))
-        val blockData = material.createBlockData()
-
-        return variables(
-            when {
-                blockData is Stairs -> mutableMapOf("bottom" to texture, "top" to texture, "side" to texture)
-                blockData is Slab -> mutableMapOf("bottom" to texture, "top" to texture, "side" to texture)
-                blockData is Door -> mutableMapOf("bottom" to texture, "top" to texture)
-                blockData is TrapDoor -> mutableMapOf("texture" to texture)
-                "GRATE" in material.name -> mutableMapOf("all" to texture)
-                else -> return null
-            }
-        )
-    }
-    private fun ModelTextures.Builder.customProperties(prefabKey: PrefabKey): ModelTextures.Builder? {
+    private fun ModelTextures.Builder.customProperties(prefabKey: PrefabKey): ModelTextures.Builder {
         val entity = prefabKey.toEntityOrNull() ?: return this
         val setBlock = entity.get<SetBlock>() ?: return this
         val info = entity.get<BlockyInfo>() ?: return this

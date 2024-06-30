@@ -8,7 +8,6 @@ import com.mineinabyss.geary.modules.GearyModule
 import com.mineinabyss.geary.observers.events.OnSet
 import com.mineinabyss.geary.systems.builders.observe
 import com.mineinabyss.geary.systems.query.query
-import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.Bukkit
 import org.bukkit.entity.ItemDisplay
 

@@ -1,20 +1,15 @@
 package com.mineinabyss.blocky.components.core
 
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.blocks.BlockyInstrument
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.isVanillaNoteBlock
 import com.mineinabyss.blocky.helpers.persistentDataContainer
-import com.mineinabyss.blocky.helpers.vanillaNoteBlock
-import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.idofront.location.up
-import com.mineinabyss.idofront.messaging.broadcast
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument
-import org.bukkit.Color
 import org.bukkit.GameEvent
 import org.bukkit.Particle
 import org.bukkit.block.Block

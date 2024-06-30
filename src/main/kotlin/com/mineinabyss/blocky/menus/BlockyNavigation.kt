@@ -8,7 +8,6 @@ import com.mineinabyss.blocky.systems.furniturePrefabs
 import com.mineinabyss.blocky.systems.plantPrefabs
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.guiy.components.CreativeItem
-import com.mineinabyss.guiy.components.HorizontalGrid
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.components.VerticalGrid
 import com.mineinabyss.guiy.components.canvases.Chest
@@ -88,26 +87,6 @@ private fun BlockyScreen.handleTitle(page: Int): Component {
         if (page > 0) append(":blocky_scrolling_up::space_-18:")
         append(":blocky_scrolling_down:")
     }.miniMsg())
-}
-
-@Composable
-fun PaginatedNextButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Button(onClick = onClick, modifier = modifier) {
-        Item(ItemStack(Material.PAPER).editItemMeta {
-            itemName("<green><b>Next".miniMsg())
-            setCustomModelData(0)
-        }, modifier)
-    }
-}
-
-@Composable
-fun PaginatedPrevButton(modifier: Modifier = Modifier, onClick: () -> Unit) {
-    Button(onClick = onClick, modifier = modifier) {
-        Item(ItemStack(Material.PAPER).editItemMeta {
-            itemName("<red><b>Previous".miniMsg())
-            setCustomModelData(0)
-        }, modifier)
-    }
 }
 
 @Composable

@@ -7,7 +7,6 @@ import org.bukkit.event.Cancellable
 import org.bukkit.event.HandlerList
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
-import org.bukkit.util.Vector
 
 class BlockyFurnitureInteractEvent(
     entity: Entity,

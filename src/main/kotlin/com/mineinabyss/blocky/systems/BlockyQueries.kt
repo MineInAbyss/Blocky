@@ -1,12 +1,9 @@
-@file:OptIn(UnsafeAccessors::class, UnsafeAccessors::class, UnsafeAccessors::class)
-
 package com.mineinabyss.blocky.systems
 
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
-import com.mineinabyss.geary.annotations.optin.UnsafeAccessors
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab

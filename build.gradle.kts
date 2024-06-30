@@ -1,5 +1,4 @@
 import net.minecrell.pluginyml.paper.PaperPluginDescription
-import kotlin.io.path.Path
 
 plugins {
     alias(idofrontLibs.plugins.mia.kotlin.jvm)

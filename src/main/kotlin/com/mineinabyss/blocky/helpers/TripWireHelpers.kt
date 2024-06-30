@@ -7,13 +7,10 @@ import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
-import org.bukkit.GameMode
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
-import org.bukkit.util.BoundingBox
 
 fun SetBlock.blockyTripWire() = gearyBlocks.block2Prefab.blockMap[blockType]!![blockId]
 

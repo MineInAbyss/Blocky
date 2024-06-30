@@ -5,7 +5,6 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture
-import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.VanillaNoteBlock
@@ -14,16 +13,12 @@ import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.mining.BlockyMining
-import com.mineinabyss.blocky.components.features.mining.PlayerMiningAttribute
 import com.mineinabyss.blocky.components.features.mining.ToolType
-import com.mineinabyss.blocky.components.features.mining.miningAttribute
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.GearyEntity
-import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
-import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.gearyItems
 import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -33,11 +28,9 @@ import com.mineinabyss.idofront.util.randomOrMin
 import io.th0rgal.protectionlib.ProtectionLib
 import net.minecraft.core.BlockPos
 import org.bukkit.*
-import org.bukkit.attribute.Attribute
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.Chest
 import org.bukkit.block.data.type.Fence
 import org.bukkit.block.data.type.Stairs
 import org.bukkit.enchantments.Enchantment
@@ -52,18 +45,6 @@ import org.bukkit.util.BoundingBox
 import java.util.*
 import kotlin.math.pow
 import kotlin.random.Random
-
-const val VANILLA_STONE_PLACE = "blocky:block.stone.place"
-const val VANILLA_STONE_BREAK = "blocky:block.stone.break"
-const val VANILLA_STONE_HIT = "blocky:block.stone.hit"
-const val VANILLA_STONE_STEP = "blocky:block.stone.step"
-const val VANILLA_STONE_FALL = "blocky:block.stone.fall"
-
-const val VANILLA_WOOD_PLACE = "blocky:block.wood.place"
-const val VANILLA_WOOD_BREAK = "blocky:block.wood.break"
-const val VANILLA_WOOD_HIT = "blocky:block.wood.hit"
-const val VANILLA_WOOD_STEP = "blocky:block.wood.step"
-const val VANILLA_WOOD_FALL = "blocky:block.wood.fall"
 
 const val DEFAULT_PLACE_VOLUME = 1.0f
 const val DEFAULT_PLACE_PITCH = 0.8f
@@ -80,7 +61,7 @@ val Block.persistentDataContainer get() = customBlockData as PersistentDataConta
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 fun Block.toBlockPos() = BlockPos(this.x, this.y, this.z)
 
-internal inline fun ItemStack.toGearyOrNull(): GearyEntity? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)
+internal fun ItemStack.toGearyOrNull(): GearyEntity? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)
 internal inline fun <reified T : Component> ItemStack.decode(): T? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)?.get<T>()
 internal val Player.gearyInventory get() = inventory.toGeary()
 
@@ -134,8 +115,6 @@ fun handleBlockyDrops(block: Block, player: Player) {
 }
 
 object GenericHelpers {
-
-    fun blockReachDistance(player: Player) = player.getAttribute(Attribute.PLAYER_BLOCK_INTERACTION_RANGE)?.value ?: 5.0
 
     val simulationDistance = (Bukkit.getServer().simulationDistance * 16.0).pow(2)
 
@@ -213,30 +192,6 @@ object GenericHelpers {
         else -> BlockFace.NORTH
     }
 
-    fun leftBlock(block: Block, player: Player): Block {
-        val leftBlock = when (player.facing) {
-            BlockFace.NORTH -> block.getRelative(BlockFace.WEST)
-            BlockFace.SOUTH -> block.getRelative(BlockFace.EAST)
-            BlockFace.WEST -> block.getRelative(BlockFace.SOUTH)
-            BlockFace.EAST -> block.getRelative(BlockFace.NORTH)
-            else -> block
-        }
-        return if (leftBlock.blockData is Chest && (leftBlock.blockData as Chest).facing != player.facing.oppositeFace) block
-        else leftBlock
-    }
-
-    fun rightBlock(block: Block, player: Player): Block {
-        val rightBlock = when (player.facing) {
-            BlockFace.NORTH -> block.getRelative(BlockFace.EAST)
-            BlockFace.SOUTH -> block.getRelative(BlockFace.WEST)
-            BlockFace.WEST -> block.getRelative(BlockFace.NORTH)
-            BlockFace.EAST -> block.getRelative(BlockFace.SOUTH)
-            else -> block
-        }
-        return if (rightBlock.blockData is Chest && (rightBlock.blockData as Chest).facing != player.facing.oppositeFace) block
-        else rightBlock
-    }
-
     /**
      * @return A new location at the bottom-center of a block
      */
@@ -253,7 +208,7 @@ object GenericHelpers {
         return ToolType.ANY in acceptedToolTypes || acceptedToolTypes.any { it in heldToolTypes }
     }
 
-    fun vanillaToolTypes(itemStack: ItemStack) = when {
+    private fun vanillaToolTypes(itemStack: ItemStack) = when {
         MaterialTags.AXES.isTagged(itemStack.type) -> ToolType.AXE
         MaterialTags.PICKAXES.isTagged(itemStack.type) -> ToolType.PICKAXE
         MaterialTags.SWORDS.isTagged(itemStack.type) -> ToolType.SWORD

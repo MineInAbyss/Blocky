@@ -2,25 +2,19 @@ package com.mineinabyss.blocky
 
 import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.blocky.helpers.FurnitureOutlineType
-import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.serialization.MiniMessageSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
-import com.mineinabyss.idofront.serialization.toSerializable
 import com.mineinabyss.idofront.textcomponents.miniMsg
-import com.ticxo.modelengine.api.entity.Hitbox
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.kyori.adventure.text.Component
-import net.minecraft.core.registries.BuiltInRegistries
 import net.minecraft.network.syncher.EntityDataSerializers
 import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.level.block.Block
-import net.minecraft.world.level.block.Blocks
 import org.bukkit.Material
 import org.bukkit.craftbukkit.inventory.CraftItemStack
-import org.bukkit.entity.EntityType
-import org.bukkit.inventory.ItemStack
 
+@Suppress("UnstableApiUsage")
 @Serializable
 data class BlockyConfig(
     val menus: BlockyMenus = BlockyMenus(),

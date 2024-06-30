@@ -1,16 +1,8 @@
 package com.mineinabyss.blocky.listeners
 
-import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.VanillaNoteBlock
-import com.mineinabyss.blocky.helpers.NoteBlockHelpers
-import com.mineinabyss.blocky.helpers.persistentDataContainer
 import com.mineinabyss.blocky.helpers.vanillaNoteBlock
-import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.idofront.entities.rightClicked
-import com.mineinabyss.idofront.messaging.broadcast
 import org.bukkit.Material
-import org.bukkit.Note
-import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler

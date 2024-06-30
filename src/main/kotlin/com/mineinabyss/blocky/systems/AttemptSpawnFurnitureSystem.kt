@@ -1,19 +1,15 @@
 package com.mineinabyss.blocky.systems
 
 import com.mineinabyss.blocky.components.core.BlockyFurniture
-import com.mineinabyss.geary.annotations.optin.DangerousComponentOperation
 import com.mineinabyss.geary.modules.GearyModule
-import com.mineinabyss.geary.papermc.features.entities.sounds.Sounds
 import com.mineinabyss.geary.papermc.tracking.entities.components.AttemptSpawn
 import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.geary.systems.builders.observeWithData
 import com.mineinabyss.geary.systems.query.Query
-import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.typealiases.BukkitEntity
 import org.bukkit.entity.ItemDisplay
 
-@OptIn(DangerousComponentOperation::class)
 fun GearyModule.createFurnitureSpawner() = observeWithData<AttemptSpawn>()
     .exec(object : Query() {
         val furniture by get<BlockyFurniture>()

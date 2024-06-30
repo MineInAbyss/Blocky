@@ -1,18 +1,16 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
-import com.mineinabyss.blocky.api.events.block.BlockyBlockPlaceEvent
-import com.mineinabyss.blocky.components.core.VanillaCopperBlock
-import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.CopperHelpers
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
-import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.blocky.helpers.customBlockData
+import com.mineinabyss.blocky.helpers.gearyInventory
+import com.mineinabyss.blocky.helpers.placeBlockyBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.to
-import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
-import org.bukkit.block.BlockFace
 import org.bukkit.block.data.type.Slab
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
