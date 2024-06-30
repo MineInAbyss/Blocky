@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.assets_generation
 
-import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration.multiVariant
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
@@ -11,10 +10,13 @@ import com.mineinabyss.geary.datatypes.GearyEntity
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.idofront.messaging.broadcastVal
 import net.kyori.adventure.key.Key
 import org.bukkit.Material
 import org.bukkit.block.data.BlockData
+import org.bukkit.block.data.type.Door
+import org.bukkit.block.data.type.Slab
+import org.bukkit.block.data.type.Stairs
+import org.bukkit.block.data.type.TrapDoor
 import team.unnamed.creative.ResourcePack
 import team.unnamed.creative.blockstate.BlockState
 import team.unnamed.creative.blockstate.MultiVariant
@@ -34,7 +36,8 @@ object ResourcepackGeneration {
         resourcePack.models().clear()
         resourcePack.blockState(blockState(SetBlock.BlockType.NOTEBLOCK))
         resourcePack.blockState(blockState(SetBlock.BlockType.WIRE))
-        handleCopperModelOverrides()
+
+        copperBlockStates()
 
         registerRequiredSounds()
 
@@ -104,58 +107,57 @@ object ResourcepackGeneration {
     )
 
     private val BlockData.propertiesAsString get() = this.asString.substringAfter("[").substringBeforeLast("]")
-    private fun handleCopperModelOverrides() {
-        CopperHelpers.COPPER_STAIRS.forEachIndexed { index, material ->
-            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.STAIR && it.block.blockId == index + 1 } ?: return@forEachIndexed
-            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
-            val prefix = "block/${material.name.lowercase()}"
+    private fun copperBlockStates() {
 
-            resourcePack.model(model.parent(Key.key("block/stairs")).key(Key.key(prefix)).build())
-            resourcePack.model(model.parent(Key.key("block/inner_stairs")).key(Key.key("${prefix}_inner")).build())
-            resourcePack.model(model.parent(Key.key("block/outer_stairs")).key(Key.key("${prefix}_outer")).build())
+        fun handleModel(blockType: SetBlock.BlockType, material: Material, index: Int, parent: String, suffix: String) {
+            val query = blockPrefabs.find { it.block.blockType == blockType && it.block.blockId == index + 1 } ?: return
+            val model = Model.model().textures(ModelTextures.builder().customProperties(query.prefabKey)?.build() ?: return)
+                .parent(Key.key(parent)).key(Key.key("blocky:block/${material.name.lowercase()}$suffix"))
+                .build()
+
+            resourcePack.model(model)
         }
 
-        CopperHelpers.COPPER_SLABS.forEachIndexed { index, material ->
-            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.SLAB && it.block.blockId == index + 1 } ?: return@forEachIndexed
-            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
-            val prefix = "block/${material.name.lowercase()}"
-
-            resourcePack.model(model.parent(Key.key("block/slab")).key(Key.key(prefix)).build())
-            resourcePack.model(model.parent(Key.key("block/slab_top")).key(Key.key("${prefix}_top")).build())
+        fun handleBlockState(blockType: SetBlock.BlockType, material: Material, index: Int) {
+            blockPrefabs.find { it.block.blockType == blockType && it.block.blockId == index + 1 } ?: return
+            resourcePack.blockState(VanillaBlockstateFiles.vanillaBlockStateFile(blockType, material) ?: return)
         }
 
-        CopperHelpers.COPPER_DOORS.forEachIndexed { index, material ->
-            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.DOOR && it.block.blockId == index + 1 } ?: return@forEachIndexed
-            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
-            val prefix = "block/${material.name.lowercase()}"
-
-            resourcePack.model(model.parent(Key.key("block/door_bottom_left")).key(Key.key("${prefix}_bottom_left")).build())
-            resourcePack.model(model.parent(Key.key("block/door_bottom_left_open")).key(Key.key("${prefix}_bottom_left_open")).build())
-            resourcePack.model(model.parent(Key.key("block/door_bottom_right")).key(Key.key("${prefix}_bottom_right")).build())
-            resourcePack.model(model.parent(Key.key("block/door_bottom_right_open")).key(Key.key("${prefix}_bottom_right_open")).build())
-            resourcePack.model(model.parent(Key.key("block/door_top_left")).key(Key.key("${prefix}_top_left")).build())
-            resourcePack.model(model.parent(Key.key("block/door_top_left_open")).key(Key.key("${prefix}_top_left_open")).build())
-            resourcePack.model(model.parent(Key.key("block/door_top_right")).key(Key.key("${prefix}_top_right")).build())
-            resourcePack.model(model.parent(Key.key("block/door_top_right_open")).key(Key.key("${prefix}_top_right_open")).build())
+        CopperHelpers.BLOCKY_STAIRS.forEachIndexed { index, material ->
+            handleBlockState(SetBlock.BlockType.STAIR, material, index)
+            handleModel(SetBlock.BlockType.STAIR, material, index, "block/stairs", "")
+            handleModel(SetBlock.BlockType.STAIR, material, index, "block/inner_stairs", "_inner")
+            handleModel(SetBlock.BlockType.STAIR, material, index, "block/outer_stairs", "_outer")
         }
 
-        CopperHelpers.COPPER_TRAPDOORS.forEachIndexed { index, material ->
-            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.TRAPDOOR && it.block.blockId == index + 1 } ?: return@forEachIndexed
-            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
-            val prefix = "block/${material.name.lowercase()}"
-            val parentPrefix = "block/template_trapdoor"
-
-            resourcePack.model(model.parent(Key.key("${parentPrefix}_bottom")).key(Key.key("${prefix}_bottom")).build())
-            resourcePack.model(model.parent(Key.key("${parentPrefix}_open")).key(Key.key("${prefix}_open")).build())
-            resourcePack.model(model.parent(Key.key("${parentPrefix}_top")).key(Key.key("${prefix}_top")).build())
+        CopperHelpers.BLOCKY_SLABS.forEachIndexed { index, material ->
+            handleBlockState(SetBlock.BlockType.SLAB, material, index)
+            handleModel(SetBlock.BlockType.SLAB, material, index, "block/slab", "")
+            handleModel(SetBlock.BlockType.SLAB, material, index, "block/slab_top", "_top")
         }
 
-        CopperHelpers.COPPER_GRATE.forEachIndexed { index, material ->
-            val query = blockPrefabs.find { it.block.blockType == SetBlock.BlockType.GRATE && it.block.blockId == index + 1 } ?: return@forEachIndexed
-            val model = Model.model().textures(ModelTextures.builder().properties(query.prefabKey)?.build() ?:return@forEachIndexed)
-            val key = Key.key("block/${material.name.lowercase()}")
+        CopperHelpers.BLOCKY_DOORS.forEachIndexed { index, material ->
+            handleBlockState(SetBlock.BlockType.DOOR, material, index)
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_bottom_left", "_bottom_left")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_bottom_left_open", "_bottom_left_open")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_bottom_right", "_bottom_right")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_bottom_right_open", "_bottom_right_open")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_top_left", "_top_left")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_top_left_open", "_top_left_open")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_top_right", "_top_right")
+            handleModel(SetBlock.BlockType.DOOR, material, index, "block/door_top_right_open", "_top_right_open")
+        }
 
-            resourcePack.model(model.parent(Key.key("block/cube_all")).key(key).build())
+        CopperHelpers.BLOCKY_TRAPDOORS.forEachIndexed { index, material ->
+            handleBlockState(SetBlock.BlockType.TRAPDOOR, material, index)
+            handleModel(SetBlock.BlockType.TRAPDOOR, material, index, "block/template_trapdoor_bottom", "_bottom")
+            handleModel(SetBlock.BlockType.TRAPDOOR, material, index, "block/template_trapdoor_open", "_open")
+            handleModel(SetBlock.BlockType.TRAPDOOR, material, index, "block/template_trapdoor_top", "_top")
+        }
+
+        CopperHelpers.BLOCKY_GRATE.forEachIndexed { index, material ->
+            handleBlockState(SetBlock.BlockType.GRATE, material, index)
+            handleModel(SetBlock.BlockType.GRATE, material, index, "block/cube_all", "")
         }
     }
 
@@ -180,41 +182,60 @@ object ResourcepackGeneration {
             val query = blockPrefabs.find { gearyBlocks.createBlockData(it.prefabKey) == blockData }
                 ?: plantPrefabs.find { gearyBlocks.createBlockData(it.prefabKey) == blockData }
                 ?: return@mapIndexed null
-            val variant = MultiVariant.of(Variant.builder().properties(query.prefabKey)?.build()) ?: return@mapIndexed null
+            val variant = MultiVariant.of(Variant.builder().customProperties(query.prefabKey)?.build()) ?: return@mapIndexed null
             blockData.propertiesAsString to variant
         }?.filterNotNull()?.toMap()?.toMutableMap() ?: mutableMapOf()
 
-    private fun SetBlock.BlockType.blockStateKey() = when (this) {
+    private fun SetBlock.BlockType.blockStateKey(index: Int = 0) = when (this) {
         SetBlock.BlockType.NOTEBLOCK -> Key.key("note_block")
         SetBlock.BlockType.WIRE -> Key.key("tripwire")
+        SetBlock.BlockType.STAIR -> Key.key(CopperHelpers.BLOCKY_STAIRS.elementAt(index).name.lowercase())
+        SetBlock.BlockType.SLAB -> Key.key(CopperHelpers.BLOCKY_SLABS.elementAt(index).name.lowercase())
+        SetBlock.BlockType.DOOR -> Key.key(CopperHelpers.BLOCKY_DOORS.elementAt(index).name.lowercase())
+        SetBlock.BlockType.TRAPDOOR -> Key.key(CopperHelpers.BLOCKY_TRAPDOORS.elementAt(index).name.lowercase())
+        SetBlock.BlockType.GRATE -> Key.key(CopperHelpers.BLOCKY_GRATE.elementAt(index).name.lowercase())
 
         else -> Key.key("nothing")
     }
 
-    private fun ModelTextures.Builder.properties(prefabKey: PrefabKey): ModelTextures.Builder? {
-        val entity = prefabKey.toEntityOrNull() ?: return this
-        val setBlock = entity.get<SetBlock>() ?: return this
-        val texture = entity.get<BlockyInfo>()?.blockTexture ?: return null
+    private fun ModelTextures.Builder.vanillaProperties(material: Material): ModelTextures.Builder? {
+        val texture = ModelTexture.ofKey(Key.key("block/${material.name.lowercase()}"))
+        val blockData = material.createBlockData()
 
         return variables(
-            when (setBlock.blockType) {
-                SetBlock.BlockType.STAIR, SetBlock.BlockType.SLAB -> mutableMapOf(
-                    "bottom" to ModelTexture.ofKey(texture),
-                    "top" to ModelTexture.ofKey(texture),
-                    "side" to ModelTexture.ofKey(texture),
-                )
-                SetBlock.BlockType.DOOR -> mutableMapOf(
-                    "bottom" to ModelTexture.ofKey(texture),
-                    "top" to ModelTexture.ofKey(texture),
-                )
-                SetBlock.BlockType.TRAPDOOR -> mutableMapOf("texture" to ModelTexture.ofKey(texture))
-                SetBlock.BlockType.GRATE -> mutableMapOf("all" to ModelTexture.ofKey(texture))
-                else -> return this
+            when {
+                blockData is Stairs -> mutableMapOf("bottom" to texture, "top" to texture, "side" to texture)
+                blockData is Slab -> mutableMapOf("bottom" to texture, "top" to texture, "side" to texture)
+                blockData is Door -> mutableMapOf("bottom" to texture, "top" to texture)
+                blockData is TrapDoor -> mutableMapOf("texture" to texture)
+                "GRATE" in material.name -> mutableMapOf("all" to texture)
+                else -> return null
             }
         )
     }
+    private fun ModelTextures.Builder.customProperties(prefabKey: PrefabKey): ModelTextures.Builder? {
+        val entity = prefabKey.toEntityOrNull() ?: return this
+        val setBlock = entity.get<SetBlock>() ?: return this
+        val info = entity.get<BlockyInfo>() ?: return this
 
-    private fun Variant.Builder.properties(prefabKey: PrefabKey): Variant.Builder? {
+        info.blockTexture?.let {
+            val texture = ModelTexture.ofKey(it)
+            return variables(
+                when (setBlock.blockType) {
+                    SetBlock.BlockType.STAIR -> mutableMapOf("bottom" to texture, "top" to texture, "side" to texture)
+                    SetBlock.BlockType.SLAB -> mutableMapOf("bottom" to texture, "top" to texture, "side" to texture)
+                    SetBlock.BlockType.DOOR -> mutableMapOf("bottom" to texture, "top" to texture)
+                    SetBlock.BlockType.TRAPDOOR -> mutableMapOf("texture" to texture)
+                    SetBlock.BlockType.GRATE -> mutableMapOf("all" to texture)
+                    else -> return this
+                }
+            )
+        }
+
+        return variables(info.blockTextures?.map { it.key to ModelTexture.ofKey(it.value) }?.toMap() ?: return this)
+    }
+
+    private fun Variant.Builder.customProperties(prefabKey: PrefabKey): Variant.Builder? {
         val entity = prefabKey.toEntityOrNull() ?: return null
         entity.has<SetBlock>() || return null
         val blockyInfo = entity.get<BlockyInfo>()

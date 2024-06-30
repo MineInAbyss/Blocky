@@ -75,7 +75,7 @@ object CopperHelpers {
         get() = blockyCopperMaterial.filter { "STAIRS" in it.name }.toSet()
 
     val BLOCKY_DOORS: Set<Material>
-        get() = blockyCopperMaterial.filter { "DOOR" in it.name }.toSet()
+        get() = blockyCopperMaterial.filter { "_DOOR" in it.name }.toSet()
 
     val BLOCKY_TRAPDOORS: Set<Material>
         get() = blockyCopperMaterial.filter { "TRAPDOOR" in it.name }.toSet()
@@ -90,7 +90,7 @@ object CopperHelpers {
         get() = nonBlockyCopperMaterial.filter { "STAIRS" in it.name }.toSet()
 
     val COPPER_DOORS: Set<Material>
-        get() = nonBlockyCopperMaterial.filter { "DOOR" in it.name }.toSet()
+        get() = nonBlockyCopperMaterial.filter { "_DOOR" in it.name }.toSet()
 
     val COPPER_TRAPDOORS: Set<Material>
         get() = nonBlockyCopperMaterial.filter { "TRAPDOOR" in it.name }.toSet()
