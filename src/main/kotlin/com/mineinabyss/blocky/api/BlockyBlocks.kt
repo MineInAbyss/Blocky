@@ -45,12 +45,8 @@ object BlockyBlocks {
     fun placeBlockyBlock(location: Location, prefabKey: PrefabKey): Boolean {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return false
         val blockyBlock = gearyEntity.get<SetBlock>() ?: return false
-        val blockData = when (blockyBlock.blockType) {
-            SetBlock.BlockType.NOTEBLOCK -> gearyEntity.blockyNoteBlock()
-            SetBlock.BlockType.WIRE -> blockyBlock.blockyTripWire()
-            SetBlock.BlockType.CAVEVINE -> CaveVineHelpers.blockyCaveVine(blockyBlock)
-            else -> return false
-        }
+        val blockData = gearyBlocks.createBlockData(prefabKey) ?: return false
+
         return placeBlockyBlock(location, blockData)
     }
 

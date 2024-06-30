@@ -7,6 +7,9 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
+import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.util.to
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
 import org.bukkit.event.Event
@@ -24,30 +27,20 @@ class BlockyCopperListener {
     class BlockySlabListener : Listener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-        fun PlayerInteractEvent.onPlacingBlockyStair() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
-            val block = (clickedBlock!!.takeIf { it.isReplaceable } ?: clickedBlock!!.getRelative(blockFace))
-            if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND || item.type in CopperHelpers.BLOCKY_SLABS) return
+        fun PlayerInteractEvent.onPlacingBlockySlab() {
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+            val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
+            val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
+            player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType == SetBlock.BlockType.SLAB } ?: return
+            if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
-            if (blockyBlock.blockType != SetBlock.BlockType.SLAB) return
-            if (!player.isSneaking && block.isInteractable()) return
+            setUseInteractedBlock(Event.Result.DENY)
 
-            val blockyEvent = BlockyBlockPlaceEvent(block, player, hand, item)
-            if (!ProtectionLib.canBuild(player, block.location)) blockyEvent.isCancelled = true
-            if (!blockyEvent.callEvent()) return setUseItemInHand(Event.Result.DENY)
-
-            // If item being placed is a blocky copper block, we want this logic to run with an item of waxed material
-            // If it is not, we want to ensure the material is not waxed copper, and if it is, change it
-            val placedItem = item.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(item)
-            BlockStateCorrection.placeItemAsBlock(player, hand, placedItem)
-
-            // Set PDC Key so that the converter knows it should skip this blocky block
-            block.persistentDataContainer.encode(VanillaCopperBlock())
+            placeBlockyBlock(player, hand, item, block, blockFace, blockData)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
-        fun PlayerInteractEvent.onWaxCopperStair() {
+        fun PlayerInteractEvent.onWaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type !in CopperHelpers.COPPER_STAIRS || item?.type != Material.HONEYCOMB) return
@@ -58,7 +51,7 @@ class BlockyCopperListener {
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
-        fun PlayerInteractEvent.onUnwaxCopperStair() {
+        fun PlayerInteractEvent.onUnwaxCopperSlab() {
             val block = clickedBlock ?: return
             if (hand != EquipmentSlot.HAND || action != Action.RIGHT_CLICK_BLOCK) return
             if (block.type !in CopperHelpers.COPPER_STAIRS || item?.let { MaterialTags.AXES.isTagged(it) } != true) return
@@ -68,22 +61,22 @@ class BlockyCopperListener {
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
-        fun PlayerInteractEvent.onUnwaxBlockyStair() {
+        fun PlayerInteractEvent.onUnwaxBlockySlab() {
             if (clickedBlock?.type in CopperHelpers.BLOCKY_STAIRS && item?.let { MaterialTags.AXES.isTagged(it) } == true)
                 isCancelled = true
         }
 
         @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-        fun BlockFormEvent.onOxidizedCopperStair() {
+        fun BlockFormEvent.onOxidizedCopperSlab() {
             if (newState.type in CopperHelpers.BLOCKY_STAIRS || CopperHelpers.isFakeWaxedCopper(block))
                 isCancelled = true
         }
 
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-        fun BlockBreakEvent.onBreakFakeCopperStair() {
+        fun BlockBreakEvent.onBreakFakeCopperSlab() {
             if (!CopperHelpers.isFakeWaxedCopper(block)) return
-            val index = CopperHelpers.COPPER_STAIRS.indexOf(block.type)
-            val waxedType = CopperHelpers.BLOCKY_STAIRS.elementAt(index)
+            val index = CopperHelpers.COPPER_STAIRS.indexOf(block.type).takeIf { it != -1 } ?: return
+            val waxedType = CopperHelpers.BLOCKY_STAIRS.elementAtOrNull(index) ?: return
             isDropItems = false
             block.customBlockData.clear()
             block.world.dropItemNaturally(block.location, ItemStack(waxedType))
@@ -91,30 +84,19 @@ class BlockyCopperListener {
 
     }
 
-
     class BlockyStairListener : Listener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockyStair() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
-            val block = (clickedBlock!!.takeIf { it.isReplaceable } ?: clickedBlock!!.getRelative(blockFace))
-            if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND || item.type in CopperHelpers.BLOCKY_STAIRS) return
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+            val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
+            val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
+            player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType == SetBlock.BlockType.STAIR } ?: return
+            if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
-            if (blockyBlock.blockType != SetBlock.BlockType.STAIR) return
-            if (!player.isSneaking && block.isInteractable()) return
+            setUseInteractedBlock(Event.Result.DENY)
 
-            val blockyEvent = BlockyBlockPlaceEvent(block, player, hand, item)
-            if (!ProtectionLib.canBuild(player, block.location)) blockyEvent.isCancelled = true
-            if (!blockyEvent.callEvent()) return setUseItemInHand(Event.Result.DENY)
-
-            // If item being placed is a blocky copper block, we want this logic to run with an item of waxed material
-            // If it is not, we want to ensure the material is not waxed copper, and if it is, change it
-            val placedItem = item.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(item)
-            BlockStateCorrection.placeItemAsBlock(player, hand, placedItem)
-
-            // Set PDC Key so that the converter knows it should skip this blocky block
-            block.persistentDataContainer.encode(VanillaCopperBlock())
+            placeBlockyBlock(player, hand, item, block, blockFace, blockData)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
@@ -153,8 +135,8 @@ class BlockyCopperListener {
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         fun BlockBreakEvent.onBreakFakeCopperStair() {
             if (!CopperHelpers.isFakeWaxedCopper(block)) return
-            val index = CopperHelpers.COPPER_STAIRS.indexOf(block.type)
-            val waxedType = CopperHelpers.BLOCKY_STAIRS.elementAt(index)
+            val index = CopperHelpers.COPPER_STAIRS.indexOf(block.type).takeIf { it != -1 } ?: return
+            val waxedType = CopperHelpers.BLOCKY_STAIRS.elementAtOrNull(index) ?: return
             isDropItems = false
             block.customBlockData.clear()
             block.world.dropItemNaturally(block.location, ItemStack(waxedType))
@@ -166,25 +148,15 @@ class BlockyCopperListener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockyDoor() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
-            val block = (clickedBlock!!.takeIf { it.isReplaceable } ?: clickedBlock!!.getRelative(blockFace))
-            if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND || item.type in CopperHelpers.BLOCKY_DOORS) return
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+            val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
+            val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
+            player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType == SetBlock.BlockType.DOOR } ?: return
+            if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
-            if (blockyBlock.blockType != SetBlock.BlockType.DOOR) return
-            if (!player.isSneaking && block.isInteractable()) return
+            setUseInteractedBlock(Event.Result.DENY)
 
-            val blockyEvent = BlockyBlockPlaceEvent(block, player, hand, item)
-            if (!ProtectionLib.canBuild(player, block.location)) blockyEvent.isCancelled = true
-            if (!blockyEvent.callEvent()) return setUseItemInHand(Event.Result.DENY)
-
-            // If item being placed is a blocky copper block, we want this logic to run with an item of waxed material
-            // If it is not, we want to ensure the material is not waxed copper, and if it is, change it
-            val placedItem = item.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(item)
-            BlockStateCorrection.placeItemAsBlock(player, hand, placedItem)
-
-            // Set PDC Key so that the converter knows it should skip this blocky block
-            block.persistentDataContainer.encode(VanillaCopperBlock())
+            placeBlockyBlock(player, hand, item, block, blockFace, blockData)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
@@ -223,8 +195,8 @@ class BlockyCopperListener {
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         fun BlockBreakEvent.onBreakFakeCopperDoor() {
             if (!CopperHelpers.isFakeWaxedCopper(block)) return
-            val index = CopperHelpers.COPPER_DOORS.indexOf(block.type)
-            val waxedType = CopperHelpers.BLOCKY_DOORS.elementAt(index)
+            val index = CopperHelpers.COPPER_DOORS.indexOf(block.type).takeIf { it != -1 } ?: return
+            val waxedType = CopperHelpers.BLOCKY_DOORS.elementAtOrNull(index) ?: return
             isDropItems = false
             block.customBlockData.clear()
             block.world.dropItemNaturally(block.location, ItemStack.of(waxedType))
@@ -236,25 +208,15 @@ class BlockyCopperListener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockyTrapDoor() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
-            val block = (clickedBlock!!.takeIf { it.isReplaceable } ?: clickedBlock!!.getRelative(blockFace))
-            if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND || item.type in CopperHelpers.BLOCKY_TRAPDOORS) return
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+            val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
+            val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
+            player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType == SetBlock.BlockType.TRAPDOOR } ?: return
+            if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
-            if (blockyBlock.blockType != SetBlock.BlockType.TRAPDOOR) return
-            if (!player.isSneaking && block.isInteractable()) return
+            setUseInteractedBlock(Event.Result.DENY)
 
-            val blockyEvent = BlockyBlockPlaceEvent(block, player, hand, item)
-            if (!ProtectionLib.canBuild(player, block.location)) blockyEvent.isCancelled = true
-            if (!blockyEvent.callEvent()) return setUseItemInHand(Event.Result.DENY)
-
-            // If item being placed is a blocky copper block, we want this logic to run with an item of waxed material
-            // If it is not, we want to ensure the material is not waxed copper, and if it is, change it
-            val placedItem = item.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(item)
-            BlockStateCorrection.placeItemAsBlock(player, hand, placedItem)
-
-            // Set PDC Key so that the converter knows it should skip this blocky block
-            block.persistentDataContainer.encode(VanillaCopperBlock())
+            placeBlockyBlock(player, hand, item, block, blockFace, blockData)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
@@ -293,8 +255,8 @@ class BlockyCopperListener {
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         fun BlockBreakEvent.onBreakFakeCopperTrapDoor() {
             if (!CopperHelpers.isFakeWaxedCopper(block)) return
-            val index = CopperHelpers.COPPER_TRAPDOORS.indexOf(block.type)
-            val waxedType = CopperHelpers.BLOCKY_TRAPDOORS.elementAt(index)
+            val index = CopperHelpers.COPPER_TRAPDOORS.indexOf(block.type).takeIf { it != -1 } ?: return
+            val waxedType = CopperHelpers.BLOCKY_TRAPDOORS.elementAtOrNull(index) ?: return
             isDropItems = false
             block.customBlockData.clear()
             block.world.dropItemNaturally(block.location, ItemStack.of(waxedType))
@@ -306,25 +268,15 @@ class BlockyCopperListener {
 
         @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
         fun PlayerInteractEvent.onPlacingBlockyGrate() {
-            val (item, hand) = (item ?: return) to (hand ?: return)
-            val block = (clickedBlock!!.takeIf { it.isReplaceable } ?: clickedBlock!!.getRelative(blockFace))
-            if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND || item.type in CopperHelpers.BLOCKY_GRATE) return
+            val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+            val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
+            val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
+            player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType == SetBlock.BlockType.GRATE } ?: return
+            if (action != Action.RIGHT_CLICK_BLOCK || (!player.isSneaking && block.isInteractable())) return
 
-            val blockyBlock = player.gearyInventory?.get(hand)?.get<SetBlock>() ?: return
-            if (blockyBlock.blockType != SetBlock.BlockType.GRATE) return
-            if (!player.isSneaking && block.isInteractable()) return
+            setUseInteractedBlock(Event.Result.DENY)
 
-            val blockyEvent = BlockyBlockPlaceEvent(block, player, hand, item)
-            if (!ProtectionLib.canBuild(player, block.location)) blockyEvent.isCancelled = true
-            if (!blockyEvent.callEvent()) return setUseItemInHand(Event.Result.DENY)
-
-            // If item being placed is a blocky copper block, we want this logic to run with an item of waxed material
-            // If it is not, we want to ensure the material is not waxed copper, and if it is, change it
-            val placedItem = item.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(item)
-            BlockStateCorrection.placeItemAsBlock(player, hand, placedItem)
-
-            // Set PDC Key so that the converter knows it should skip this blocky block
-            block.persistentDataContainer.encode(VanillaCopperBlock())
+            placeBlockyBlock(player, hand, item, block, blockFace, blockData)
         }
 
         @EventHandler(priority = EventPriority.LOWEST)
@@ -363,8 +315,8 @@ class BlockyCopperListener {
         @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
         fun BlockBreakEvent.onBreakFakeCopperGrate() {
             if (!CopperHelpers.isFakeWaxedCopper(block)) return
-            val index = CopperHelpers.COPPER_GRATE.indexOf(block.type)
-            val waxedType = CopperHelpers.BLOCKY_GRATE.elementAt(index)
+            val index = CopperHelpers.COPPER_GRATE.indexOf(block.type).takeIf { it != -1 } ?: return
+            val waxedType = CopperHelpers.BLOCKY_GRATE.elementAtOrNull(index) ?: return
             isDropItems = false
             block.customBlockData.clear()
             block.world.dropItemNaturally(block.location, ItemStack.of(waxedType))

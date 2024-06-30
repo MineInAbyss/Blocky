@@ -23,14 +23,15 @@ import org.bukkit.inventory.ItemStack
 
 object BlockStateCorrection {
     fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack)  {
-        val nmsStack = CraftItemStack.asNMSCopy(itemStack)
+        val placedItem = itemStack.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(itemStack)
+        val nmsStack = CraftItemStack.asNMSCopy(placedItem)
         val blockItem = nmsStack.item as? BlockItem
         val serverPlayer = (player as CraftPlayer).handle
         val hitResult = playerPOVHitResult(serverPlayer)
         val hand = if (slot == EquipmentSlot.HAND) InteractionHand.MAIN_HAND else InteractionHand.OFF_HAND
 
         val placeContext = when {// Shulker-Boxes are DirectionalPlace based unlike other directional-blocks
-            MaterialSetTag.SHULKER_BOXES.isTagged(itemStack.type) ->
+            MaterialSetTag.SHULKER_BOXES.isTagged(placedItem.type) ->
                 DirectionalPlaceContext(serverPlayer.level(), hitResult.blockPos, hitResult.direction, nmsStack, hitResult.direction.opposite)
             else -> BlockPlaceContext(UseOnContext(serverPlayer, hand, hitResult))
         }
@@ -39,7 +40,7 @@ object BlockStateCorrection {
             if (blockItem.place(placeContext) == InteractionResult.FAIL) return
             // Seems shulkers for some reason do not adhere to the place-item subtraction by default
             if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
-                itemStack.subtract(1)
+                placedItem.subtract(1)
             val target = hitResult.blockPos.let { pos -> player.world.getBlockAt(pos.x, pos.y, pos.z) }
             // Open sign, side will always be front when placed
             (target.state as? Sign)?.let { if (!it.isWaxed) player.openSign(it, Side.FRONT) }

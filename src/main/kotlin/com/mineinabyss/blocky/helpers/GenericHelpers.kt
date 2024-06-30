@@ -116,7 +116,7 @@ fun placeBlockyBlock(
 
     // if new block is a blocky block, place it via API
     // if not it is a vanilla block placed against a blocky block, and we place it via NMS methods
-    if (newData.toGearyOrNull()?.has<PrefabKey>() == true) {
+    if (!CopperHelpers.isBlockyCopper(newData) && newData.toGearyOrNull()?.has<PrefabKey>() == true) {
         BlockyBlocks.placeBlockyBlock(targetBlock.location, newData)
         if (player.gameMode != GameMode.CREATIVE) item.subtract(1)
     } else BlockStateCorrection.placeItemAsBlock(player, hand, item)

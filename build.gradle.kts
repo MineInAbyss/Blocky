@@ -50,7 +50,7 @@ dependencies {
 
 tasks {
     shadowJar {
-        relocate("io.th0rgal.protectionlib", "com.mineinabyss.shaded.protectionlib")
+        //relocate("io.th0rgal.protectionlib", "com.mineinabyss.shaded.protectionlib")
     }
 }
 

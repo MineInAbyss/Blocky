@@ -64,8 +64,9 @@ class BlockyGenericListener : Listener {
         isDropItems = false
     }
 
-    private val materialSet = setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES)
-        .plus(CopperHelpers.BLOCKY_SLABS).plus(CopperHelpers.BLOCKY_STAIRS)
+    private val materialSet = setOf(Material.NOTE_BLOCK, Material.STRING, Material.CAVE_VINES).asSequence()
+        .plus(CopperHelpers.BLOCKY_SLABS).plus(CopperHelpers.BLOCKY_STAIRS).plus(CopperHelpers.BLOCKY_DOORS)
+        .plus(CopperHelpers.BLOCKY_TRAPDOORS).plus(CopperHelpers.BLOCKY_GRATE).toList()
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     fun BlockPlaceEvent.onPlacingDefaultBlock() {
         val heldType = itemInHand.type
