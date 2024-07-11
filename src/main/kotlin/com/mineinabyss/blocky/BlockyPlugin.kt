@@ -63,6 +63,7 @@ class BlockyPlugin : JavaPlugin() {
             BlockyGenericListener(),
             BlockyFurnitureListener(),
             BlockyMiddleClickListener(),
+            BlockySoundListener(),
             BlockyCopperListener()
         )
         CustomBlockData.registerListener(this)
