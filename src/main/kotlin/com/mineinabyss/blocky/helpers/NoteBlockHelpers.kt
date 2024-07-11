@@ -12,12 +12,14 @@ import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.serialization.SerializableItemStack
+import com.mineinabyss.idofront.serialization.toSerializable
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.block.data.type.NoteBlock
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 
 /**
  * Gets the blockdata of a given Blocky-block from a GearyEntity
@@ -54,27 +56,27 @@ object NoteBlockHelpers {
             heldTypes = setOf(BlockyBreaking.BlockyModifiers.BlockyToolModifier(toolType = ToolType.AXE, value = 0.3)),
             heldItems = setOf(
                 BlockyBreaking.BlockyModifiers.BlockySerializableItemModifier(
-                    item = SerializableItemStack(type = Material.NETHERITE_AXE),
+                    item = ItemStack(Material.NETHERITE_AXE).toSerializable(),
                     value = 9.0
                 ),
                 BlockyBreaking.BlockyModifiers.BlockySerializableItemModifier(
-                    item = SerializableItemStack(type = Material.DIAMOND_AXE),
+                    item = ItemStack(Material.DIAMOND_AXE).toSerializable(),
                     value = 8.0
                 ),
                 BlockyBreaking.BlockyModifiers.BlockySerializableItemModifier(
-                    item = SerializableItemStack(type = Material.GOLDEN_AXE),
+                    item = ItemStack(Material.GOLDEN_AXE).toSerializable(),
                     value = 12.0
                 ),
                 BlockyBreaking.BlockyModifiers.BlockySerializableItemModifier(
-                    item = SerializableItemStack(type = Material.IRON_AXE),
+                    item = ItemStack(Material.IRON_AXE).toSerializable(),
                     value = 6.0
                 ),
                 BlockyBreaking.BlockyModifiers.BlockySerializableItemModifier(
-                    item = SerializableItemStack(type = Material.STONE_AXE),
+                    item = ItemStack(Material.STONE_AXE).toSerializable(),
                     value = 4.0
                 ),
                 BlockyBreaking.BlockyModifiers.BlockySerializableItemModifier(
-                    item = SerializableItemStack(type = Material.WOODEN_AXE),
+                    item = ItemStack(Material.WOODEN_AXE).toSerializable(),
                     value = 2.0
                 )
             )

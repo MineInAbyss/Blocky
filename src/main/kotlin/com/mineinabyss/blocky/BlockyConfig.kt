@@ -2,8 +2,10 @@ package com.mineinabyss.blocky
 
 import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.blocky.helpers.FurnitureOutlineType
+import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.serialization.MiniMessageSerializer
 import com.mineinabyss.idofront.serialization.SerializableItemStack
+import com.mineinabyss.idofront.serialization.toSerializable
 import com.mineinabyss.idofront.textcomponents.miniMsg
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
@@ -13,6 +15,7 @@ import net.minecraft.network.syncher.SynchedEntityData
 import net.minecraft.world.level.block.Block
 import org.bukkit.Material
 import org.bukkit.craftbukkit.inventory.CraftItemStack
+import org.bukkit.inventory.ItemStack
 
 @Suppress("UnstableApiUsage")
 @Serializable
@@ -60,7 +63,7 @@ data class BlockyConfig(
         data class HitboxOutline(
             @YamlComment("Valid typed are ITEM, BLOCK, NONE")
             val type: FurnitureOutlineType = FurnitureOutlineType.ITEM,
-            val item: SerializableItemStack = SerializableItemStack(type = Material.PAPER)
+            val item: SerializableItemStack = ItemStack(Material.PAPER).toSerializable()
         ) {
             fun entityType(): net.minecraft.world.entity.EntityType<*>? {
                 return when (type) {
@@ -83,8 +86,8 @@ data class BlockyConfig(
     @Serializable data class DefaultBlockyMenu(
         val title: @Serializable(MiniMessageSerializer::class) Component = Component.empty(),
         val height: Int = 5,
-        val blockButton: SerializableItemStack = SerializableItemStack(type = Material.PAPER, customModelData = 1, itemName = "<gradient:gold:yellow>Block Menu".miniMsg()),
-        val wireButton: SerializableItemStack = SerializableItemStack(type = Material.PAPER, customModelData = 1, itemName = "<gradient:gold:yellow>Wire Menu".miniMsg()),
-        val furnitureButton: SerializableItemStack = SerializableItemStack(type = Material.PAPER, customModelData = 1, itemName = "<gradient:gold:yellow>Furniture Menu".miniMsg()),
+        val blockButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); itemName("<gradient:gold:yellow>Block Menu".miniMsg()) }.toSerializable(),
+        val wireButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); itemName("<gradient:gold:yellow>Wire Menu".miniMsg()) }.toSerializable(),
+        val furnitureButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); itemName("<gradient:gold:yellow>Furniture Menu".miniMsg()) }.toSerializable(),
     )
 }
