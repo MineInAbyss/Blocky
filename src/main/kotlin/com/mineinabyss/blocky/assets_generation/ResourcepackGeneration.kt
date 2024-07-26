@@ -187,12 +187,12 @@ object ResourcepackGeneration {
                 .parent(Key.key(parent)).key(Key.key("blocky:block/${material.name.lowercase()}$suffix"))
                 .build()
 
-            resourcePack.model(model)
+            model.addTo(resourcePack)
         }
 
         fun handleBlockState(blockType: SetBlock.BlockType, material: Material, index: Int) {
             blockPrefabs.find { it.block.blockType == blockType && it.block.blockId == index + 1 } ?: return
-            resourcePack.blockState(VanillaBlockstateFiles.vanillaBlockStateFile(blockType, material) ?: return)
+            VanillaBlockstateFiles.vanillaBlockStateFile(blockType, material)?.addTo(resourcePack)
         }
 
         CopperHelpers.BLOCKY_STAIRS.forEachIndexed { index, material ->
@@ -206,6 +206,7 @@ object ResourcepackGeneration {
             handleBlockState(SetBlock.BlockType.SLAB, material, index)
             handleModel(SetBlock.BlockType.SLAB, material, index, "block/slab", "")
             handleModel(SetBlock.BlockType.SLAB, material, index, "block/slab_top", "_top")
+            handleModel(SetBlock.BlockType.SLAB, material, index, "block/cube_all", "")
         }
 
         CopperHelpers.BLOCKY_DOORS.forEachIndexed { index, material ->

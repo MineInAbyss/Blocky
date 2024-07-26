@@ -91,11 +91,14 @@ class BlockySoundListener : Listener {
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun PlayerInteractEvent.onOpenCloseDoor() {
         if (action != Action.RIGHT_CLICK_BLOCK || useInteractedBlock() == Event.Result.DENY) return
-        val block = clickedBlock?.takeIf { (it.type in CopperHelpers.BLOCKY_DOORS || it.type !in CopperHelpers.BLOCKY_TRAPDOORS) } ?: return
-        val type = if (block.blockData is Door) "_door_" else if (block.blockData is TrapDoor) "_trapdoor_" else return
+        val block = clickedBlock?.takeIf(CopperHelpers::isBlockyDoor)?.takeIf(CopperHelpers::isBlockyTrapDoor) ?: return
         val opening = !(block.blockData as Openable).isOpen
-        val suffix = if (opening) "open" else "close"
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.let { if (opening) it.openSound else it.closeSound } ?: ("blocky:copper_$type$suffix")
+        val suffix = when (block.blockData) {
+            is Door -> "_door_"
+            is TrapDoor -> "_trapdoor_"
+            else -> return
+        }.plus(if (opening) "open" else "close")
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.let { if (opening) it.openSound else it.closeSound } ?: ("blocky:copper_$suffix")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 

@@ -78,33 +78,15 @@ object CopperHelpers {
         Material.WEATHERED_COPPER_DOOR, Material.WEATHERED_COPPER_TRAPDOOR, Material.WEATHERED_COPPER_GRATE
     )
 
-    val BLOCKY_SLABS: Set<Material>
-        get() = BLOCKY_COPPER.filter { it.name.endsWith("_SLAB") }.toSet()
+    val BLOCKY_SLABS = BLOCKY_COPPER.filter { it.name.endsWith("_SLAB") }.toSet()
+    val BLOCKY_STAIRS = BLOCKY_COPPER.filter { it.name.endsWith("_STAIRS") }.toSet()
+    val BLOCKY_DOORS = BLOCKY_COPPER.filter { it.name.endsWith("_DOOR") }.toSet()
+    val BLOCKY_TRAPDOORS = BLOCKY_COPPER.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
+    val BLOCKY_GRATE = BLOCKY_COPPER.filter { it.name.endsWith("_GRATE") }.toSet()
 
-    val BLOCKY_STAIRS: Set<Material>
-        get() = BLOCKY_COPPER.filter { it.name.endsWith("_STAIRS") }.toSet()
-
-    val BLOCKY_DOORS: Set<Material>
-        get() = BLOCKY_COPPER.filter { it.name.endsWith("_DOOR") }.toSet()
-
-    val BLOCKY_TRAPDOORS: Set<Material>
-        get() = BLOCKY_COPPER.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
-
-    val BLOCKY_GRATE: Set<Material>
-        get() = BLOCKY_COPPER.filter { it.name.endsWith("_GRATE") }.toSet()
-
-    val COPPER_SLABS: Set<Material>
-        get() = VANILLA_COPPER.filter { it.name.endsWith("_SLAB") }.toSet()
-
-    val COPPER_STAIRS: Set<Material>
-        get() = VANILLA_COPPER.filter { it.name.endsWith("_STAIRS") }.toSet()
-
-    val COPPER_DOORS: Set<Material>
-        get() = VANILLA_COPPER.filter { it.name.endsWith("_DOOR") }.toSet()
-
-    val COPPER_TRAPDOORS: Set<Material>
-        get() = VANILLA_COPPER.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
-
-    val COPPER_GRATE: Set<Material>
-        get() = VANILLA_COPPER.filter { it.name.endsWith("_GRATE") }.toSet()
+    val COPPER_SLABS = VANILLA_COPPER.filter { it.name.endsWith("_SLAB") }.toSet()
+    val COPPER_STAIRS = VANILLA_COPPER.filter { it.name.endsWith("_STAIRS") }.toSet()
+    val COPPER_DOORS = VANILLA_COPPER.filter { it.name.endsWith("_DOOR") }.toSet()
+    val COPPER_TRAPDOORS = VANILLA_COPPER.filter { it.name.endsWith("_TRAPDOOR") }.toSet()
+    val COPPER_GRATE = VANILLA_COPPER.filter { it.name.endsWith("_GRATE") }.toSet()
 }
