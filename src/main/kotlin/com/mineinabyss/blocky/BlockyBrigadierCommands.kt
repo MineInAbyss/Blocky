@@ -14,6 +14,7 @@ import com.mineinabyss.idofront.messaging.success
 import com.mineinabyss.idofront.util.to
 import com.mojang.brigadier.arguments.IntegerArgumentType
 import io.papermc.paper.command.brigadier.argument.ArgumentTypes
+import org.bukkit.entity.Player
 
 object BlockyBrigadierCommands {
 
@@ -44,15 +45,12 @@ object BlockyBrigadierCommands {
                         suggest(allBlockyPrefabs.distinctBy { it.prefabKey.full }.map { it.prefabKey.full })
                     }
                     val amount by IntegerArgumentType.integer(1)
-                    val player by ArgumentTypes.player()
-                    executes {
-                        val (player, item, amount) = player().first()!! to item()!! to amount()!!
-                        if (player.inventory.firstEmpty() == -1) {
-                            player.error("No empty slots in inventory")
-                            return@executes
-                        }
+                    playerExecutes {
+                        val (player, item, amount) = (executor as? Player ?: return@playerExecutes) to item()!! to amount()!!
+                        if (player.inventory.firstEmpty() == -1) return@playerExecutes player.error("No empty slots in inventory")
 
-                        val itemstack = gearyItems.createItem(PrefabKey.of(item.asString()))?.asQuantity(amount) ?: return@executes player.error("$item exists but is not a block.")
+                        val itemstack = gearyItems.createItem(PrefabKey.of(item.asString()))?.asQuantity(amount)
+                            ?: return@playerExecutes player.error("$item exists but is not a block.")
                         player.inventory.addItem(itemstack)
                     }
                 }
