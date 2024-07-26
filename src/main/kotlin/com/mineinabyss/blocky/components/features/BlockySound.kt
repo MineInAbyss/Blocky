@@ -10,5 +10,8 @@ class BlockySound(
     val breakSound: String? = null,
     val hitSound: String? = null,
     val stepSound: String? = null,
-    val fallSound: String? = null
+    val fallSound: String? = null,
+    // Copper Door/Trapdoor only
+    val openSound: String? = null,
+    val closeSound: String? = null,
 )

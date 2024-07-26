@@ -8,40 +8,43 @@ import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import io.papermc.paper.event.block.BlockBreakProgressUpdateEvent
 import org.bukkit.*
+import org.bukkit.block.data.Openable
+import org.bukkit.block.data.type.Door
+import org.bukkit.block.data.type.TrapDoor
 import org.bukkit.entity.LivingEntity
 import org.bukkit.entity.Player
+import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageEvent
+import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.world.GenericGameEvent
 
 class BlockySoundListener : Listener {
 
     @EventHandler
     fun BlockPlaceEvent.onPlace() {
-        val soundGroup = block.blockSoundGroup.placeSound
-        if (soundGroup != Sound.BLOCK_WOOD_PLACE && soundGroup != Sound.BLOCK_STONE_PLACE) return
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: ("blocky:${soundGroup.key.key}")
+        val soundGroup = block.blockSoundGroup.placeSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: ("blocky:$soundGroup")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
     @EventHandler
     fun BlockBreakProgressUpdateEvent.onBreakProgress() {
         if ((entity as? Player)?.gameMode == GameMode.CREATIVE) return
-        val soundGroup = block.blockSoundGroup.hitSound
-        if (soundGroup != Sound.BLOCK_WOOD_HIT && soundGroup != Sound.BLOCK_STONE_HIT) return
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.hitSound ?: ("blocky:${soundGroup.key.key}")
+        val soundGroup = block.blockSoundGroup.hitSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.hitSound ?: ("blocky:$soundGroup")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
     @EventHandler
     fun BlockBreakEvent.onBreak() {
-        val soundGroup = block.blockSoundGroup.breakSound
-        if (soundGroup != Sound.BLOCK_WOOD_BREAK && soundGroup != Sound.BLOCK_STONE_BREAK) return
-        val sound = block.toGearyOrNull()?.get<BlockySound>()?.breakSound ?: ("blocky:${soundGroup.key.key}")
+        val soundGroup = block.blockSoundGroup.breakSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.breakSound ?: ("blocky:$soundGroup")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
@@ -50,9 +53,7 @@ class BlockySoundListener : Listener {
         if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
 
         val (entity, standingOn) = (entity as? LivingEntity ?: return) to GenericHelpers.blockStandingOn(entity as LivingEntity)
-        val soundGroup = standingOn.blockSoundGroup.stepSound
-
-        if (soundGroup != Sound.BLOCK_WOOD_STEP && soundGroup != Sound.BLOCK_STONE_STEP) return
+        val soundGroup = standingOn.blockSoundGroup.stepSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
         if (event != GameEvent.STEP && event != GameEvent.HIT_GROUND) return
         if (event == GameEvent.HIT_GROUND && entity.lastDamageCause?.cause != EntityDamageEvent.DamageCause.FALL) return
 
@@ -64,7 +65,7 @@ class BlockySoundListener : Listener {
             GameEvent.STEP -> blockySound?.stepSound
             GameEvent.HIT_GROUND -> blockySound?.fallSound
             else -> return
-        } ?: ("blocky:${soundGroup.key.key}")
+        } ?: ("blocky:$soundGroup")
 
         val (volume, pitch) = when (event) {
             GameEvent.STEP -> DEFAULT_STEP_VOLUME to DEFAULT_STEP_PITCH
@@ -85,5 +86,24 @@ class BlockySoundListener : Listener {
     fun BlockyFurnitureBreakEvent.onBreakBlockyFurniture() {
         val sound = entity.toGeary().get<BlockySound>()?.breakSound ?: entity.location.block.blockData.soundGroup.breakSound.key.toString()
         entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_BREAK_VOLUME, DEFAULT_BREAK_PITCH)
+    }
+
+    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    fun PlayerInteractEvent.onOpenCloseDoor() {
+        if (action != Action.RIGHT_CLICK_BLOCK || useInteractedBlock() == Event.Result.DENY) return
+        val block = clickedBlock?.takeIf { (it.type in CopperHelpers.BLOCKY_DOORS || it.type !in CopperHelpers.BLOCKY_TRAPDOORS) } ?: return
+        val type = if (block.blockData is Door) "_door_" else if (block.blockData is TrapDoor) "_trapdoor_" else return
+        val opening = !(block.blockData as Openable).isOpen
+        val suffix = if (opening) "open" else "close"
+        val sound = block.toGearyOrNull()?.get<BlockySound>()?.let { if (opening) it.openSound else it.closeSound } ?: ("blocky:copper_$type$suffix")
+        block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
+    }
+
+    private fun Sound.isNotCustomBlockGroup() = when (this) {
+        Sound.BLOCK_WOOD_PLACE, Sound.BLOCK_WOOD_BREAK, Sound.BLOCK_WOOD_HIT, Sound.BLOCK_WOOD_FALL, Sound.BLOCK_WOOD_STEP -> true
+        Sound.BLOCK_STONE_PLACE, Sound.BLOCK_STONE_BREAK, Sound.BLOCK_STONE_HIT, Sound.BLOCK_STONE_FALL, Sound.BLOCK_STONE_STEP -> true
+        Sound.BLOCK_COPPER_PLACE, Sound.BLOCK_COPPER_BREAK, Sound.BLOCK_COPPER_HIT, Sound.BLOCK_COPPER_FALL, Sound.BLOCK_COPPER_STEP -> true
+        Sound.BLOCK_COPPER_GRATE_PLACE, Sound.BLOCK_COPPER_GRATE_BREAK, Sound.BLOCK_COPPER_GRATE_HIT, Sound.BLOCK_COPPER_GRATE_FALL, Sound.BLOCK_COPPER_GRATE_STEP -> true
+        else -> false
     }
 }
