@@ -88,7 +88,7 @@ class BlockyPlugin : JavaPlugin() {
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
         }
 
-        ResourcepackGeneration.generateDefaultAssets()
+        ResourcepackGeneration().generateDefaultAssets()
     }
 
 

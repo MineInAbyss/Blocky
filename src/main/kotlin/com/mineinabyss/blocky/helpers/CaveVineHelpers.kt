@@ -10,13 +10,17 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.block.data.BlockData
 import org.bukkit.entity.Player
+import org.bukkit.inventory.ItemStack
 
 object CaveVineHelpers {
+    val defaultBlockData = Material.CAVE_VINES.createBlockData()
+
     fun blockyCaveVine(setBlock: SetBlock) : BlockData {
         return gearyBlocks.block2Prefab.blockMap[setBlock.blockType]!![setBlock.blockId]
     }
 
     fun isBlockyCaveVine(block: Block) = block.type == Material.CAVE_VINES && block.blockData in gearyBlocks.block2Prefab
+    fun isBlockyCaveVine(itemStack: ItemStack) = itemStack.decode<SetBlock>()?.blockType == SetBlock.BlockType.CAVEVINE
 
     fun breakCaveVineBlock(block: Block, player: Player?): Boolean {
         val gearyBlock = block.toGearyOrNull() ?: return false

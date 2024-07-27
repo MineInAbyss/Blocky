@@ -36,7 +36,7 @@ object BlockyBrigadierCommands {
                             blockyPrefabs.filter { it !in inheritedPrefabs }.sortedBy { it.prefabs.size }
                                 .forEach { prefabs.loader.reload(it) }
                         }
-                        ResourcepackGeneration.generateDefaultAssets()
+                        ResourcepackGeneration().generateDefaultAssets()
                         sender.success("Blocky has been reloaded!")
                     }
                 }
