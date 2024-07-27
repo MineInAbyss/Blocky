@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.query.GearyQuery
