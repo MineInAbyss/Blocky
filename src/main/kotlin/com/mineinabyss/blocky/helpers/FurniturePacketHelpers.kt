@@ -72,7 +72,7 @@ object FurniturePacketHelpers {
         if (furniture.isModelEngineFurniture) {
             val modelId = furniture.toGeary().get<BlockyModelEngine>()?.modelId ?: return
             val blueprint = ModelEngineAPI.getBlueprint(modelId) ?: return
-            if (blueprint.mainHitbox != null || blueprint.subHitboxes.isNotEmpty()) return
+            if (blueprint.mainHitbox != null) return
         }
 
         val interactionHitboxes = furniture.toGeary().get<BlockyFurniture>()?.interactionHitbox ?: return

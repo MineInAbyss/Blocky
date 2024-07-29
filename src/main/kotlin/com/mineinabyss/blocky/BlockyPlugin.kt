@@ -38,7 +38,8 @@ class BlockyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         createBlockyContext()
-        BlockyDatapacks.generateDatapack()
+
+        BlockyTags.interceptConfigPhaseTagPacket()
 
         if (Plugins.isEnabled("WorldEdit")) {
             WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())

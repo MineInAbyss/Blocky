@@ -21,10 +21,7 @@ dependencyResolutionManagement {
     }
 
     versionCatalogs {
-        create("idofrontLibs"){
-            from("com.mineinabyss:catalog:$idofrontVersion")
-            version("modelengine", "R4.0.3")
-        }
+        create("idofrontLibs").from("com.mineinabyss:catalog:$idofrontVersion")
     }
 }
 

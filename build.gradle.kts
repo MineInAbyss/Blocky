@@ -60,7 +60,7 @@ paper {
     val version: String by project
     this.version = version
     authors = listOf("boy0000")
-    apiVersion = "1.20"
+    apiVersion = "1.21"
 
     serverDependencies {
         register("Geary") {
