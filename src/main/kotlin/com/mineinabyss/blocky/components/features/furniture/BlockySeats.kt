@@ -12,6 +12,6 @@ class BlockySeats(val offsets: Set<@Serializable(VectorSerializer::class) Vector
         serialName = "blocky:seats",
         inner = SetSerializer(VectorSerializer),
         inverseTransform = { it.offsets },
-        transform = ::BlockySeats
+        transform = { BlockySeats(it) }
     )
 }
