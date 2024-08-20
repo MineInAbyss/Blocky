@@ -12,6 +12,7 @@ import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.components.VerticalGrid
 import com.mineinabyss.guiy.components.canvases.Chest
 import com.mineinabyss.guiy.components.lists.NavbarPosition
+import com.mineinabyss.guiy.components.lists.ScrollDirection
 import com.mineinabyss.guiy.components.lists.Scrollable
 import com.mineinabyss.guiy.inventory.LocalGuiyOwner
 import com.mineinabyss.guiy.modifiers.Modifier
@@ -46,33 +47,34 @@ fun BlockyMainMenu(player: Player) {
     val owner = LocalGuiyOwner.current
     BlockyUIScope(player).apply {
         nav.withScreen(setOf(player), onEmpty = owner::exit) { screen ->
-            var title by remember(screen) { mutableStateOf(screen.handleTitle(0)) }
+            val items = remember(screen) {
+                when (screen) {
+                    is BlockyScreen.Block -> blockPrefabs
+                    is BlockyScreen.Wire -> plantPrefabs
+                    is BlockyScreen.Furniture -> furniturePrefabs
+                    else -> return@remember emptyList()
+                }.sortedBy { it.prefabKey.full }.map { gearyItems.createItem(it.prefabKey) }
+            }
+            val hasMultiplePages by remember(screen) { mutableStateOf(items.size.toDouble().div(9 * 5) > 1) }
+            var title by remember(screen) { mutableStateOf(handleTitle(screen, 0, hasMultiplePages)) }
+            var line by remember(screen) { mutableStateOf(0) }
+
             Chest(setOf(player), title, Modifier.height(screen.height), onClose = { owner.exit() }) {
                 when (screen) {
                     is BlockyScreen.Default -> BlockyMenu()
                     else -> {
-                        var line by remember(screen) { mutableStateOf(0) }
-                        val items = remember(screen) {
-                            when (screen) {
-                                is BlockyScreen.Block -> blockPrefabs
-                                is BlockyScreen.Wire -> plantPrefabs
-                                is BlockyScreen.Furniture -> furniturePrefabs
-                                else -> return@remember emptyList()
-                            }.sortedBy { it.prefabKey.full }.map { gearyItems.createItem(it.prefabKey) }
-                        }
-
                         Scrollable(
-                            items, line, 8, 5,
-                            nextButton = { ScrollDownButton(Modifier.at(0, 3).clickable { line++; title = screen.handleTitle(line) }) },
-                            previousButton = { ScrollUpButton(Modifier.at(0, 1).clickable { line--; title = screen.handleTitle(line) }) },
-                            NavbarPosition.START, null
+                            items, line, ScrollDirection.VERTICAL,
+                            nextButton = { ScrollDownButton(Modifier.at(5, 0).clickable { line++; title = handleTitle(screen, line, hasMultiplePages) }) },
+                            previousButton = { ScrollUpButton(Modifier.at(2, 0).clickable { line--; title = handleTitle(screen, line, hasMultiplePages) }) },
+                            NavbarPosition.BOTTOM, null
                         ) { pageItems ->
-                            VerticalGrid(Modifier.size(8, 5)) {
+                            VerticalGrid(Modifier.size(9, 5)) {
                                 pageItems.forEach { CreativeItem(it) }
                             }
                         }
 
-                        BackButton(Modifier.at(0, 5))
+                        BackButton(Modifier.at(8, 5))
                     }
                 }
             }
@@ -80,11 +82,12 @@ fun BlockyMainMenu(player: Player) {
     }
 }
 
-private fun BlockyScreen.handleTitle(page: Int): Component {
-    if (this is BlockyScreen.Default) return title
-    return Component.textOfChildren(title, buildString {
-        append(":space_-26:")
-        if (page > 0) append(":blocky_scrolling_up::space_-18:")
+private fun handleTitle(screen: BlockyScreen, page: Int, hasMultiplePages: Boolean): Component {
+    if (screen is BlockyScreen.Default) return screen.title
+    return Component.textOfChildren(screen.title, buildString {
+        if (!hasMultiplePages) return@buildString
+        if (page > 0) append(":space_-132::blocky_scrolling_up::space_36:")
+        else append(":space_-80:")
         append(":blocky_scrolling_down:")
     }.miniMsg())
 }
@@ -93,7 +96,7 @@ private fun BlockyScreen.handleTitle(page: Int): Component {
 fun ScrollDownButton(modifier: Modifier = Modifier) {
     Item(ItemStack(Material.PAPER).editItemMeta {
         itemName("<green><b>Scroll Down".miniMsg())
-        setCustomModelData(0)
+        setCustomModelData(1)
     }, modifier)
 }
 
@@ -101,8 +104,7 @@ fun ScrollDownButton(modifier: Modifier = Modifier) {
 fun ScrollUpButton(modifier: Modifier = Modifier) {
     Item(ItemStack(Material.PAPER).editItemMeta {
         itemName("<blue><b>Scroll Up".miniMsg())
-        isHideTooltip = true
-        setCustomModelData(0)
+        setCustomModelData(1)
     }, modifier)
 }
 
@@ -111,7 +113,7 @@ fun BlockyUIScope.BackButton(modifier: Modifier = Modifier, onClick: () -> Unit 
     Button(onClick = onClick, modifier = modifier) {
         Item(ItemStack(Material.PAPER).editItemMeta {
             itemName("<red><b>Back".miniMsg())
-            setCustomModelData(0)
+            setCustomModelData(1)
         })
     }
 }

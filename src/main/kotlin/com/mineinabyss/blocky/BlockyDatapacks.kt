@@ -19,33 +19,29 @@ object BlockyDatapacks {
     }
 
     private fun writeMcMeta() {
-        runCatching {
-            val packMeta = blockyDatapack.resolve("pack.mcmeta")
-            packMeta.writeText(buildJsonObject {
-                putJsonObject("pack") {
-                    put("description", "Datapack for Blocky")
-                    put("pack_format", 26)
-                }
-            }.toString())
-        }.onFailure { it.printStackTrace() }
+        val packMeta = blockyDatapack.resolve("pack.mcmeta")
+        packMeta.writeText(buildJsonObject {
+            putJsonObject("pack") {
+                put("description", "Datapack for Blocky")
+                put("pack_format", 26)
+            }
+        }.toString())
     }
 
     private fun generateMineableTag() {
-        runCatching {
-            val tagFile = blockyDatapack.resolve("data/minecraft/tags/block/mineable/axe.json")
-            tagFile.parentFile.mkdirs()
-            tagFile.createNewFile()
+        val tagFile = blockyDatapack.resolve("data/minecraft/tags/block/mineable/axe.json")
+        tagFile.parentFile.mkdirs()
+        tagFile.createNewFile()
 
-            val tagObject = buildJsonObject {
-                put("replace", true)
-                putJsonArray("values") {
-                    BuiltInRegistries.BLOCK.tags.toList().find { it.first == BlockTags.MINEABLE_WITH_AXE }?.second?.forEach {
-                        if (it.registeredName != "minecraft:note_block") add(it.registeredName)
-                    }
+        val tagObject = buildJsonObject {
+            put("replace", true)
+            putJsonArray("values") {
+                BuiltInRegistries.BLOCK.tags.toList().find { it.first == BlockTags.MINEABLE_WITH_AXE }?.second?.forEach {
+                    if (it.registeredName != "minecraft:note_block") add(it.registeredName)
                 }
             }
+        }
 
-            tagFile.writeText(tagObject.toString())
-        }.onFailure { it.printStackTrace() }
+        tagFile.writeText(tagObject.toString())
     }
 }
