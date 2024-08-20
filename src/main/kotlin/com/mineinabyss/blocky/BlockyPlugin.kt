@@ -5,6 +5,7 @@ import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
 import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.listeners.*
+import com.mineinabyss.blocky.menus.BlockyScreen
 import com.mineinabyss.blocky.systems.*
 import com.mineinabyss.blocky.systems.actions.createFurnitureItemSetter
 import com.mineinabyss.blocky.systems.actions.createFurnitureMEGModelSetter
@@ -20,8 +21,10 @@ import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.observeLogger
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
+import com.mineinabyss.idofront.textcomponents.miniMsg
 import com.sk89q.worldedit.WorldEdit
 import io.papermc.paper.configuration.GlobalConfiguration
+import net.kyori.adventure.text.Component
 import org.bukkit.block.data.BlockData
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -34,6 +37,16 @@ class BlockyPlugin : JavaPlugin() {
                 all()
             }
         }
+    }
+
+    fun handleTitle(screen: BlockyScreen, page: Int, hasMultiplePages: Boolean): Component {
+        if (screen is BlockyScreen.Default) return screen.title
+        return Component.textOfChildren(screen.title, buildString {
+            if (!hasMultiplePages) return@buildString
+            if (page > 0) append(":space_-132::blocky_scrolling_up::space_36:")
+            else append(":space_-80:")
+            append(":blocky_scrolling_down:")
+        }.miniMsg())
     }
 
     override fun onEnable() {
