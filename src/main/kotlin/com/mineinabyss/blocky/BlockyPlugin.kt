@@ -2,8 +2,6 @@ package com.mineinabyss.blocky
 
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
-import com.mineinabyss.blocky.compatibility.worldedit.WorldEditListener
-import com.mineinabyss.blocky.compatibility.worldedit.WorldEditSupport
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.blocky.systems.*
 import com.mineinabyss.blocky.systems.actions.createFurnitureItemSetter
@@ -13,19 +11,13 @@ import com.mineinabyss.blocky.systems.actions.furnitureHitboxSetter
 import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.systems.builders.cache
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.observeLogger
-import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
-import com.sk89q.worldedit.WorldEdit
 import io.papermc.paper.configuration.GlobalConfiguration
-import org.bukkit.block.data.BlockData
 import org.bukkit.plugin.java.JavaPlugin
-
-var prefabMap = mapOf<BlockData, PrefabKey>()
 
 class BlockyPlugin : JavaPlugin() {
 
@@ -39,11 +31,6 @@ class BlockyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         createBlockyContext()
-
-        if (Plugins.isEnabled("WorldEdit")) {
-            WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
-            listeners(WorldEditListener())
-        }
 
         BlockyBrigadierCommands.registerCommands()
         geary.pipeline.runOnOrAfter(GearyPhase.INIT_SYSTEMS) {

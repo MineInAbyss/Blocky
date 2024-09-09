@@ -53,10 +53,7 @@ data class BlockyConfig(
     @Serializable data class BlockyDoorConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyTrapDoorConfig(val isEnabled: Boolean = false)
     @Serializable data class BlockyGrateConfig(val isEnabled: Boolean = false)
-    @Serializable data class BlockyFurnitureConfig(
-        val hitboxOutlines: HitboxOutline = HitboxOutline(),
-        val worldEdit: Boolean = false
-    ) {
+    @Serializable data class BlockyFurnitureConfig(val hitboxOutlines: HitboxOutline = HitboxOutline()) {
         @Transient val showOutlines = hitboxOutlines.type != FurnitureOutlineType.NONE
 
         @Serializable
