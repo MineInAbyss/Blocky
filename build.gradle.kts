@@ -55,12 +55,20 @@ tasks {
 
 paper {
     main = "com.mineinabyss.blocky.BlockyPlugin"
+    bootstrapper = "com.mineinabyss.blocky.BlockyBootstrap"
     name = "Blocky"
     prefix = "Blocky"
     val version: String by project
     this.version = version
     authors = listOf("boy0000")
     apiVersion = "1.21"
+
+    bootstrapDependencies {
+        register("Idofront") {
+            required = true
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+        }
+    }
 
     serverDependencies {
         register("Geary") {

@@ -28,7 +28,7 @@ class BlockySoundListener : Listener {
 
     @EventHandler
     fun BlockPlaceEvent.onPlace() {
-        val soundGroup = block.blockSoundGroup.placeSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val soundGroup = Registry.SOUNDS.get(block.blockSoundGroup.placeSound.key())?.takeUnless { it.isNotCustomBlockGroup() } ?: return
         val sound = block.toGearyOrNull()?.get<BlockySound>()?.placeSound ?: ("blocky:$soundGroup")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
@@ -36,14 +36,14 @@ class BlockySoundListener : Listener {
     @EventHandler
     fun BlockBreakProgressUpdateEvent.onBreakProgress() {
         if ((entity as? Player)?.gameMode == GameMode.CREATIVE) return
-        val soundGroup = block.blockSoundGroup.hitSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val soundGroup = Registry.SOUNDS.get(block.blockSoundGroup.hitSound.key())?.takeUnless { it.isNotCustomBlockGroup() } ?: return
         val sound = block.toGearyOrNull()?.get<BlockySound>()?.hitSound ?: ("blocky:$soundGroup")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
 
     @EventHandler
     fun BlockBreakEvent.onBreak() {
-        val soundGroup = block.blockSoundGroup.breakSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val soundGroup = Registry.SOUNDS.get(block.blockSoundGroup.breakSound.key())?.takeUnless { it.isNotCustomBlockGroup() } ?: return
         val sound = block.toGearyOrNull()?.get<BlockySound>()?.breakSound ?: ("blocky:$soundGroup")
         block.world.playSound(block.location, sound, SoundCategory.BLOCKS, DEFAULT_HIT_VOLUME, DEFAULT_HIT_PITCH)
     }
@@ -53,7 +53,7 @@ class BlockySoundListener : Listener {
         if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
 
         val (entity, standingOn) = (entity as? LivingEntity ?: return) to GenericHelpers.blockStandingOn(entity as LivingEntity)
-        val soundGroup = standingOn.blockSoundGroup.stepSound.takeUnless { it.isNotCustomBlockGroup() }?.key?.key ?: return
+        val soundGroup = Registry.SOUNDS.get(standingOn.blockSoundGroup.stepSound.key())?.takeUnless { it.isNotCustomBlockGroup() } ?: return
         if (event != GameEvent.STEP && event != GameEvent.HIT_GROUND) return
         if (event == GameEvent.HIT_GROUND && entity.lastDamageCause?.cause != EntityDamageEvent.DamageCause.FALL) return
 
@@ -78,13 +78,13 @@ class BlockySoundListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyFurniturePlaceEvent.onPlaceBlockyFurniture() {
-        val sound = entity.toGeary().get<BlockySound>()?.placeSound ?: entity.location.block.blockData.soundGroup.placeSound.key.asString()
+        val sound = entity.toGeary().get<BlockySound>()?.placeSound ?: entity.location.block.blockData.soundGroup.placeSound.key().asString()
         entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_PLACE_VOLUME, DEFAULT_PLACE_PITCH)
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     fun BlockyFurnitureBreakEvent.onBreakBlockyFurniture() {
-        val sound = entity.toGeary().get<BlockySound>()?.breakSound ?: entity.location.block.blockData.soundGroup.breakSound.key.toString()
+        val sound = entity.toGeary().get<BlockySound>()?.breakSound ?: entity.location.block.blockData.soundGroup.breakSound.key().asString()
         entity.world.playSound(entity.location, sound, SoundCategory.BLOCKS, DEFAULT_BREAK_VOLUME, DEFAULT_BREAK_PITCH)
     }
 

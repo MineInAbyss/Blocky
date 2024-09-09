@@ -28,6 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin
 var prefabMap = mapOf<BlockData, PrefabKey>()
 
 class BlockyPlugin : JavaPlugin() {
+
     override fun onLoad() {
         geary {
             autoscan(classLoader, "com.mineinabyss.blocky") {
@@ -38,8 +39,6 @@ class BlockyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         createBlockyContext()
-
-        BlockyDatapacks.generateDatapack()
 
         if (Plugins.isEnabled("WorldEdit")) {
             WorldEdit.getInstance().blockFactory.register(WorldEditSupport.BlockyInputParser())
