@@ -47,35 +47,35 @@ object VanillaSoundEntries {
 
         val blockyRegistry = resourcePack.soundRegistry("blocky") ?: SoundRegistry.soundRegistry("blocky", emptyList())
         SoundRegistry.soundRegistry(blockyRegistry.namespace(), blockyRegistry.sounds().plus(listOf(
-            SoundEvent.soundEvent(Key.key("blocky:block.stone.place"), false, "subtitles.block.generic.place", VanillaSoundEntries.stoneDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.stone.break"), false, "subtitles.block.generic.break", VanillaSoundEntries.stoneDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.stone.hit"), false, "subtitles.block.generic.hit", VanillaSoundEntries.stoneStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.stone.fall"), false, null, VanillaSoundEntries.stoneStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.stone.step"), false, "subtitles.block.generic.footsteps", VanillaSoundEntries.stoneStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.place"), false, "subtitles.block.generic.place", stoneDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.break"), false, "subtitles.block.generic.break", stoneDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.hit"), false, "subtitles.block.generic.hit", stoneStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.fall"), false, null, stoneStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.stone.step"), false, "subtitles.block.generic.footsteps", stoneStep),
 
-            SoundEvent.soundEvent(Key.key("blocky:block.wood.place"), false, "subtitles.block.generic.place", VanillaSoundEntries.woodDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.wood.break"), false, "subtitles.block.generic.break", VanillaSoundEntries.woodDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.wood.hit"), false, "subtitles.block.generic.hit", VanillaSoundEntries.woodStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.wood.fall"), false, null, VanillaSoundEntries.woodStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.wood.step"), false, "subtitles.block.generic.footsteps", VanillaSoundEntries.woodStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.place"), false, "subtitles.block.generic.place", woodDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.break"), false, "subtitles.block.generic.break", woodDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.hit"), false, "subtitles.block.generic.hit", woodStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.fall"), false, null, woodStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.wood.step"), false, "subtitles.block.generic.footsteps", woodStep),
 
-            SoundEvent.soundEvent(Key.key("blocky:block.copper.place"), false, "subtitles.block.generic.place", VanillaSoundEntries.copperDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper.break"), false, "subtitles.block.generic.break", VanillaSoundEntries.copperDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper.hit"), false, "subtitles.block.generic.hit", VanillaSoundEntries.copperStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper.fall"), false, null, VanillaSoundEntries.copperStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper.step"), false, "subtitles.block.generic.footsteps", VanillaSoundEntries.copperStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper.place"), false, "subtitles.block.generic.place", copperDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper.break"), false, "subtitles.block.generic.break", copperDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper.hit"), false, "subtitles.block.generic.hit", copperStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper.fall"), false, null, copperStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper.step"), false, "subtitles.block.generic.footsteps", copperStep),
 
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.place"), false, "subtitles.block.generic.place", VanillaSoundEntries.copperGrateDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.break"), false, "subtitles.block.generic.break", VanillaSoundEntries.copperGrateDig),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.hit"), false, "subtitles.block.generic.hit", VanillaSoundEntries.copperGrateStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.fall"), false, null, VanillaSoundEntries.copperGrateStep),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.step"), false, "subtitles.block.generic.footsteps", VanillaSoundEntries.copperGrateStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.place"), false, "subtitles.block.generic.place", copperGrateDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.break"), false, "subtitles.block.generic.break", copperGrateDig),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.hit"), false, "subtitles.block.generic.hit", copperGrateStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.fall"), false, null, copperGrateStep),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_grate.step"), false, "subtitles.block.generic.footsteps", copperGrateStep),
 
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_door.open"), false, null, VanillaSoundEntries.copperDoor),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_door.close"), false, "subtitles.block.generic.footsteps", VanillaSoundEntries.copperDoor),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_door.open"), false, null, copperDoor),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_door.close"), false, "subtitles.block.generic.footsteps", copperDoor),
 
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_trapdoor.open"), false, null, VanillaSoundEntries.copperTrapDoor),
-            SoundEvent.soundEvent(Key.key("blocky:block.copper_trapdoor.close"), false, "subtitles.block.generic.footsteps", VanillaSoundEntries.copperTrapDoor),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_trapdoor.open"), false, null, copperTrapDoor),
+            SoundEvent.soundEvent(Key.key("blocky:block.copper_trapdoor.close"), false, "subtitles.block.generic.footsteps", copperTrapDoor),
         ))).let(resourcePack::soundRegistry)
     }
 
@@ -108,10 +108,10 @@ object VanillaSoundEntries {
         SoundEntry.soundEntry().key(Key.key("step/wood6")).build(),
     )
     val copperDig = listOf(
-        SoundEntry.soundEntry().key(Key.key("block/copper/dig1")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper/dig2")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper/dig3")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper/dig4")).build()
+        SoundEntry.soundEntry().key(Key.key("block/copper/break1")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper/break2")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper/break3")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper/break4")).build()
     )
     val copperStep = listOf(
         SoundEntry.soundEntry().key(Key.key("block/copper/step1")).build(),
@@ -122,10 +122,10 @@ object VanillaSoundEntries {
         SoundEntry.soundEntry().key(Key.key("block/copper/step6")).build(),
     )
     val copperGrateDig = listOf(
-        SoundEntry.soundEntry().key(Key.key("block/copper_grate/dig1")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper_grate/dig2")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper_grate/dig3")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper_grate/dig4")).build()
+        SoundEntry.soundEntry().key(Key.key("block/copper_grate/break1")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_grate/break2")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_grate/break3")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_grate/break4")).build()
     )
     val copperGrateStep = listOf(
         SoundEntry.soundEntry().key(Key.key("block/copper_grate/step1")).build(),
@@ -141,9 +141,9 @@ object VanillaSoundEntries {
         SoundEntry.soundEntry().key(Key.key("block/copper_door/toggle3")).build(),
     )
     val copperTrapDoor = listOf(
-        SoundEntry.soundEntry().key(Key.key("block/copper_door/toggle1")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper_door/toggle2")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper_door/toggle3")).build(),
-        SoundEntry.soundEntry().key(Key.key("block/copper_door/toggle4")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_trapdoor/toggle1")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_trapdoor/toggle2")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_trapdoor/toggle3")).build(),
+        SoundEntry.soundEntry().key(Key.key("block/copper_trapdoor/toggle4")).build(),
     )
 }
