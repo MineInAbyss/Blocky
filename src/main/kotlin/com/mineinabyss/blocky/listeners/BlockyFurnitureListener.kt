@@ -13,16 +13,29 @@ import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyPlacableOn
 import com.mineinabyss.blocky.components.features.furniture.BlockySeats
 import com.mineinabyss.blocky.helpers.*
+import com.mineinabyss.blocky.helpers.GenericHelpers.toEntity
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
+import com.mineinabyss.idofront.nms.PacketListener
+import com.mineinabyss.idofront.nms.aliases.toBukkit
+import com.mineinabyss.idofront.nms.aliases.toNMS
+import com.mineinabyss.idofront.nms.interceptClientbound
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.util.to
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
 import io.th0rgal.protectionlib.ProtectionLib
+import net.minecraft.network.Connection
+import net.minecraft.network.protocol.Packet
+import net.minecraft.network.protocol.game.ClientGamePacketListener
+import net.minecraft.network.protocol.game.ClientboundAddEntityPacket
+import net.minecraft.network.protocol.game.ClientboundBundlePacket
+import net.minecraft.network.protocol.game.ClientboundRemoveEntitiesPacket
+import net.minecraft.server.packs.repository.Pack
 import org.bukkit.*
 import org.bukkit.block.BlockFace
+import org.bukkit.craftbukkit.CraftServer
 import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
@@ -40,41 +53,51 @@ import org.bukkit.util.Vector
 
 class BlockyFurnitureListener : Listener {
 
-    @EventHandler(priority = EventPriority.HIGH)
-    fun PlayerChunkLoadEvent.onLoadChunk() {
-        chunk.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.sendInteractionEntityPacket(it, player)
-            FurniturePacketHelpers.sendCollisionHitboxPacket(it, player)
-            FurniturePacketHelpers.sendLightPacket(it, player)
+    init {
+        if (Plugins.isEnabled("ModelEngine")) {
+            blocky.logger.s("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
+            Bukkit.getPluginManager().registerEvents(object : Listener {
+                @EventHandler
+                fun BaseEntityInteractEvent.onModelEngineInteract() {
+                    val baseEntity = (baseEntity.original as? ItemDisplay)?.takeIf { it.isBlockyFurniture } ?: return
+                    when {
+                        action == BaseEntityInteractEvent.Action.ATTACK -> BlockyFurnitures.removeFurniture(baseEntity, player)
+                        else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, baseEntity.location.add(clickedPosition ?: Vector())).callEvent()
+                    }
+                }
+            }, blocky.plugin)
+        }
+
+        PacketListener.unregisterListener(FurnitureHelpers.PACKET_KEY)
+        blocky.plugin.interceptClientbound(FurnitureHelpers.PACKET_KEY.asString()) { packet: Packet<*>, player: Player? ->
+            player?.let { handlePacket(packet, it) } ?: packet
         }
     }
 
-    @EventHandler
-    fun PlayerChunkUnloadEvent.onUnloadChunk() {
-        chunk.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.removeInteractionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeHitboxOutlinePacket(it, player)
-            FurniturePacketHelpers.removeCollisionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeLightPacket(it, player)
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    fun EntityRemoveFromWorldEvent.onRemoveFurniture() {
-        val entity = entity as? ItemDisplay ?: return
-        FurniturePacketHelpers.removeInteractionHitboxPacket(entity)
-        FurniturePacketHelpers.removeHitboxOutlinePacket(entity)
-        FurniturePacketHelpers.removeCollisionHitboxPacket(entity)
-        FurniturePacketHelpers.removeLightPacket(entity)
-    }
-
-    @EventHandler
-    fun PlayerChangedWorldEvent.onChangeWorld() {
-        from.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.removeInteractionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeHitboxOutlinePacket(it, player)
-            FurniturePacketHelpers.removeCollisionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeLightPacket(it, player)
+    private fun handlePacket(packet: Packet<*>, player: Player): Packet<*>? {
+        return when (packet) {
+            is ClientboundBundlePacket -> ClientboundBundlePacket(packet.subPackets().map { handlePacket(it, player) as Packet<in ClientGamePacketListener> })
+            is ClientboundAddEntityPacket -> {
+                blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
+                    val entity = packet.uuid.toEntity() as? ItemDisplay ?: return@launch
+                    FurniturePacketHelpers.sendInteractionEntityPacket(entity, player)
+                    FurniturePacketHelpers.sendCollisionHitboxPacket(entity, player)
+                    FurniturePacketHelpers.sendLightPacket(entity, player)
+                }
+                packet
+            }
+            is ClientboundRemoveEntitiesPacket -> {
+                blocky.plugin.launch(blocky.plugin.minecraftDispatcher) {
+                    packet.entityIds.forEach { entity ->
+                        FurniturePacketHelpers.removeInteractionHitboxPacket(entity, player)
+                        FurniturePacketHelpers.removeCollisionHitboxPacket(entity, player)
+                        FurniturePacketHelpers.removeLightPacket(entity, player)
+                        FurniturePacketHelpers.removeHitboxOutlinePacket(entity, player)
+                    }
+                }
+                null
+            }
+            else -> packet
         }
     }
 
@@ -145,22 +168,6 @@ class BlockyFurnitureListener : Listener {
         // Mainly for players in creative-mode
         FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(block.toBlockPos())?.let {
             BlockyFurnitures.removeFurniture(it, player)
-        }
-    }
-
-    init {
-        if (Plugins.isEnabled("ModelEngine")) {
-            blocky.logger.s("ModelEngine detected, enabling ModelEngine-Furniture-Interaction Listener!")
-            Bukkit.getPluginManager().registerEvents(object : Listener {
-                @EventHandler
-                fun BaseEntityInteractEvent.onModelEngineInteract() {
-                    val baseEntity = (baseEntity.original as? ItemDisplay)?.takeIf { it.isBlockyFurniture } ?: return
-                    when {
-                        action == BaseEntityInteractEvent.Action.ATTACK -> BlockyFurnitures.removeFurniture(baseEntity, player)
-                        else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, baseEntity.location.add(clickedPosition ?: Vector())).callEvent()
-                    }
-                }
-            }, blocky.plugin)
         }
     }
 
