@@ -20,6 +20,8 @@ import com.mineinabyss.idofront.util.to
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.packet.PlayerChunkLoadEvent
 import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
+import io.papermc.paper.event.player.PlayerTrackEntityEvent
+import io.papermc.paper.event.player.PlayerUntrackEntityEvent
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.*
 import org.bukkit.block.BlockFace
@@ -41,41 +43,20 @@ import org.bukkit.util.Vector
 class BlockyFurnitureListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
-    fun PlayerChunkLoadEvent.onLoadChunk() {
-        chunk.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.sendInteractionEntityPacket(it, player)
-            FurniturePacketHelpers.sendCollisionHitboxPacket(it, player)
-            FurniturePacketHelpers.sendLightPacket(it, player)
-        }
+    fun PlayerTrackEntityEvent.onTrackEntity() {
+        val baseEntity = entity as? ItemDisplay ?: return
+        FurniturePacketHelpers.sendInteractionEntityPacket(baseEntity, player)
+        FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity, player)
+        FurniturePacketHelpers.sendLightPacket(baseEntity, player)
     }
 
     @EventHandler
-    fun PlayerChunkUnloadEvent.onUnloadChunk() {
-        chunk.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.removeInteractionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeHitboxOutlinePacket(it, player)
-            FurniturePacketHelpers.removeCollisionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeLightPacket(it, player)
-        }
-    }
-
-    @EventHandler(priority = EventPriority.LOWEST)
-    fun EntityRemoveFromWorldEvent.onRemoveFurniture() {
-        val entity = entity as? ItemDisplay ?: return
-        FurniturePacketHelpers.removeInteractionHitboxPacket(entity)
-        FurniturePacketHelpers.removeHitboxOutlinePacket(entity)
-        FurniturePacketHelpers.removeCollisionHitboxPacket(entity)
-        FurniturePacketHelpers.removeLightPacket(entity)
-    }
-
-    @EventHandler
-    fun PlayerChangedWorldEvent.onChangeWorld() {
-        from.entities.filterIsInstance<ItemDisplay>().forEach {
-            FurniturePacketHelpers.removeInteractionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeHitboxOutlinePacket(it, player)
-            FurniturePacketHelpers.removeCollisionHitboxPacket(it, player)
-            FurniturePacketHelpers.removeLightPacket(it, player)
-        }
+    fun PlayerUntrackEntityEvent.onUntrackEntity() {
+        val baseEntity = entity as? ItemDisplay ?: return
+        FurniturePacketHelpers.removeInteractionHitboxPacket(baseEntity, player)
+        FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity, player)
+        FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity, player)
+        FurniturePacketHelpers.removeLightPacket(baseEntity, player)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
