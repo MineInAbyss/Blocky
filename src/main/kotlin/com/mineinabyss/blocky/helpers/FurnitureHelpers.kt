@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.helpers
 
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
@@ -18,7 +17,6 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import org.bukkit.Location
-import org.bukkit.NamespacedKey
 import org.bukkit.Rotation
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
@@ -30,9 +28,6 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 
 object FurnitureHelpers {
-
-    val PACKET_KEY = NamespacedKey.fromString("furniture_packet_listener", blocky.plugin)!!
-
     fun targetBlock(placedAgainst: Block, blockFace: BlockFace): Block? {
         return if (placedAgainst.isReplaceable) placedAgainst
         else placedAgainst.getRelative(blockFace).takeUnless { !it.type.isAir && it.isReplaceable }
