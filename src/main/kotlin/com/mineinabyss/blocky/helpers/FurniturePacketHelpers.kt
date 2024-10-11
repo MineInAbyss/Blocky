@@ -45,9 +45,8 @@ data class FurnitureSubEntityPacket(val entityId: Int, val addEntity: Clientboun
 }
 object FurniturePacketHelpers {
 
-    const val INTERACTION_WIDTH_ID = 8
-    const val INTERACTION_HEIGHT_ID = 9
-    const val ITEM_DISPLAY_ITEMSTACK_ID = 23
+    private const val INTERACTION_WIDTH_ID = 8
+    private const val INTERACTION_HEIGHT_ID = 9
 
     private val collisionHitboxPosMap = mutableMapOf<FurnitureUUID, MutableSet<BlockPos>>()
     private val interactionHitboxIds = mutableSetOf<FurnitureSubEntity>()
@@ -62,11 +61,15 @@ object FurniturePacketHelpers {
     fun baseFurnitureFromCollisionHitbox(pos: BlockPos) =
         collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key?.toEntity() as? ItemDisplay
 
+    fun sendInteractionHitboxPackets(furniture: ItemDisplay) {
+        furniture.world.players.filter { it.canSee(furniture) }.forEach { sendInteractionHitboxPackets(furniture, it) }
+    }
+
     /**
      * Sends a packet to show the interaction hitbox of the given furniture to the given player.
      * @param furniture The furniture to show the interaction hitbox of.
      */
-    fun sendInteractionEntityPacket(furniture: ItemDisplay, player: Player) {
+    fun sendInteractionHitboxPackets(furniture: ItemDisplay, player: Player) {
         if (!furniture.isBlockyFurniture) return
         // Don't send interactionEntity packet if modelengine furniture with hitbox
         if (furniture.isModelEngineFurniture) {
@@ -76,30 +79,30 @@ object FurniturePacketHelpers {
         }
 
         val interactionHitboxes = furniture.toGeary().get<BlockyFurniture>()?.interactionHitbox ?: return
-            interactionHitboxPacketMap.computeIfAbsent(furniture.uniqueId) {
-                val entityIds = interactionHitboxIds.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: List(interactionHitboxes.size) { Entity.nextEntityId() }.apply {
-                    interactionHitboxIds += FurnitureSubEntity(furniture.uniqueId, IntList.of(*toIntArray()))
-                }
-                mutableSetOf<FurnitureSubEntityPacket>().apply {
-                    interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
-                        val loc = hitbox.location(furniture)
-                        val addEntityPacket = ClientboundAddEntityPacket(
-                            entityId, UUID.randomUUID(),
-                            loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
-                            EntityType.INTERACTION, 0, Vec3.ZERO, 0.0
-                        )
+        interactionHitboxPacketMap.computeIfAbsent(furniture.uniqueId) {
+            val entityIds = interactionHitboxIds.firstOrNull { it.furnitureUUID == furniture.uniqueId }?.entityIds ?: List(interactionHitboxes.size) { Entity.nextEntityId() }.apply {
+                interactionHitboxIds += FurnitureSubEntity(furniture.uniqueId, IntList.of(*toIntArray()))
+            }
+            mutableSetOf<FurnitureSubEntityPacket>().apply {
+                interactionHitboxes.zip(entityIds).forEach { (hitbox, entityId) ->
+                    val loc = hitbox.location(furniture)
+                    val addEntityPacket = ClientboundAddEntityPacket(
+                        entityId, UUID.randomUUID(),
+                        loc.x, loc.y, loc.z, loc.pitch, loc.yaw,
+                        EntityType.INTERACTION, 0, Vec3.ZERO, 0.0
+                    )
 
-                        val metadataPacket = ClientboundSetEntityDataPacket(
-                            entityId, listOf(
-                                SynchedEntityData.DataValue(INTERACTION_WIDTH_ID, EntityDataSerializers.FLOAT, hitbox.width),
-                                SynchedEntityData.DataValue(INTERACTION_HEIGHT_ID, EntityDataSerializers.FLOAT, hitbox.height)
-                            )
+                    val metadataPacket = ClientboundSetEntityDataPacket(
+                        entityId, listOf(
+                            SynchedEntityData.DataValue(INTERACTION_WIDTH_ID, EntityDataSerializers.FLOAT, hitbox.width),
+                            SynchedEntityData.DataValue(INTERACTION_HEIGHT_ID, EntityDataSerializers.FLOAT, hitbox.height)
                         )
+                    )
 
-                        add(FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket))
-                    }
+                    add(FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket))
                 }
-            }.forEach { (player as CraftPlayer).handle.connection.send(it.bundlePacket()) }
+            }
+        }.forEach { (player as CraftPlayer).handle.connection.send(it.bundlePacket()) }
     }
 
     /**
@@ -182,6 +185,9 @@ object FurniturePacketHelpers {
         outlinePlayerMap.remove(player.uniqueId)
     }
 
+    fun sendCollisionHitboxPacket(furniture: ItemDisplay) {
+        furniture.world.players.filter { it.canSee(furniture) }.forEach { sendCollisionHitboxPacket(furniture, it) }
+    }
 
     /**
      * Sends a packet to show the collision hitbox of the given furniture to the given player.
@@ -220,6 +226,11 @@ object FurniturePacketHelpers {
         val positions = collisionHitboxPositions(baseEntity.yaw, baseEntity.location, furniture.collisionHitbox)
             .associateWith { Material.AIR.createBlockData() }.toMutableMap()
         player.sendMultiBlockChange(positions)
+    }
+
+
+    fun sendLightPacket(furniture: ItemDisplay) {
+        furniture.world.players.filter { it.canSee(furniture) }.forEach { sendLightPacket(furniture, it) }
     }
 
     /**

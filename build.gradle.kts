@@ -43,6 +43,7 @@ dependencies {
     compileOnly(idofrontLibs.minecraft.customblockdata)
     compileOnly(idofrontLibs.creative.api)
     compileOnly(idofrontLibs.creative.serializer.minecraft)
+    compileOnly(libs.minecraft.plugin.axiompaper)
 
     implementation(libs.minecraft.plugin.protectionlib)
 }
@@ -82,6 +83,11 @@ paper {
             joinClasspath = true
         }
         register("ModelEngine") {
+            required = false
+            load = PaperPluginDescription.RelativeLoadOrder.BEFORE
+            joinClasspath = true
+        }
+        register("AxiomPaper") {
             required = false
             load = PaperPluginDescription.RelativeLoadOrder.BEFORE
             joinClasspath = true

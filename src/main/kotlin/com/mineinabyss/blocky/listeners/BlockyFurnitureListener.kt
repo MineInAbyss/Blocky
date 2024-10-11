@@ -16,13 +16,14 @@ import com.mineinabyss.blocky.helpers.*
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.plugin.Plugins
+import com.mineinabyss.idofront.time.ticks
 import com.mineinabyss.idofront.util.to
+import com.moulberry.axiom.event.AxiomManipulateEntityEvent
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
-import io.papermc.paper.event.packet.PlayerChunkLoadEvent
-import io.papermc.paper.event.packet.PlayerChunkUnloadEvent
 import io.papermc.paper.event.player.PlayerTrackEntityEvent
 import io.papermc.paper.event.player.PlayerUntrackEntityEvent
 import io.th0rgal.protectionlib.ProtectionLib
+import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.ArmorStand
@@ -35,7 +36,6 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageEvent
-import org.bukkit.event.player.PlayerChangedWorldEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.util.Vector
@@ -47,7 +47,7 @@ class BlockyFurnitureListener : Listener {
         val baseEntity = entity as? ItemDisplay ?: return
         blocky.plugin.launch {
             delay(2.ticks)
-            FurniturePacketHelpers.sendInteractionEntityPacket(baseEntity, player)
+            FurniturePacketHelpers.sendInteractionHitboxPackets(baseEntity, player)
             FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity, player)
             FurniturePacketHelpers.sendLightPacket(baseEntity, player)
         }
@@ -151,6 +151,28 @@ class BlockyFurnitureListener : Listener {
                     when {
                         action == BaseEntityInteractEvent.Action.ATTACK -> BlockyFurnitures.removeFurniture(baseEntity, player)
                         else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, baseEntity.location.add(clickedPosition ?: Vector())).callEvent()
+                    }
+                }
+            }, blocky.plugin)
+        }
+
+        if (Plugins.isEnabled("AxiomPaper")) {
+            blocky.logger.s("AxiomPaper detected, enabling AxiomPaper Listener!")
+            Bukkit.getPluginManager().registerEvents(object : Listener {
+                @EventHandler
+                fun AxiomManipulateEntityEvent.onAxiomManipFurniture() {
+                    val baseEntity = entity as? ItemDisplay ?: return
+
+                    FurniturePacketHelpers.removeInteractionHitboxPacket(baseEntity)
+                    FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity)
+                    FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity)
+                    FurniturePacketHelpers.removeLightPacket(baseEntity)
+
+                    blocky.plugin.launch {
+                        delay(2.ticks)
+                        FurniturePacketHelpers.sendInteractionHitboxPackets(baseEntity)
+                        FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity)
+                        FurniturePacketHelpers.sendLightPacket(baseEntity)
                     }
                 }
             }, blocky.plugin)
