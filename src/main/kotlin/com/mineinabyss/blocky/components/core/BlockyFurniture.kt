@@ -85,6 +85,7 @@ data class BlockyFurniture(
         val itemStack: SerializableItemStack? = null,
         val displayTransform: ItemDisplayTransform = ItemDisplayTransform.NONE,
         val scale: @Serializable(Vector3fSerializer::class) Vector3f = Vector3f(1f, 1f, 1f),
+        val translation: @Serializable(Vector3fSerializer::class) Vector3f = Vector3f(),
         val displayWidth: Float = 0f,
         val displayHeight: Float = 0f,
         val trackingRotation: Billboard = Billboard.FIXED,

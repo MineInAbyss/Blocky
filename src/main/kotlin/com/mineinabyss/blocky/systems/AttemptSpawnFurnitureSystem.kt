@@ -16,18 +16,21 @@ fun GearyModule.createFurnitureSpawner() = observeWithData<AttemptSpawn>()
         val color by get<BlockyFurniture.Color>().orNull()
     }) {
         event.location.spawn<ItemDisplay> {
-            val props = it.furniture.properties
+            val properties = it.furniture.properties
 
-            isPersistent = props.persistent
-            itemDisplayTransform = props.displayTransform
-            displayWidth = props.displayWidth
-            displayHeight = props.displayHeight
-            brightness = props.brightness
-            billboard = props.trackingRotation
-            props.viewRange?.let { viewRange = it }
-            props.shadowRadius?.let { shadowRadius = it }
-            props.shadowStrength?.let { shadowStrength = it }
-            transformation = transformation.apply { scale.set(props.scale) }
+            isPersistent = properties.persistent
+            itemDisplayTransform = properties.displayTransform
+            displayWidth = properties.displayWidth
+            displayHeight = properties.displayHeight
+            brightness = properties.brightness
+            billboard = properties.trackingRotation
+            properties.viewRange?.let { viewRange = it }
+            properties.shadowRadius?.let { shadowRadius = it }
+            properties.shadowStrength?.let { shadowStrength = it }
+            transformation = transformation.apply {
+                scale.set(properties.scale)
+                translation.set(properties.translation)
+            }
 
             it.color?.let { entity.setPersisting(it) }
             entity.set<BukkitEntity>(this)
