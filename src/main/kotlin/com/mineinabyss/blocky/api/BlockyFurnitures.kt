@@ -100,13 +100,4 @@ object BlockyFurnitures {
         furniture.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, furniture.location.toVector())
         return true
     }
-
-    /**
-     * Updates the hitbox & light packets of a furniture entity for a given player.
-     */
-    fun updateFurniturePackets(furniture: ItemDisplay, player: Player) {
-        FurniturePacketHelpers.sendInteractionEntityPacket(furniture, player)
-        FurniturePacketHelpers.sendCollisionHitboxPacket(furniture, player)
-        FurniturePacketHelpers.sendLightPacket(furniture, player)
-    }
 }

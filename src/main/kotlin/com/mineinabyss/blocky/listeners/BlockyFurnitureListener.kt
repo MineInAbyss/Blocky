@@ -45,9 +45,12 @@ class BlockyFurnitureListener : Listener {
     @EventHandler(priority = EventPriority.HIGH)
     fun PlayerTrackEntityEvent.onTrackEntity() {
         val baseEntity = entity as? ItemDisplay ?: return
-        FurniturePacketHelpers.sendInteractionEntityPacket(baseEntity, player)
-        FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity, player)
-        FurniturePacketHelpers.sendLightPacket(baseEntity, player)
+        blocky.plugin.launch {
+            delay(2.ticks)
+            FurniturePacketHelpers.sendInteractionEntityPacket(baseEntity, player)
+            FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity, player)
+            FurniturePacketHelpers.sendLightPacket(baseEntity, player)
+        }
     }
 
     @EventHandler
@@ -57,6 +60,15 @@ class BlockyFurnitureListener : Listener {
         FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity, player)
         FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity, player)
         FurniturePacketHelpers.removeLightPacket(baseEntity, player)
+    }
+
+    @EventHandler
+    fun EntityRemoveFromWorldEvent.onRemoveEntity() {
+        val baseEntity = entity as? ItemDisplay ?: return
+        FurniturePacketHelpers.removeInteractionHitboxPacket(baseEntity)
+        FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity)
+        FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity)
+        FurniturePacketHelpers.removeLightPacket(baseEntity)
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
