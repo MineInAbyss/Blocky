@@ -83,7 +83,7 @@ class BlockyFurnitureListener : Listener {
 
         when {
             action != Action.RIGHT_CLICK_BLOCK || player.gameMode == GameMode.ADVENTURE -> return
-            !FurnitureHelpers.hasEnoughSpace(furniture, targetBlock.location, yaw) -> return
+            !FurnitureHelpers.hasEnoughSpace(furniture, targetBlock.location.toCenterLocation(), yaw) -> return
             !ProtectionLib.canBuild(player, targetBlock.location) -> return
             gearyEntity.get<BlockyPlacableOn>()?.isPlacableOn(targetBlock, blockFace) == false -> return
             targetBlock.getRelative(BlockFace.DOWN).isVanillaNoteBlock -> return

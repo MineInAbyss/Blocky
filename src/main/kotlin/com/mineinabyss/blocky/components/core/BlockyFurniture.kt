@@ -1,6 +1,5 @@
 package com.mineinabyss.blocky.components.core
 
-import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.serializers.BrightnessSerializer
 import com.mineinabyss.idofront.serialization.*
 import kotlinx.serialization.SerialName
@@ -33,15 +32,15 @@ data class BlockyFurniture(
         val offset: @Serializable(VectorSerializer::class) Vector = Vector(),
         val width: Float,
         val height: Float,
-        val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()) {
+        val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()
+    ) {
         fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
         fun location(furniture: ItemDisplay): Location {
-            return furniture.location.toBlockCenterLocation().add(offset(furniture.yaw))
+            return furniture.location.add(offset(furniture.yaw))
         }
 
         fun offset(furnitureYaw: Float): Vector {
             val angleRad = Math.toRadians(furnitureYaw.toDouble())
-
 
             // Get the coordinates relative to the local y-axis
             val x = cos(angleRad) * offset.x + sin(angleRad) * offset.z

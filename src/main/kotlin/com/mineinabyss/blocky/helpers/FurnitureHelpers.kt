@@ -11,6 +11,7 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.serialization.setPersisting
 import com.mineinabyss.idofront.items.asColorable
+import com.mineinabyss.idofront.operators.plus
 import com.mineinabyss.idofront.spawning.spawn
 import io.papermc.paper.math.Position
 import kotlinx.coroutines.async
@@ -51,8 +52,7 @@ object FurnitureHelpers {
         rotation: Float,
         center: Location,
         hitbox: Set<BlockyFurniture.InteractionHitbox>
-    ): List<Location> =
-        hitbox.map { i -> center.clone().add(i.offset(rotation)) }
+    ): List<Location> = hitbox.map { i -> center.clone().plus(i.offset(rotation)) }
 
     fun rotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
         val furniture = nullFurniture ?: BlockyFurniture()

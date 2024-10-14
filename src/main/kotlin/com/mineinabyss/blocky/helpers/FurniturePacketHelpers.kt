@@ -162,7 +162,7 @@ object FurniturePacketHelpers {
                     add(FurnitureSubEntityPacket(entityId, addEntityPacket, metadataPacket))
                 }
             }
-        }.forEach { (player as CraftPlayer).handle.connection.send(ClientboundBundlePacket(listOf(it.addEntity, it.metadata))) }
+        }.forEach { (player as CraftPlayer).handle.connection.send(it.bundlePacket()) }
     }
 
     fun removeHitboxOutlinePacket(furniture: ItemDisplay) {
