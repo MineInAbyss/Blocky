@@ -20,7 +20,7 @@ import org.bukkit.Location
 import org.bukkit.Rotation
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
-import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Interaction
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.FIXED
 import org.bukkit.entity.ItemDisplay.ItemDisplayTransform.NONE
@@ -100,14 +100,10 @@ object FurnitureHelpers {
         furniture.toGeary().setPersisting(
             BlockyAssociatedSeats(
                 seats.offsets.mapNotNull { seatOffset ->
-                    furniture.location.add(seatOffset).spawn<ArmorStand> {
+                    furniture.location.add(seatOffset).spawn<Interaction> {
                         isPersistent = false
-                        isVisible = false
-                        isMarker = true
-                        isSilent = true
-                        isSmall = true
-                        setGravity(false)
-                        setRotation(furniture.yaw, 0F)
+                        interactionWidth = 0.1f
+                        interactionHeight = 0.1f
                     }?.uniqueId
                 }.toMutableList()
             )

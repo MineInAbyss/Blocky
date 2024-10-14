@@ -26,7 +26,7 @@ import io.th0rgal.protectionlib.ProtectionLib
 import kotlinx.coroutines.delay
 import org.bukkit.*
 import org.bukkit.block.BlockFace
-import org.bukkit.entity.ArmorStand
+import org.bukkit.entity.Interaction
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
 import org.bukkit.event.Event
@@ -188,7 +188,7 @@ class BlockyFurnitureListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     fun PlayerQuitEvent.onQuit() {
-        (player.vehicle as? ArmorStand)?.toGearyOrNull()?.get<BlockySeats>() ?: return
+        (player.vehicle as? Interaction)?.toGearyOrNull()?.get<BlockySeats>() ?: return
         player.leaveVehicle()
     }
 
