@@ -8,7 +8,6 @@ import com.mineinabyss.blocky.systems.actions.createFurnitureItemSetter
 import com.mineinabyss.blocky.systems.actions.createFurnitureMEGModelSetter
 import com.mineinabyss.blocky.systems.actions.createFurnitureSeatSetter
 import com.mineinabyss.blocky.systems.actions.furnitureHitboxSetter
-import com.mineinabyss.geary.addons.GearyPhase
 import com.mineinabyss.geary.autoscan.autoscan
 import com.mineinabyss.geary.modules.geary
 import com.mineinabyss.geary.systems.builders.cache

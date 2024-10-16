@@ -8,69 +8,49 @@ import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.idofront.time.ticks
-import net.minecraft.world.entity.EntitySelector
+import net.minecraft.world.entity.EntityType
 import net.minecraft.world.phys.AABB
 import net.minecraft.world.phys.Vec3
+import org.bukkit.attribute.Attribute
 import org.bukkit.craftbukkit.entity.CraftPlayer
 import org.bukkit.entity.ItemDisplay
 import org.bukkit.entity.Player
-import java.util.*
+import kotlin.jvm.optionals.getOrNull
 
 
 fun GearyModule.createFurnitureOutlineSystem() =
     system(query<Player>()).every(4.ticks).exec { (player) ->
-        if (blocky.config.furniture.showOutlines && player.isConnected) findTargetFurnitureHitbox(player, 5.0)?.let {
+        if (blocky.config.furniture.showOutlines && player.isConnected) findTargetFurnitureHitbox(player)?.let {
             FurniturePacketHelpers.sendHitboxOutlinePacket(it, player)
         } ?: FurniturePacketHelpers.removeHitboxOutlinePacket(player)
     }
 
-private fun findTargetFurnitureHitbox(player: Player, maxDistance: Double): ItemDisplay? {
-    if (maxDistance < 1 || maxDistance > 120) return null
+private fun findTargetFurnitureHitbox(player: Player): ItemDisplay? {
+    val maxReachDistance = player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE)?.value?.takeIf { it in 1.0..120.0 } ?: return null
     val nmsPlayer = (player as CraftPlayer).handle
-    val start = nmsPlayer.getEyePosition(1.0f)
-    val direction = nmsPlayer.lookAngle
-    val distanceDirection = Vec3(direction.x * maxDistance, direction.y * maxDistance, direction.z * maxDistance)
+    val (start, direction) = nmsPlayer.getEyePosition(1.0f) to nmsPlayer.lookAngle
+    val distanceDirection = direction.scale(maxReachDistance)
     val end = start.add(distanceDirection)
-    val entities = nmsPlayer.level().getEntities(
-        nmsPlayer,
-        nmsPlayer.boundingBox.expandTowards(distanceDirection).inflate(1.0, 1.0, 1.0),
-        EntitySelector.NO_SPECTATORS
-    )
-    var distance = 0.0
-    val entityIterator: Iterator<net.minecraft.world.entity.Entity> = entities.iterator()
 
-    var baseEntity: ItemDisplay? = null
-    while (true) {
-        var entity: net.minecraft.world.entity.Entity
-        var rayTrace: Vec3
-        var distanceTo: Double
-        do {
-            var rayTraceResult: Optional<Vec3> = Optional.empty()
-            do {
-                if (!entityIterator.hasNext()) return baseEntity
+    val aabb = nmsPlayer.boundingBox.expandTowards(distanceDirection).inflate(1.0)
+    val entities = nmsPlayer.level().getEntities(nmsPlayer, aabb) { it.type == EntityType.ITEM_DISPLAY }
 
-                entity = entityIterator.next()
-                val bukkitEntity = entity.bukkitEntity as? ItemDisplay ?: continue
-                // If entity is furniture, check all interactionHitboxes if their "bounding box" is colliding
-                bukkitEntity.toGearyOrNull()?.get<BlockyFurniture>()?.interactionHitbox?.firstOrNull { hitbox ->
-                    val hitboxLoc = hitbox.location(bukkitEntity).add(0.0, hitbox.height / 2.0, 0.0)
-                    val hitboxVec = Vec3(hitboxLoc.x(), hitboxLoc.y(), hitboxLoc.z())
-                    val hitboxAABB = AABB.ofSize(
-                        hitboxVec,
-                        hitbox.width.toDouble(),
-                        hitbox.height.toDouble(),
-                        hitbox.width.toDouble()
-                    )
-                    rayTraceResult = hitboxAABB.clip(start, end)
-                    rayTraceResult.isPresent
+    var closestEntity: ItemDisplay? = null
+    var closestDistance = Double.MAX_VALUE
+
+    entities.asSequence().mapNotNull { it.bukkitEntity as? ItemDisplay }.forEach { bukkitEntity ->
+        bukkitEntity.toGearyOrNull()?.get<BlockyFurniture>()?.interactionHitbox?.forEach { hitbox ->
+            val (width, height) = hitbox.width.toDouble() to hitbox.height.toDouble()
+            val hitboxCenter = hitbox.location(bukkitEntity).add(0.0, hitbox.height / 2.0, 0.0).let { Vec3(it.x, it.y, it.z) }
+            AABB.ofSize(hitboxCenter, width, height, width).clip(start, end).getOrNull()?.let { rayTrace ->
+                val distanceTo = start.distanceToSqr(rayTrace)
+                if (distanceTo < closestDistance) {
+                    closestDistance = distanceTo
+                    closestEntity = bukkitEntity
                 }
-            } while (rayTraceResult.isEmpty)
-
-            rayTrace = rayTraceResult.get()
-            distanceTo = start.distanceToSqr(rayTrace)
-        } while (!(distanceTo < distance) && distance != 0.0)
-
-        baseEntity = entity.bukkitEntity as? ItemDisplay
-        distance = distanceTo
+            }
+        }
     }
+
+    return closestEntity
 }
