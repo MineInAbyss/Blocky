@@ -18,7 +18,7 @@ import java.util.*
 
 
 fun GearyModule.createFurnitureOutlineSystem() =
-    system(query<Player>()).every(1.ticks).exec { (player) ->
+    system(query<Player>()).every(4.ticks).exec { (player) ->
         if (blocky.config.furniture.showOutlines && player.isConnected) findTargetFurnitureHitbox(player, 5.0)?.let {
             FurniturePacketHelpers.sendHitboxOutlinePacket(it, player)
         } ?: FurniturePacketHelpers.removeHitboxOutlinePacket(player)

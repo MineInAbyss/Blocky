@@ -33,11 +33,9 @@ class BlockyPlugin : JavaPlugin() {
         createBlockyContext()
 
         BlockyBrigadierCommands.registerCommands()
-        geary.pipeline.runOnOrAfter(GearyPhase.INIT_SYSTEMS) {
-            geary.createFurnitureOutlineSystem()
-        }
 
         geary.run {
+            createFurnitureOutlineSystem()
             createFurnitureSpawner()
             createFurnitureItemSetter()
             createFurnitureSeatSetter()
