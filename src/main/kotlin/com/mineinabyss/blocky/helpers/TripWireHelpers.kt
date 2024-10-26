@@ -1,10 +1,11 @@
 package com.mineinabyss.blocky.helpers
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyBlocks
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
 import com.mineinabyss.blocky.components.features.wire.BlockyTallWire
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
-import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
@@ -12,6 +13,7 @@ import org.bukkit.block.Block
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Player
 
+context(Geary)
 fun SetBlock.blockyTripWire() = gearyBlocks.block2Prefab.blockMap[blockType]!![blockId]
 
 fun breakWireBlock(block: Block, player: Player?): Boolean {
@@ -37,7 +39,8 @@ fun breakWireBlock(block: Block, player: Player?): Boolean {
 }
 
 fun handleTallWire(block: Block) {
-    val tallWire = block.persistentDataContainer.decode<BlockyTallWire>() ?: BlockyTallWire(block.getRelative(BlockFace.UP).location)
+    val tallWire = block.container { decode<BlockyTallWire>() }
+        ?: BlockyTallWire(block.getRelative(BlockFace.UP).location)
     tallWire.baseWire?.let {
         it.customBlockData.clear()
         it.type = Material.AIR

@@ -16,7 +16,6 @@ import com.mineinabyss.blocky.helpers.isVanillaNoteBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.idofront.messaging.broadcastVal
 import com.mineinabyss.idofront.util.to
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.GameMode

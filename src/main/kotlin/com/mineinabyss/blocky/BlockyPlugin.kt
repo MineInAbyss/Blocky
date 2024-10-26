@@ -4,13 +4,8 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.blocky.systems.*
-import com.mineinabyss.blocky.systems.actions.createFurnitureItemSetter
-import com.mineinabyss.blocky.systems.actions.createFurnitureMEGModelSetter
-import com.mineinabyss.blocky.systems.actions.createFurnitureSeatSetter
-import com.mineinabyss.blocky.systems.actions.furnitureHitboxSetter
-import com.mineinabyss.geary.autoscan.autoscan
-import com.mineinabyss.geary.modules.geary
-import com.mineinabyss.geary.systems.builders.cache
+import com.mineinabyss.geary.papermc.configure
+import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.observeLogger
@@ -19,12 +14,9 @@ import io.papermc.paper.configuration.GlobalConfiguration
 import org.bukkit.plugin.java.JavaPlugin
 
 class BlockyPlugin : JavaPlugin() {
-
     override fun onLoad() {
-        geary {
-            autoscan(classLoader, "com.mineinabyss.blocky") {
-                all()
-            }
+        gearyPaper.configure {
+            install(BlockyAddon)
         }
     }
 
@@ -32,16 +24,6 @@ class BlockyPlugin : JavaPlugin() {
         createBlockyContext()
 
         BlockyBrigadierCommands.registerCommands()
-
-        geary.run {
-            createFurnitureOutlineSystem()
-            createFurnitureSpawner()
-            createFurnitureItemSetter()
-            createFurnitureSeatSetter()
-            createFurnitureMEGModelSetter()
-
-            furnitureHitboxSetter()
-        }
 
         listeners(
             BlockyGenericListener(),
@@ -72,19 +54,21 @@ class BlockyPlugin : JavaPlugin() {
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
         }
 
-        ResourcepackGeneration().generateDefaultAssets()
+        ResourcepackGeneration(gearyPaper.worldManager.global).generateDefaultAssets()
     }
 
 
     fun createBlockyContext() {
         DI.remove<BlockyContext>()
+        // TODO update to use per world syntax when geary adds it
+        val geary = gearyPaper.worldManager.global
         val blockyContext = object : BlockyContext {
             override val plugin = this@BlockyPlugin
             override val logger by plugin.observeLogger()
             override val config: BlockyConfig by config("config", dataFolder.toPath(), BlockyConfig())
-            override val prefabQuery = geary.cache(BlockyQuery())
-            override val blockQuery = geary.cache(BlockyBlockQuery())
-            override val furnitureQuery = geary.cache(BlockyFurnitureQuery())
+            override val prefabQuery = geary.cache(::BlockyQuery)
+            override val blockQuery = geary.cache(::BlockyBlockQuery)
+            override val furnitureQuery = geary.cache(::BlockyFurnitureQuery)
         }
         DI.add<BlockyContext>(blockyContext)
     }

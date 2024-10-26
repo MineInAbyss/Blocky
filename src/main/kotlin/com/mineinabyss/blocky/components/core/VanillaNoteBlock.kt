@@ -4,6 +4,7 @@ import com.mineinabyss.blocky.components.features.blocks.BlockyInstrument
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
 import com.mineinabyss.blocky.helpers.isVanillaNoteBlock
 import com.mineinabyss.blocky.helpers.persistentDataContainer
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.datastore.encode
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.idofront.location.up
@@ -23,7 +24,7 @@ import kotlin.math.pow
 @Serializable
 @SerialName("blocky:vanilla_note_block")
 data class VanillaNoteBlock(private var note: Int = 0, private var powered: Boolean = false) {
-
+    context(Geary)
     fun interact(block: Block, source: Player? = null, action: Action) {
         playSoundNaturally(block, source)
         if (action == Action.RIGHT_CLICK_BLOCK) note(block, (note + 1) % 25)
@@ -31,6 +32,9 @@ data class VanillaNoteBlock(private var note: Int = 0, private var powered: Bool
 
     // Use method and private var to avoid issues with class changing but not pdc entry
     fun powered(): Boolean = powered
+
+
+    context(Geary)
     fun powered(block: Block, state: Boolean) {
         if (powered == state || !block.isVanillaNoteBlock) return
         powered = state
@@ -38,12 +42,15 @@ data class VanillaNoteBlock(private var note: Int = 0, private var powered: Bool
     }
 
     fun note(): Int = note
+
+    context(Geary)
     fun note(block: Block, note: Int) {
         if (this.note == note || !block.isVanillaNoteBlock) return
         this.note = note
         block.persistentDataContainer.encode(this)
     }
 
+    context(Geary)
     private fun playSoundNaturally(block: Block, source: Player? = null) {
         val particleColor = note.toDouble() / 24.0
         val sound = block.instrumentSound()
@@ -64,6 +71,7 @@ data class VanillaNoteBlock(private var note: Int = 0, private var powered: Bool
 
     private fun isSkullAbove(block: Block) = (block.getRelative(BlockFace.UP).state as CraftBlockState).handle.instrument().worksAboveNoteBlock()
 
+    context(Geary)
     private fun Block.instrumentSound(): String {
         val (stateAbove, stateBelow) = (getRelative(BlockFace.UP).state as CraftBlockState) to (getRelative(BlockFace.DOWN).state as CraftBlockState)
         val instrumentAbove = stateAbove.handle.instrument().takeIf { it.worksAboveNoteBlock() }

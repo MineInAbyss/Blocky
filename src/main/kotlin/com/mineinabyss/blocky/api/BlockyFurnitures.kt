@@ -10,9 +10,12 @@ import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
 import com.mineinabyss.blocky.helpers.decode
 import com.mineinabyss.blocky.helpers.toBlockPos
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.papermc.toEntityOrNull
+import com.mineinabyss.geary.papermc.toGeary
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.papermc.tracking.items.gearyItems
+import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
@@ -34,21 +37,21 @@ object BlockyFurnitures {
     val GearyEntity.isModelEngineFurniture: Boolean get() = this.has<BlockyModelEngine>()
 
     //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
-    val Block.isBlockyFurniture get() = this.toGearyOrNull()?.isBlockyFurniture ?: false
+    val Block.isBlockyFurniture get() = with(world.toGeary()) { toGearyOrNull()?.isBlockyFurniture ?: false }
     val GearyEntity.isBlockyFurniture get() = has<BlockyFurniture>() || this.isModelEngineFurniture
     val Entity.isBlockyFurniture: Boolean
         get() = when (this) {
             is ItemDisplay -> this.toGearyOrNull()?.isBlockyFurniture == true
             else -> false
         } || isModelEngineFurniture
-    val String.isBlockyFurniture get() = PrefabKey.of(this).toEntityOrNull()?.isBlockyFurniture ?: false
-    val PrefabKey.isBlockyFurniture get() = this.toEntityOrNull()?.isBlockyFurniture ?: false
+    context(Geary) val String.isBlockyFurniture get() = PrefabKey.of(this).toEntityOrNull()?.isBlockyFurniture ?: false
+    context(Geary)  val PrefabKey.isBlockyFurniture get() = this.toEntityOrNull()?.isBlockyFurniture ?: false
 
-    val ItemStack.blockyFurniture get() = this.decode<BlockyFurniture>()
-    val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
+    context(Geary) val ItemStack.blockyFurniture get() = this.decode<BlockyFurniture>()
+    context(Geary) val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
 
     //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
-    val Block.blockyFurniture get() = this.toGearyOrNull()?.get<BlockyFurniture>()
+    context(Geary) val Block.blockyFurniture get() = this.toGearyOrNull()?.get<BlockyFurniture>()
 
     val Block.baseFurniture: ItemDisplay?
         get() = FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(this.toBlockPos())
@@ -64,11 +67,13 @@ object BlockyFurnitures {
     val ItemDisplay.blockySeat
         get() = this.seats.minByOrNull { it.location.distanceSquared(this.location) }
 
+    context(Geary)
     fun placeFurniture(prefabKey: PrefabKey, location: Location) =
         placeFurniture(prefabKey, location, 0f)
 
+    context(Geary)
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) =
-        gearyItems.createItem(prefabKey)?.let { FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, it) }
+        getAddon(ItemTracking).createItem(prefabKey)?.let { FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, it) }
 
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
         FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)

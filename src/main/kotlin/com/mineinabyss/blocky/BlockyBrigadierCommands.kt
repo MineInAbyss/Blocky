@@ -4,9 +4,11 @@ import com.github.shynixn.mccoroutine.bukkit.launch
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.allBlockyPrefabs
-import com.mineinabyss.geary.papermc.tracking.items.gearyItems
+import com.mineinabyss.geary.papermc.gearyPaper
+import com.mineinabyss.geary.papermc.toGeary
+import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
-import com.mineinabyss.geary.prefabs.prefabs
+import com.mineinabyss.geary.prefabs.Prefabs
 import com.mineinabyss.guiy.inventory.guiy
 import com.mineinabyss.idofront.commands.brigadier.commands
 import com.mineinabyss.idofront.messaging.error
@@ -23,6 +25,8 @@ object BlockyBrigadierCommands {
             "blocky" {
                 "reload" {
                     executes {
+                        val geary = gearyPaper.worldManager.global
+                        val prefabs = geary.getAddon(Prefabs)
                         blocky.plugin.createBlockyContext()
                         blocky.plugin.launch {
                             val blockyPrefabs = blocky.prefabQuery.entities()
@@ -36,7 +40,7 @@ object BlockyBrigadierCommands {
                             blockyPrefabs.filter { it !in inheritedPrefabs }.sortedBy { it.prefabs.size }
                                 .forEach { prefabs.loader.reload(it) }
                         }
-                        ResourcepackGeneration().generateDefaultAssets()
+                        ResourcepackGeneration(geary).generateDefaultAssets()
                         sender.success("Blocky has been reloaded!")
                     }
                 }
@@ -46,7 +50,9 @@ object BlockyBrigadierCommands {
                     }
                     val amount by IntegerArgumentType.integer(1)
                     playerExecutes {
-                        val (player, item, amount) = (executor as? Player ?: return@playerExecutes) to item()!! to amount()!!
+                        val gearyItems = location.world.toGeary().getAddon(ItemTracking)
+                        val (player, item, amount) = (executor as? Player
+                            ?: return@playerExecutes) to item()!! to amount()!!
                         if (player.inventory.firstEmpty() == -1) return@playerExecutes player.error("No empty slots in inventory")
 
                         val itemstack = gearyItems.createItem(PrefabKey.of(item.asString()))?.asQuantity(amount)

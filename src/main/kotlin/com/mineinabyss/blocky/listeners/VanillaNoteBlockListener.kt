@@ -1,6 +1,7 @@
 package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.helpers.vanillaNoteBlock
+import com.mineinabyss.geary.papermc.toGeary
 import com.mineinabyss.idofront.entities.rightClicked
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
@@ -15,15 +16,14 @@ import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.inventory.meta.SkullMeta
 
 class VanillaNoteBlockListener: Listener {
-
     @EventHandler
-    fun NotePlayEvent.onNotePlay() {
+    fun NotePlayEvent.onNotePlay() = with(block.world.toGeary()) {
         isCancelled = true
         block.vanillaNoteBlock?.interact(block, null, Action.LEFT_CLICK_BLOCK)
     }
 
     @EventHandler
-    fun BlockPhysicsEvent.onRedstone() {
+    fun BlockPhysicsEvent.onRedstone() = with(block.world.toGeary()) {
         val vanillaNoteBlock = block.takeIf { it.type == Material.NOTE_BLOCK }?.vanillaNoteBlock ?: return
 
         if (!block.isBlockIndirectlyPowered) return vanillaNoteBlock.powered(block, false)
@@ -32,7 +32,7 @@ class VanillaNoteBlockListener: Listener {
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
-    fun PlayerInteractEvent.onChangingNote() {
+    fun PlayerInteractEvent.onChangingNote() = with(player.world.toGeary()) {
         val (block, vanillaNoteBlock) = (clickedBlock ?: return) to (clickedBlock?.vanillaNoteBlock ?: return)
         val (mainHand, offHand) = player.inventory.let { it.itemInMainHand to it.itemInOffHand }
 

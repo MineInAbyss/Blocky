@@ -16,11 +16,15 @@ import com.mineinabyss.blocky.components.features.mining.BlockyMining
 import com.mineinabyss.blocky.components.features.mining.ToolType
 import com.mineinabyss.geary.datatypes.Component
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.datastore.encode
+import com.mineinabyss.geary.papermc.toEntityOrNull
+import com.mineinabyss.geary.papermc.toGeary
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
-import com.mineinabyss.geary.papermc.tracking.items.gearyItems
+import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
 import com.mineinabyss.geary.papermc.tracking.items.inventory.toGeary
+import com.mineinabyss.geary.papermc.withGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.nms.nbt.fastPDC
 import com.mineinabyss.idofront.spawning.spawn
@@ -61,8 +65,18 @@ val Block.persistentDataContainer get() = customBlockData as PersistentDataConta
 val Block.customBlockData get() = CustomBlockData(this, blocky.plugin)
 fun Block.toBlockPos() = BlockPos(this.x, this.y, this.z)
 
-internal fun ItemStack.toGearyOrNull(): GearyEntity? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)
-internal inline fun <reified T : Component> ItemStack.decode(): T? = gearyItems.itemProvider.deserializeItemStackToEntity(this.fastPDC)?.get<T>()
+inline fun <T> Block.container(run: context(Geary, PersistentDataContainer) () -> T) = withGeary {
+    run(this@withGeary, persistentDataContainer)
+}
+
+context(Geary)
+internal fun ItemStack.toGearyOrNull(): GearyEntity? =
+    getAddon(ItemTracking).itemProvider.deserializeItemStackToEntity(this.fastPDC)
+
+context(Geary)
+internal inline fun <reified T : Component> ItemStack.decode(): T? =
+    getAddon(ItemTracking).itemProvider.deserializeItemStackToEntity(this.fastPDC)?.get<T>()
+
 internal val Player.gearyInventory get() = inventory.toGeary()
 
 fun placeBlockyBlock(
@@ -72,7 +86,7 @@ fun placeBlockyBlock(
     against: Block,
     face: BlockFace,
     newData: BlockData
-) {
+) = with(player.world.toGeary()) {
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return
     if (!against.isBlockyBlock && !newData.isBlockyBlock && !CopperHelpers.isBlockyCopper(against) && !CopperHelpers.isBlockyCopper(newData)) return
@@ -105,7 +119,7 @@ fun placeBlockyBlock(
     targetBlock.world.sendGameEvent(null, GameEvent.BLOCK_PLACE, targetBlock.location.toVector())
 }
 
-fun handleBlockyDrops(block: Block, player: Player) {
+fun handleBlockyDrops(block: Block, player: Player) = with(block.world.toGeary()) {
     val gearyBlock = block.toGearyOrNull() ?: return
     val drop = gearyBlock.get<BlockyDrops>() ?: return
     if (!gearyBlock.has<SetBlock>()) return
@@ -142,20 +156,22 @@ object GenericHelpers {
         block.world.getNearbyEntities(BoundingBox.of(block.location.toCenterLocation(), 0.5, 0.5, 0.5))
             .any { it is LivingEntity && (it !is Player || it.gameMode != GameMode.SPECTATOR) }
 
-    fun Block.isInteractable() = when {
-        isBlockyBlock || isBlockyFurniture || CaveVineHelpers.isBlockyCaveVine(this) -> false
-        blockData is Stairs || blockData is Fence -> false
-        !type.isInteractable || type in setOf(
-            Material.PUMPKIN,
-            Material.MOVING_PISTON,
-            Material.REDSTONE_ORE,
-            Material.REDSTONE_WIRE
-        ) -> false
+    fun Block.isInteractable() = with(world.toGeary()) {
+        when {
+            isBlockyBlock || isBlockyFurniture || CaveVineHelpers.isBlockyCaveVine(this@isInteractable) -> false
+            blockData is Stairs || blockData is Fence -> false
+            !type.isInteractable || type in setOf(
+                Material.PUMPKIN,
+                Material.MOVING_PISTON,
+                Material.REDSTONE_ORE,
+                Material.REDSTONE_WIRE
+            ) -> false
 
-        else -> true
+            else -> true
+        }
     }
 
-    fun directionalId(gearyEntity: GearyEntity, face: BlockFace, player: Player?): Int {
+    fun directionalId(gearyEntity: GearyEntity, face: BlockFace, player: Player?): Int = with(gearyEntity.world) {
         return gearyEntity.get<BlockyDirectional>()?.let { directional ->
             if (directional.isLogType) {
                 return when (face) {

@@ -1,6 +1,8 @@
 package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialSetTag
+import com.mineinabyss.geary.papermc.withGeary
+import com.mineinabyss.idofront.nms.aliases.NMSPlayer
 import net.minecraft.util.Mth
 import net.minecraft.world.InteractionHand
 import net.minecraft.world.InteractionResult
@@ -19,8 +21,12 @@ import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
 
 object BlockStateCorrection {
-    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack)  {
-        val placedItem = itemStack.takeIf(CopperHelpers::isBlockyCopper)?.let(CopperHelpers::convertToBlockyType) ?: CopperHelpers.convertToFakeType(itemStack)
+    fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack) = player.withGeary {
+        val placedItem = itemStack
+            .takeIf { CopperHelpers.isBlockyCopper(it) }
+            ?.let { CopperHelpers.convertToBlockyType(it) }
+            ?: CopperHelpers.convertToFakeType(itemStack)
+
         val nmsStack = CraftItemStack.asNMSCopy(placedItem)
         val blockItem = nmsStack.item as? BlockItem
         val serverPlayer = (player as CraftPlayer).handle
@@ -28,13 +34,15 @@ object BlockStateCorrection {
         val hand = if (slot == EquipmentSlot.HAND) InteractionHand.MAIN_HAND else InteractionHand.OFF_HAND
 
         val placeContext = when {// Shulker-Boxes are DirectionalPlace based unlike other directional-blocks
-            MaterialSetTag.SHULKER_BOXES.isTagged(placedItem.type) ->
-                DirectionalPlaceContext(serverPlayer.level(), hitResult.blockPos, hitResult.direction, nmsStack, hitResult.direction.opposite)
+            MaterialSetTag.SHULKER_BOXES.isTagged(placedItem.type) -> DirectionalPlaceContext(
+                serverPlayer.level(), hitResult.blockPos, hitResult.direction, nmsStack, hitResult.direction.opposite
+            )
+
             else -> BlockPlaceContext(serverPlayer.level(), serverPlayer, hand, nmsStack, hitResult)
         }
 
         blockItem?.let {
-            if (blockItem.place(placeContext) == InteractionResult.FAIL) return
+            if (blockItem.place(placeContext) == InteractionResult.FAIL) return@withGeary
             // Seems shulkers for some reason do not adhere to the place-item subtraction by default
             if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
                 placedItem.subtract(1)
@@ -44,7 +52,10 @@ object BlockStateCorrection {
         } ?: serverPlayer.gameMode.useItem(serverPlayer, serverPlayer.level(), nmsStack, hand)
     }
 
-    private fun playerPOVHitResult(player: net.minecraft.world.entity.player.Player, fluidHandling: ClipContext.Fluid = ClipContext.Fluid.ANY): BlockHitResult {
+    private fun playerPOVHitResult(
+        player: NMSPlayer,
+        fluidHandling: ClipContext.Fluid = ClipContext.Fluid.ANY,
+    ): BlockHitResult {
         val f = player.xRot
         val g = player.yRot
         val vec3 = player.eyePosition
