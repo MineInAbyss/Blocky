@@ -1,15 +1,16 @@
 package com.mineinabyss.blocky.assets_generation
 
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyBlocks
 import com.mineinabyss.blocky.blocky
-import com.mineinabyss.blocky.components.core.BlockyInfo
 import com.mineinabyss.blocky.components.core.BlockyPack
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.CopperHelpers
 import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.blocky.systems.plantPrefabs
 import com.mineinabyss.geary.datatypes.GearyEntity
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.papermc.toEntityOrNull
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
-import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
 import net.kyori.adventure.key.Key
 import org.bukkit.Material
@@ -21,8 +22,9 @@ import team.unnamed.creative.blockstate.Variant
 import team.unnamed.creative.model.Model
 import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter
 
-class ResourcepackGeneration {
-
+class ResourcepackGeneration(
+    geary: Geary
+): Geary by geary {
     private val resourcePack = ResourcePack.resourcePack()
     private val BlockData.propertiesAsString get() = this.asString.substringAfter("[").substringBeforeLast("]")
 

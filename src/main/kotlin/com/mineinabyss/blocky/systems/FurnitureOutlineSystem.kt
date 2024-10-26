@@ -3,9 +3,8 @@ package com.mineinabyss.blocky.systems
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.helpers.FurniturePacketHelpers
-import com.mineinabyss.geary.modules.GearyModule
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
-import com.mineinabyss.geary.systems.builders.system
 import com.mineinabyss.geary.systems.query.query
 import com.mineinabyss.idofront.time.ticks
 import net.minecraft.world.entity.EntityType
@@ -18,7 +17,7 @@ import org.bukkit.entity.Player
 import kotlin.jvm.optionals.getOrNull
 
 
-fun GearyModule.createFurnitureOutlineSystem() =
+fun Geary.createFurnitureOutlineSystem() =
     system(query<Player>()).every(4.ticks).exec { (player) ->
         if (blocky.config.furniture.showOutlines && player.isConnected) findTargetFurnitureHitbox(player)?.let {
             FurniturePacketHelpers.sendHitboxOutlinePacket(it, player)

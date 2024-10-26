@@ -4,13 +4,13 @@ import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyFurniture
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
+import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
-import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.query.GearyQuery
 
-class BlockyQuery : GearyQuery() {
+class BlockyQuery(world: Geary) : GearyQuery(world) {
     val prefabKey by get<PrefabKey>()
     val block by get<SetBlock>().orNull()
     val directional by get<BlockyDirectional>().orNull()
@@ -25,7 +25,7 @@ class BlockyQuery : GearyQuery() {
     }
 }
 
-class BlockyBlockQuery : GearyQuery() {
+class BlockyBlockQuery(world: Geary) : GearyQuery(world) {
     val prefabKey by get<PrefabKey>()
     val block by get<SetBlock>()
     val directional by get<BlockyDirectional>().orNull()
@@ -40,7 +40,7 @@ class BlockyBlockQuery : GearyQuery() {
     }
 }
 
-class BlockyFurnitureQuery : GearyQuery() {
+class BlockyFurnitureQuery(world: Geary) : GearyQuery(world) {
     val key by get<PrefabKey>()
     val modelEngine by get<BlockyModelEngine>().orNull()
 

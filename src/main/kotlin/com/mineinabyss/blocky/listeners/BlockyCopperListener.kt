@@ -1,23 +1,18 @@
 package com.mineinabyss.blocky.listeners
 
 import com.destroystokyo.paper.MaterialTags
-import com.mineinabyss.blocky.blocky
+import com.mineinabyss.blocky.api.BlockyBlocks.gearyBlocks
 import com.mineinabyss.blocky.helpers.CopperHelpers
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
 import com.mineinabyss.blocky.helpers.customBlockData
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.placeBlockyBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
-import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
+import com.mineinabyss.geary.papermc.withGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.util.to
 import org.bukkit.GameMode
 import org.bukkit.Material
-import org.bukkit.block.data.BlockData
-import org.bukkit.block.data.type.Door
-import org.bukkit.block.data.type.Slab
-import org.bukkit.block.data.type.Stairs
-import org.bukkit.block.data.type.TrapDoor
 import org.bukkit.event.Event
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
@@ -32,8 +27,9 @@ import org.bukkit.inventory.ItemStack
 class BlockyCopperListener : Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    fun PlayerInteractEvent.onPlacingBlockyCopper() {
-        val (block, item, hand) = (clickedBlock ?: return) to (item ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
+    fun PlayerInteractEvent.onPlacingBlockyCopper() = player.withGeary {
+        val (block, item, hand) = (clickedBlock ?: return) to (item
+            ?: return) to (hand?.takeIf { it == EquipmentSlot.HAND } ?: return)
         val prefabKey = player.gearyInventory?.get(hand)?.prefabs?.firstOrNull()?.get<PrefabKey>() ?: return
         val blockData = gearyBlocks.createBlockData(prefabKey) ?: return
         player.gearyInventory?.get(hand)?.get<SetBlock>()?.takeIf { it.blockType.isCopper } ?: return
@@ -94,5 +90,4 @@ class BlockyCopperListener : Listener {
         block.customBlockData.clear()
         if (player.gameMode != GameMode.CREATIVE) block.world.dropItemNaturally(block.location, ItemStack(waxedType))
     }
-
 }

@@ -54,6 +54,16 @@ tasks {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            "-opt-in=kotlinx.serialization.ExperimentalSerializationApi",
+            "-opt-in=kotlin.ExperimentalUnsignedTypes",
+            "-Xcontext-receivers"
+        )
+    }
+}
+
 paper {
     main = "com.mineinabyss.blocky.BlockyPlugin"
     bootstrapper = "com.mineinabyss.blocky.BlockyBootstrap"

@@ -1,8 +1,10 @@
 package com.mineinabyss.blocky.helpers
 
 import com.mineinabyss.blocky.api.events.block.BlockyBlockBreakEvent
+import com.mineinabyss.geary.modules.Geary
+import com.mineinabyss.geary.papermc.toGeary
+import com.mineinabyss.geary.papermc.tracking.blocks.BlockTracking
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
-import com.mineinabyss.geary.papermc.tracking.blocks.gearyBlocks
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
 import io.th0rgal.protectionlib.ProtectionLib
 import org.bukkit.Material
@@ -15,14 +17,18 @@ import org.bukkit.inventory.ItemStack
 object CaveVineHelpers {
     val defaultBlockData = Material.CAVE_VINES.createBlockData()
 
-    fun blockyCaveVine(setBlock: SetBlock) : BlockData {
-        return gearyBlocks.block2Prefab.blockMap[setBlock.blockType]!![setBlock.blockId]
+    context(Geary)
+    fun blockyCaveVine(setBlock: SetBlock): BlockData {
+        return getAddon(BlockTracking).block2Prefab.blockMap[setBlock.blockType]!![setBlock.blockId]
     }
 
-    fun isBlockyCaveVine(block: Block) = block.type == Material.CAVE_VINES && block.blockData in gearyBlocks.block2Prefab
+    fun isBlockyCaveVine(block: Block) = block.type == Material.CAVE_VINES && block.blockData in block.world.toGeary()
+        .getAddon(BlockTracking).block2Prefab
+
+    context(Geary)
     fun isBlockyCaveVine(itemStack: ItemStack) = itemStack.decode<SetBlock>()?.blockType == SetBlock.BlockType.CAVEVINE
 
-    fun breakCaveVineBlock(block: Block, player: Player?): Boolean {
+    fun breakCaveVineBlock(block: Block, player: Player?): Boolean = with(block.world.toGeary()) {
         val gearyBlock = block.toGearyOrNull() ?: return false
         if (!gearyBlock.has<SetBlock>()) return false
 

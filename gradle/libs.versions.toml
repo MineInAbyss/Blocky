@@ -1,5 +1,5 @@
 [versions]
-gearyPaper = "0.30.20"
+gearyPaper = "0.31.0-dev.2"
 guiy="0.12.4"
 
 [libraries]

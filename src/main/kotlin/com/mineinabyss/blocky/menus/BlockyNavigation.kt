@@ -6,7 +6,8 @@ import com.mineinabyss.blocky.helpers.composables.Button
 import com.mineinabyss.blocky.systems.blockPrefabs
 import com.mineinabyss.blocky.systems.furniturePrefabs
 import com.mineinabyss.blocky.systems.plantPrefabs
-import com.mineinabyss.geary.papermc.tracking.items.gearyItems
+import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
+import com.mineinabyss.geary.papermc.withGeary
 import com.mineinabyss.guiy.components.CreativeItem
 import com.mineinabyss.guiy.components.Item
 import com.mineinabyss.guiy.components.VerticalGrid
@@ -48,12 +49,14 @@ fun BlockyMainMenu(player: Player) {
     BlockyUIScope(player).apply {
         nav.withScreen(setOf(player), onEmpty = owner::exit) { screen ->
             val items = remember(screen) {
-                when (screen) {
-                    is BlockyScreen.Block -> blockPrefabs
-                    is BlockyScreen.Wire -> plantPrefabs
-                    is BlockyScreen.Furniture -> furniturePrefabs
-                    else -> return@remember emptyList()
-                }.sortedBy { it.prefabKey.full }.map { gearyItems.createItem(it.prefabKey) }
+                player.withGeary {
+                    when (screen) {
+                        is BlockyScreen.Block -> blockPrefabs
+                        is BlockyScreen.Wire -> plantPrefabs
+                        is BlockyScreen.Furniture -> furniturePrefabs
+                        else -> return@remember emptyList()
+                    }.sortedBy { it.prefabKey.full }.map { getAddon(ItemTracking).createItem(it.prefabKey) }
+                }
             }
             val hasMultiplePages by remember(screen) { mutableStateOf(items.size.toDouble().div(9 * 5) > 1) }
             var title by remember(screen) { mutableStateOf(handleTitle(screen, 0, hasMultiplePages)) }
@@ -65,8 +68,18 @@ fun BlockyMainMenu(player: Player) {
                     else -> {
                         Scrollable(
                             items, line, ScrollDirection.VERTICAL,
-                            nextButton = { ScrollDownButton(Modifier.at(5, 0).clickable { line++; title = handleTitle(screen, line, hasMultiplePages) }) },
-                            previousButton = { ScrollUpButton(Modifier.at(2, 0).clickable { line--; title = handleTitle(screen, line, hasMultiplePages) }) },
+                            nextButton = {
+                                ScrollDownButton(Modifier
+                                    .at(5, 0)
+                                    .clickable { line++; title = handleTitle(screen, line, hasMultiplePages) }
+                                )
+                            },
+                            previousButton = {
+                                ScrollUpButton(Modifier
+                                    .at(2, 0)
+                                    .clickable { line--; title = handleTitle(screen, line, hasMultiplePages) }
+                                )
+                            },
                             NavbarPosition.BOTTOM, null
                         ) { pageItems ->
                             VerticalGrid(Modifier.size(9, 5)) {

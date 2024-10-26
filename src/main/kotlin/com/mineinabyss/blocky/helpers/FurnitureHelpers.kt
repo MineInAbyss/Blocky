@@ -5,7 +5,9 @@ import com.mineinabyss.blocky.components.features.BlockyDrops
 import com.mineinabyss.blocky.components.features.furniture.BlockyAssociatedSeats
 import com.mineinabyss.blocky.components.features.furniture.BlockySeats
 import com.mineinabyss.blocky.helpers.GenericHelpers.toBlockCenterLocation
+import com.mineinabyss.geary.papermc.toEntityOrNull
 import com.mineinabyss.geary.papermc.tracking.entities.helpers.spawnFromPrefab
+import com.mineinabyss.geary.papermc.tracking.entities.helpers.withGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.prefabs.PrefabKey
@@ -37,21 +39,21 @@ object FurnitureHelpers {
     fun collisionHitboxLocations(
         rotation: Float,
         center: Location,
-        hitbox: Set<BlockyFurniture.CollisionHitbox>
+        hitbox: Set<BlockyFurniture.CollisionHitbox>,
     ): List<Location> =
         hitbox.map { c -> c.location.groundRotate(rotation).add(center) }
 
     fun collisionHitboxPositions(
         rotation: Float,
         center: Location,
-        hitbox: Set<BlockyFurniture.CollisionHitbox>
+        hitbox: Set<BlockyFurniture.CollisionHitbox>,
     ): List<Position> =
         collisionHitboxLocations(rotation, center, hitbox).map { Position.block(it) }
 
     fun interactionHitboxLocations(
         rotation: Float,
         center: Location,
-        hitbox: Set<BlockyFurniture.InteractionHitbox>
+        hitbox: Set<BlockyFurniture.InteractionHitbox>,
     ): List<Location> = hitbox.map { i -> center.clone().plus(i.offset(rotation)) }
 
     fun rotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
@@ -78,8 +80,8 @@ object FurnitureHelpers {
         prefabKey: PrefabKey,
         loc: Location,
         yaw: Float = loc.yaw,
-        item: ItemStack?
-    ): ItemDisplay? {
+        item: ItemStack?,
+    ): ItemDisplay? = loc.withGeary {
         val gearyEntity = prefabKey.toEntityOrNull() ?: return null
         val furniture = gearyEntity.get<BlockyFurniture>() ?: return null
 

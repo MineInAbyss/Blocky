@@ -2,23 +2,20 @@ package com.mineinabyss.blocky.listeners
 
 import com.mineinabyss.blocky.helpers.CaveVineHelpers
 import com.mineinabyss.blocky.helpers.GenericHelpers.isInteractable
-import com.mineinabyss.blocky.helpers.decode
 import com.mineinabyss.blocky.helpers.gearyInventory
 import com.mineinabyss.blocky.helpers.placeBlockyBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.withGeary
 import com.mineinabyss.idofront.util.to
 import io.papermc.paper.event.block.BlockBreakBlockEvent
 import org.bukkit.Material
 import org.bukkit.block.BlockFace
-import org.bukkit.block.data.type.CaveVines
 import org.bukkit.block.data.type.CaveVinesPlant
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
-import org.bukkit.event.block.BlockDropItemEvent
-import org.bukkit.event.block.BlockFromToEvent
 import org.bukkit.event.block.BlockGrowEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.player.PlayerInteractEvent
@@ -32,7 +29,7 @@ class BlockyCaveVineListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
-    fun BlockPlaceEvent.onGlowBerryPlace() {
+    fun BlockPlaceEvent.onGlowBerryPlace() = block.withGeary {
         if (itemInHand.type != Material.GLOW_BERRIES || CaveVineHelpers.isBlockyCaveVine(itemInHand)) return
         if (blockPlaced.type != Material.CAVE_VINES || CaveVineHelpers.isBlockyCaveVine(blockAgainst)) return
 
@@ -70,8 +67,9 @@ class BlockyCaveVineListener : Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
-    fun PlayerInteractEvent.prePlaceBlockyCaveVine() {
-        val (block, item, hand) = (clickedBlock ?: return) to (item?.takeIf { it.type != Material.GLOW_BERRIES } ?: return) to (hand ?: return)
+    fun PlayerInteractEvent.prePlaceBlockyCaveVine() = player.withGeary {
+        val (block, item, hand) = (clickedBlock ?: return) to (item?.takeIf { it.type != Material.GLOW_BERRIES }
+            ?: return) to (hand ?: return)
         if (action != Action.RIGHT_CLICK_BLOCK || hand != EquipmentSlot.HAND) return
         if (!player.isSneaking && block.isInteractable()) return
 
