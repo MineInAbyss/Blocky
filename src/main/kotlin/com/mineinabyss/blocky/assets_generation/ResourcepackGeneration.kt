@@ -1,7 +1,6 @@
 package com.mineinabyss.blocky.assets_generation
 
 import com.mineinabyss.blocky.api.BlockyBlocks.gearyBlocks
-import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.core.BlockyPack
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.CopperHelpers
@@ -20,7 +19,6 @@ import team.unnamed.creative.blockstate.BlockState
 import team.unnamed.creative.blockstate.MultiVariant
 import team.unnamed.creative.blockstate.Variant
 import team.unnamed.creative.model.Model
-import team.unnamed.creative.serialize.minecraft.MinecraftResourcePackWriter
 
 class ResourcepackGeneration(
     geary: Geary
@@ -29,11 +27,13 @@ class ResourcepackGeneration(
     private val BlockData.propertiesAsString get() = this.asString.substringAfter("[").substringBeforeLast("]")
 
 
-    fun generateDefaultAssets() {
+    fun generateDefaultAssets(): ResourcePack {
         generateBlockstateFiles()
         VanillaSoundEntries.registerRequiredSounds(resourcePack)
 
-        MinecraftResourcePackWriter.minecraft().writeToDirectory(blocky.plugin.dataFolder.resolve("pack"), resourcePack)
+//        MinecraftResourcePackWriter.minecraft().writeToDirectory(blocky.plugin.dataFolder.resolve("pack"), resourcePack)
+
+        return resourcePack
     }
 
     private fun generateBlockstateFiles() {
