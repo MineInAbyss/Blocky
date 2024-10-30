@@ -1,9 +1,9 @@
 package com.mineinabyss.blocky
 
 import com.github.shynixn.mccoroutine.bukkit.launch
-import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.menus.BlockyMainMenu
 import com.mineinabyss.blocky.systems.allBlockyPrefabs
+import com.mineinabyss.geary.papermc.features.items.resourcepacks.ResourcePackAddon
 import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.papermc.toGeary
 import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
@@ -40,7 +40,7 @@ object BlockyBrigadierCommands {
                             blockyPrefabs.filter { it !in inheritedPrefabs }.sortedBy { it.prefabs.size }
                                 .forEach { prefabs.loader.reload(it) }
                         }
-                        ResourcepackGeneration(geary).generateDefaultAssets()
+                        geary.getAddon(ResourcePackAddon).generateResourcePack()
                         sender.success("Blocky has been reloaded!")
                     }
                 }

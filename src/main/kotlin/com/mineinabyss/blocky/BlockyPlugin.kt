@@ -3,8 +3,12 @@ package com.mineinabyss.blocky
 import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.listeners.*
-import com.mineinabyss.blocky.systems.*
+import com.mineinabyss.blocky.systems.BlockyBlockQuery
+import com.mineinabyss.blocky.systems.BlockyFurnitureQuery
+import com.mineinabyss.blocky.systems.BlockyQuery
 import com.mineinabyss.geary.papermc.configure
+import com.mineinabyss.geary.papermc.features.items.resourcepacks.ResourcePackAddon
+import com.mineinabyss.geary.papermc.features.items.resourcepacks.resourcePack
 import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
@@ -54,7 +58,13 @@ class BlockyPlugin : JavaPlugin() {
             if (caveVineBlocks.isEnabled) listeners(BlockyCaveVineListener())
         }
 
-        ResourcepackGeneration(gearyPaper.worldManager.global).generateDefaultAssets()
+        // TODO: Move to a better place
+        gearyPaper.configure {
+            resourcePack {
+                addResourcePack(ResourcepackGeneration(geary).generateDefaultAssets())
+            }
+            geary.getAddon(ResourcePackAddon).generateResourcePack()
+        }
     }
 
 
