@@ -14,8 +14,10 @@ import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.toEntityOrNull
 import com.mineinabyss.geary.papermc.toGeary
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
+import com.mineinabyss.geary.papermc.tracking.entities.helpers.withGeary
 import com.mineinabyss.geary.papermc.tracking.entities.toGearyOrNull
 import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
+import com.mineinabyss.geary.papermc.withGeary
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.events.call
 import io.th0rgal.protectionlib.ProtectionLib
@@ -50,8 +52,7 @@ object BlockyFurnitures {
     context(Geary) val ItemStack.blockyFurniture get() = this.decode<BlockyFurniture>()
     context(Geary) val PrefabKey.blockyFurniture get() = this.toEntityOrNull()?.get<BlockyFurniture>()
 
-    //TODO toGearyOrNull wouldnt work here as furniture isnt in geary
-    context(Geary) val Block.blockyFurniture get() = this.toGearyOrNull()?.get<BlockyFurniture>()
+    val Block.blockyFurniture get() = this.baseFurniture?.withGeary { it.toGearyOrNull()?.get<BlockyFurniture>() }
 
     val Block.baseFurniture: ItemDisplay?
         get() = FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(this.toBlockPos())
@@ -67,13 +68,10 @@ object BlockyFurnitures {
     val ItemDisplay.blockySeat
         get() = this.seats.minByOrNull { it.location.distanceSquared(this.location) }
 
-    context(Geary)
-    fun placeFurniture(prefabKey: PrefabKey, location: Location) =
-        placeFurniture(prefabKey, location, 0f)
+    fun placeFurniture(prefabKey: PrefabKey, location: Location) = placeFurniture(prefabKey, location, 0f)
 
-    context(Geary)
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) =
-        getAddon(ItemTracking).createItem(prefabKey)?.let { FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, it) }
+        location.withGeary { getAddon(ItemTracking).createItem(prefabKey) }?.let { FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, it) }
 
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float, itemStack: ItemStack) =
         FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, itemStack)

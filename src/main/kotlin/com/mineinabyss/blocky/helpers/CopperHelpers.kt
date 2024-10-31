@@ -38,7 +38,7 @@ object CopperHelpers {
 
     fun isFakeWaxedCopper(block: Block) = (block.type in VANILLA_COPPER) && block.container { has<WaxedCopperBlock>() }
     context(Geary) fun isFakeWaxedCopper(itemStack: ItemStack) =
-        itemStack.type.name.contains("WAXED") && itemStack.type.isBlock && !isBlockyCopper(itemStack)
+        "WAXED" in itemStack.type.name && itemStack.type.isBlock && !isBlockyCopper(itemStack)
 
     fun setFakeWaxedCopper(block: Block, value: Boolean) = when {
         !value -> block.container { remove<WaxedCopperBlock>() }

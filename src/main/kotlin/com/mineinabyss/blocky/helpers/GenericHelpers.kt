@@ -86,7 +86,7 @@ fun placeBlockyBlock(
     against: Block,
     face: BlockFace,
     newData: BlockData
-) = with(player.world.toGeary()) {
+) = player.withGeary {
     val targetBlock = if (against.isReplaceable) against else against.getRelative(face)
     if (!targetBlock.type.isAir && !targetBlock.isLiquid && targetBlock.type != Material.LIGHT) return
     if (!against.isBlockyBlock && !newData.isBlockyBlock && !CopperHelpers.isBlockyCopper(against) && !CopperHelpers.isBlockyCopper(newData)) return
