@@ -17,18 +17,22 @@ import org.bukkit.inventory.meta.SkullMeta
 
 class VanillaNoteBlockListener: Listener {
     @EventHandler
-    fun NotePlayEvent.onNotePlay() = with(block.world.toGeary()) {
-        isCancelled = true
-        block.vanillaNoteBlock?.interact(block, null, Action.LEFT_CLICK_BLOCK)
+    fun NotePlayEvent.onNotePlay() {
+        with(block.world.toGeary()) {
+            isCancelled = true
+            block.vanillaNoteBlock?.interact(block, null, Action.LEFT_CLICK_BLOCK)
+        }
     }
 
     @EventHandler
-    fun BlockPhysicsEvent.onRedstone() = with(block.world.toGeary()) {
-        val vanillaNoteBlock = block.takeIf { it.type == Material.NOTE_BLOCK }?.vanillaNoteBlock ?: return
+    fun BlockPhysicsEvent.onRedstone() {
+        with(block.world.toGeary()) {
+            val vanillaNoteBlock = block.takeIf { it.type == Material.NOTE_BLOCK }?.vanillaNoteBlock ?: return
 
-        if (!block.isBlockIndirectlyPowered) return vanillaNoteBlock.powered(block, false)
-        if (!vanillaNoteBlock.powered()) vanillaNoteBlock.interact(block, null, Action.PHYSICAL)
-        vanillaNoteBlock.powered(block, true)
+            if (!block.isBlockIndirectlyPowered) return vanillaNoteBlock.powered(block, false)
+            if (!vanillaNoteBlock.powered()) vanillaNoteBlock.interact(block, null, Action.PHYSICAL)
+            vanillaNoteBlock.powered(block, true)
+        }
     }
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
