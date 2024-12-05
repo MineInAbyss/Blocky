@@ -1,10 +1,10 @@
 [versions]
-gearyPaper = "0.31.2"
+gearyPaper = "0.31.3"
 guiy="0.12.5"
 
 [libraries]
 geary-papermc = { module = "com.mineinabyss:geary-papermc", version.ref = "gearyPaper" }
 guiy = { module = "com.mineinabyss:guiy-compose", version.ref = "guiy" }
 
-minecraft-plugin-protectionlib = "io.th0rgal:protectionlib:1.6.1"
+minecraft-plugin-protectionlib = "io.th0rgal:protectionlib:1.7.0"
 minecraft-plugin-axiompaper = "com.moulberry:axiom:4.0.1"
