@@ -36,6 +36,7 @@ import org.bukkit.event.Listener
 import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageEvent
+import org.bukkit.event.block.BlockFromToEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.util.Vector
@@ -190,6 +191,12 @@ class BlockyFurnitureListener : Listener {
     fun PlayerQuitEvent.onQuit() {
         (player.vehicle as? Interaction)?.toGearyOrNull()?.get<BlockySeats>() ?: return
         player.leaveVehicle()
+    }
+
+    @EventHandler
+    fun BlockFromToEvent.onLiquid() {
+        FurniturePacketHelpers.baseFurnitureFromCollisionHitbox(toBlock.toBlockPos()) ?: return
+        isCancelled = true
     }
 
     private fun Player.sitOnBlockySeat(entity: ItemDisplay, location: Location = entity.location) {
