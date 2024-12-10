@@ -4,6 +4,10 @@ import com.jeff_media.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.blocky.systems.*
+import com.mineinabyss.blocky.systems.actions.createFurnitureItemSetter
+import com.mineinabyss.blocky.systems.actions.createFurnitureMEGModelSetter
+import com.mineinabyss.blocky.systems.actions.createFurnitureSeatSetter
+import com.mineinabyss.blocky.systems.actions.furnitureHitboxSetter
 import com.mineinabyss.geary.papermc.configure
 import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.config
@@ -22,6 +26,15 @@ class BlockyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         createBlockyContext()
+
+        gearyPaper.worldManager.global.apply {
+            createFurnitureOutlineSystem()
+            createFurnitureSpawner()
+            createFurnitureItemSetter()
+            createFurnitureSeatSetter()
+            createFurnitureMEGModelSetter()
+            furnitureHitboxSetter()
+        }
 
         BlockyBrigadierCommands.registerCommands()
 
