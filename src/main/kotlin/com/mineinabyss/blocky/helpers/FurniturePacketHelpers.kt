@@ -57,7 +57,7 @@ object FurniturePacketHelpers {
     private val outlinePlayerMap = mutableMapOf<UUID, FurnitureUUID>()
 
     fun baseFurnitureFromInteractionHitbox(id: Int) =
-        interactionHitboxIds.firstOrNull { id in it.entityIds }?.furniture
+        interactionHitboxIds.firstOrNull { id in it.entityIds }?.furniture ?: outlineIds.firstOrNull { id in it.entityIds }?.furniture
 
     fun baseFurnitureFromCollisionHitbox(pos: BlockPos) =
         collisionHitboxPosMap.entries.firstOrNull { pos in it.value }?.key?.toEntity() as? ItemDisplay
@@ -183,8 +183,7 @@ object FurniturePacketHelpers {
     }
 
     fun removeHitboxOutlinePacket(player: Player) {
-        val outlinePlayerId = outlinePlayerMap.remove(player.uniqueId)
-        val entityIds = outlinePlayerId?.let { pId -> outlineIds.filter { it.furnitureUUID == pId } }?.takeUnless { it.isEmpty() } ?: outlineIds
+        val entityIds = outlinePlayerMap.remove(player.uniqueId)?.let { pId -> outlineIds.filter { it.furnitureUUID == pId } }?.takeUnless { it.isEmpty() } ?: outlineIds
         (player as CraftPlayer).handle.connection.send(ClientboundRemoveEntitiesPacket(*entityIds.flatMap { it.entityIds }.toIntArray()))
     }
 

@@ -68,7 +68,7 @@ object BlockyFurnitures {
     val ItemDisplay.blockySeat
         get() = this.seats.minByOrNull { it.location.distanceSquared(this.location) }
 
-    fun placeFurniture(prefabKey: PrefabKey, location: Location) = placeFurniture(prefabKey, location, 0f)
+    fun placeFurniture(prefabKey: PrefabKey, location: Location) = placeFurniture(prefabKey, location, location.yaw)
 
     fun placeFurniture(prefabKey: PrefabKey, location: Location, yaw: Float) =
         location.withGeary { getAddon(ItemTracking).createItem(prefabKey) }?.let { FurnitureHelpers.placeBlockyFurniture(prefabKey, location, yaw, it) }

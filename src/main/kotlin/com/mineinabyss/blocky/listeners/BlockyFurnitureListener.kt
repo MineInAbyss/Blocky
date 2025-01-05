@@ -18,7 +18,6 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.time.ticks
 import com.mineinabyss.idofront.util.to
-import com.moulberry.axiom.event.AxiomManipulateEntityEvent
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
 import io.papermc.paper.event.player.PlayerTrackEntityEvent
 import io.papermc.paper.event.player.PlayerUntrackEntityEvent
@@ -37,6 +36,7 @@ import org.bukkit.event.block.Action
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockDamageEvent
 import org.bukkit.event.block.BlockFromToEvent
+import org.bukkit.event.entity.EntityTeleportEvent
 import org.bukkit.event.player.PlayerInteractEvent
 import org.bukkit.event.player.PlayerQuitEvent
 import org.bukkit.util.Vector
@@ -70,6 +70,22 @@ class BlockyFurnitureListener : Listener {
         FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity)
         FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity)
         FurniturePacketHelpers.removeLightPacket(baseEntity)
+    }
+
+    @EventHandler
+    fun EntityTeleportEvent.onTeleportEntity() {
+        val baseEntity = entity as? ItemDisplay ?: return
+        FurniturePacketHelpers.removeInteractionHitboxPacket(baseEntity)
+        FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity)
+        FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity)
+        FurniturePacketHelpers.removeLightPacket(baseEntity)
+
+        blocky.plugin.launch {
+            delay(2.ticks)
+            FurniturePacketHelpers.sendInteractionHitboxPackets(baseEntity)
+            FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity)
+            FurniturePacketHelpers.sendLightPacket(baseEntity)
+        }
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -152,28 +168,6 @@ class BlockyFurnitureListener : Listener {
                     when {
                         action == BaseEntityInteractEvent.Action.ATTACK -> BlockyFurnitures.removeFurniture(baseEntity, player)
                         else -> BlockyFurnitureInteractEvent(baseEntity, player, slot, player.inventory.itemInMainHand, baseEntity.location.add(clickedPosition ?: Vector())).callEvent()
-                    }
-                }
-            }, blocky.plugin)
-        }
-
-        if (Plugins.isEnabled("AxiomPaper")) {
-            blocky.logger.s("AxiomPaper detected, enabling AxiomPaper Listener!")
-            Bukkit.getPluginManager().registerEvents(object : Listener {
-                @EventHandler
-                fun AxiomManipulateEntityEvent.onAxiomManipFurniture() {
-                    val baseEntity = entity as? ItemDisplay ?: return
-
-                    FurniturePacketHelpers.removeInteractionHitboxPacket(baseEntity)
-                    FurniturePacketHelpers.removeHitboxOutlinePacket(baseEntity)
-                    FurniturePacketHelpers.removeCollisionHitboxPacket(baseEntity)
-                    FurniturePacketHelpers.removeLightPacket(baseEntity)
-
-                    blocky.plugin.launch {
-                        delay(2.ticks)
-                        FurniturePacketHelpers.sendInteractionHitboxPackets(baseEntity)
-                        FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity)
-                        FurniturePacketHelpers.sendLightPacket(baseEntity)
                     }
                 }
             }, blocky.plugin)
