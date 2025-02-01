@@ -16,6 +16,7 @@ import com.mineinabyss.idofront.items.asColorable
 import com.mineinabyss.idofront.operators.plus
 import com.mineinabyss.idofront.spawning.spawn
 import io.papermc.paper.math.Position
+import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
@@ -40,21 +41,21 @@ object FurnitureHelpers {
         rotation: Float,
         center: Location,
         hitbox: Set<BlockyFurniture.CollisionHitbox>,
-    ): List<Location> =
-        hitbox.map { c -> c.location.groundRotate(rotation).add(center) }
+    ): ObjectArrayList<Location> =
+        hitbox.mapFast { c -> c.location.groundRotate(rotation).add(center) }
 
     fun collisionHitboxPositions(
         rotation: Float,
         center: Location,
         hitbox: Set<BlockyFurniture.CollisionHitbox>,
-    ): List<Position> =
-        collisionHitboxLocations(rotation, center, hitbox).map { Position.block(it) }
+    ): ObjectArrayList<Position> =
+        collisionHitboxLocations(rotation, center, hitbox).mapFast { Position.block(it) }
 
     fun interactionHitboxLocations(
         rotation: Float,
         center: Location,
         hitbox: Set<BlockyFurniture.InteractionHitbox>,
-    ): List<Location> = hitbox.map { i -> center.clone().plus(i.offset(rotation)) }
+    ): ObjectArrayList<Location> = hitbox.mapFast { i -> center.clone().plus(i.offset(rotation)) }
 
     fun rotation(yaw: Float, nullFurniture: BlockyFurniture?): Rotation {
         val furniture = nullFurniture ?: BlockyFurniture()
@@ -101,13 +102,13 @@ object FurnitureHelpers {
     fun spawnFurnitureSeat(furniture: ItemDisplay, seats: BlockySeats) {
         furniture.toGeary().setPersisting(
             BlockyAssociatedSeats(
-                seats.offsets.mapNotNull { seatOffset ->
+                seats.offsets.mapNotNullFast { seatOffset ->
                     furniture.location.add(seatOffset).spawn<Interaction> {
                         isPersistent = false
                         interactionWidth = 0.1f
                         interactionHeight = 0.1f
                     }?.uniqueId
-                }.toMutableList()
+                }
             )
         )
     }

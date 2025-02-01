@@ -34,6 +34,7 @@ data class BlockyFurniture(
         val height: Float,
         val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()
     ) {
+
         fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
         fun location(furniture: ItemDisplay): Location {
             return furniture.location.add(offset(furniture.yaw))
