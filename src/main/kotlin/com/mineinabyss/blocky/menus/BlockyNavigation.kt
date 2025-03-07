@@ -62,7 +62,7 @@ fun BlockyMainMenu(player: Player) {
             var title by remember(screen) { mutableStateOf(handleTitle(screen, 0, hasMultiplePages)) }
             var line by remember(screen) { mutableStateOf(0) }
 
-            Chest(setOf(player), title, Modifier.height(screen.height), onClose = { owner.exit() }) {
+            Chest(title, Modifier.height(screen.height), onClose = { owner.exit() }) {
                 when (screen) {
                     is BlockyScreen.Default -> BlockyMenu()
                     else -> {
