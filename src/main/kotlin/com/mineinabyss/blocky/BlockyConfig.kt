@@ -4,6 +4,7 @@ import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.blocky.helpers.FurnitureOutlineType
 import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.serialization.MiniMessageSerializer
+import com.mineinabyss.idofront.serialization.SerializableDataTypes
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.toSerializable
 import com.mineinabyss.idofront.textcomponents.miniMsg
