@@ -39,8 +39,6 @@ dependencies {
 
     // Other plugins
     compileOnly(idofrontLibs.minecraft.plugin.modelengine)
-    compileOnly(idofrontLibs.minecraft.plugin.fawe.core)
-    compileOnly(idofrontLibs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(idofrontLibs.minecraft.customblockdata)
     compileOnly(idofrontLibs.creative.api)
     compileOnly(idofrontLibs.creative.serializer.minecraft)
