@@ -19,7 +19,7 @@ import com.mineinabyss.idofront.events.call
 import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.util.to
 import com.ticxo.modelengine.api.events.BaseEntityInteractEvent
-import io.th0rgal.protectionlib.ProtectionLib
+import com.nexomc.protectionlib.ProtectionLib
 import org.bukkit.*
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.Interaction
