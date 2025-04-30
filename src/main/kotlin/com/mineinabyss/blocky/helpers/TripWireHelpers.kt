@@ -7,7 +7,7 @@ import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.datastore.decode
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.papermc.tracking.blocks.helpers.toGearyOrNull
-import io.th0rgal.protectionlib.ProtectionLib
+import com.nexomc.protectionlib.ProtectionLib
 import org.bukkit.Material
 import org.bukkit.block.Block
 import org.bukkit.block.BlockFace

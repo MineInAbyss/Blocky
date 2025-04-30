@@ -16,11 +16,11 @@ repositories {
     mavenCentral()
     maven("https://repo.mineinabyss.com/releases")
     maven("https://repo.mineinabyss.com/snapshots")
+    maven("https://repo.nexomc.com/releases")
     maven("https://repo.nexomc.com/snapshots")
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
-    maven("https://repo.oraxen.com/releases") // ProtectionLib
     mavenLocal()
 }
 
@@ -39,8 +39,6 @@ dependencies {
 
     // Other plugins
     compileOnly(idofrontLibs.minecraft.plugin.modelengine)
-    compileOnly(idofrontLibs.minecraft.plugin.fawe.core)
-    compileOnly(idofrontLibs.minecraft.plugin.fawe.bukkit) { isTransitive = false }
     compileOnly(idofrontLibs.minecraft.customblockdata)
     compileOnly(idofrontLibs.creative.api)
     compileOnly(idofrontLibs.creative.serializer.minecraft)
@@ -50,7 +48,7 @@ dependencies {
 
 tasks {
     shadowJar {
-        //relocate("io.th0rgal.protectionlib", "com.mineinabyss.shaded.protectionlib")
+        //relocate("com.nexomc.protectionlib", "com.mineinabyss.shaded.protectionlib")
     }
 }
 

@@ -25,7 +25,7 @@ fun Geary.createFurnitureOutlineSystem() =
     }
 
 private fun findTargetFurnitureHitbox(player: Player): ItemDisplay? {
-    val maxReachDistance = player.getAttribute(Attribute.PLAYER_ENTITY_INTERACTION_RANGE)?.value?.takeIf { it in 1.0..120.0 } ?: return null
+    val maxReachDistance = player.getAttribute(Attribute.ENTITY_INTERACTION_RANGE)?.value?.takeIf { it in 1.0..120.0 } ?: return null
     val nmsPlayer = (player as CraftPlayer).handle
     val (start, direction) = nmsPlayer.getEyePosition(1.0f) to nmsPlayer.lookAngle
     val distanceDirection = direction.scale(maxReachDistance)

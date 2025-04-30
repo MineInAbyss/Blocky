@@ -29,7 +29,7 @@ import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.nms.nbt.fastPDC
 import com.mineinabyss.idofront.spawning.spawn
 import com.mineinabyss.idofront.util.randomOrMin
-import io.th0rgal.protectionlib.ProtectionLib
+import com.nexomc.protectionlib.ProtectionLib
 import net.minecraft.core.BlockPos
 import org.bukkit.*
 import org.bukkit.block.Block

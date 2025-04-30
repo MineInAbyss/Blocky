@@ -30,10 +30,11 @@ data class BlockyFurniture(
     @SerialName("blocky:interaction_hitbox")
     data class InteractionHitbox(
         val offset: @Serializable(VectorSerializer::class) Vector = Vector(),
-        val width: Float,
-        val height: Float,
+        val width: Float = 1f,
+        val height: Float = 1f,
         val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()
     ) {
+
         fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
         fun location(furniture: ItemDisplay): Location {
             return furniture.location.add(offset(furniture.yaw))

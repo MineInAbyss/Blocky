@@ -50,7 +50,7 @@ class BlockySoundListener : Listener {
 
     @EventHandler(ignoreCancelled = true)
     fun GenericGameEvent.onSound() {
-        if (!location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
+        if (entity !is Player || !location.isWorldLoaded || !location.world.isChunkLoaded(location.chunk)) return
 
         val (entity, standingOn) = (entity as? LivingEntity ?: return) to GenericHelpers.blockStandingOn(entity as LivingEntity)
         val soundGroup = Registry.SOUNDS.get(standingOn.blockSoundGroup.stepSound.key())?.takeUnless { it.isNotCustomBlockGroup() }?.key()?.value() ?: return
