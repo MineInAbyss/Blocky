@@ -22,8 +22,9 @@ import com.mineinabyss.guiy.modifiers.height
 import com.mineinabyss.guiy.modifiers.placement.absolute.at
 import com.mineinabyss.guiy.modifiers.size
 import com.mineinabyss.guiy.navigation.Navigator
-import com.mineinabyss.idofront.items.editItemMeta
 import com.mineinabyss.idofront.textcomponents.miniMsg
+import io.papermc.paper.datacomponent.DataComponentTypes
+import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import org.bukkit.Material
 import org.bukkit.entity.Player
@@ -105,28 +106,29 @@ private fun handleTitle(screen: BlockyScreen, page: Int, hasMultiplePages: Boole
     }.miniMsg())
 }
 
+val emptyItemModel = Key.key("minecraft:empty")
 @Composable
 fun ScrollDownButton(modifier: Modifier = Modifier) {
-    Item(ItemStack(Material.PAPER).editItemMeta {
-        itemName("<green><b>Scroll Down".miniMsg())
-        setCustomModelData(1)
+    Item(ItemStack.of(Material.PAPER).apply {
+        setData(DataComponentTypes.ITEM_NAME, "<green><b>Scroll Down".miniMsg())
+        setData(DataComponentTypes.ITEM_MODEL, emptyItemModel)
     }, modifier)
 }
 
 @Composable
 fun ScrollUpButton(modifier: Modifier = Modifier) {
-    Item(ItemStack(Material.PAPER).editItemMeta {
-        itemName("<blue><b>Scroll Up".miniMsg())
-        setCustomModelData(1)
+    Item(ItemStack(Material.PAPER).apply {
+        setData(DataComponentTypes.ITEM_NAME, "<blue><b>Scroll Up".miniMsg())
+        setData(DataComponentTypes.ITEM_MODEL, emptyItemModel)
     }, modifier)
 }
 
 @Composable
 fun BlockyUIScope.BackButton(modifier: Modifier = Modifier, onClick: () -> Unit = { nav.back() }) {
     Button(onClick = onClick, modifier = modifier) {
-        Item(ItemStack(Material.PAPER).editItemMeta {
-            itemName("<red><b>Back".miniMsg())
-            setCustomModelData(1)
+        Item(ItemStack(Material.PAPER).apply {
+            setData(DataComponentTypes.ITEM_NAME, "<red><b>Back".miniMsg())
+            setData(DataComponentTypes.ITEM_MODEL, emptyItemModel)
         })
     }
 }

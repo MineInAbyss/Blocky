@@ -2,12 +2,12 @@ package com.mineinabyss.blocky
 
 import com.charleskorn.kaml.YamlComment
 import com.mineinabyss.blocky.helpers.FurnitureOutlineType
-import com.mineinabyss.idofront.items.editItemMeta
+import com.mineinabyss.blocky.menus.emptyItemModel
 import com.mineinabyss.idofront.serialization.MiniMessageSerializer
-import com.mineinabyss.idofront.serialization.SerializableDataTypes
 import com.mineinabyss.idofront.serialization.SerializableItemStack
 import com.mineinabyss.idofront.serialization.toSerializable
 import com.mineinabyss.idofront.textcomponents.miniMsg
+import io.papermc.paper.datacomponent.DataComponentTypes
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Transient
 import net.kyori.adventure.text.Component
@@ -84,8 +84,17 @@ data class BlockyConfig(
     @Serializable data class DefaultBlockyMenu(
         val title: @Serializable(MiniMessageSerializer::class) Component = Component.empty(),
         val height: Int = 5,
-        val blockButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); itemName("<gradient:gold:yellow>Block Menu".miniMsg()) }.toSerializable(),
-        val wireButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); itemName("<gradient:gold:yellow>Wire Menu".miniMsg()) }.toSerializable(),
-        val furnitureButton: SerializableItemStack = ItemStack(Material.PAPER).editItemMeta { setCustomModelData(1); itemName("<gradient:gold:yellow>Furniture Menu".miniMsg()) }.toSerializable(),
+        val blockButton: SerializableItemStack = ItemStack(Material.PAPER).apply {
+            setData(DataComponentTypes.ITEM_NAME, "<gradient:gold:yellow>Block Menu".miniMsg())
+            setData(DataComponentTypes.ITEM_MODEL, emptyItemModel)
+        }.toSerializable(),
+        val wireButton: SerializableItemStack = ItemStack(Material.PAPER).apply {
+            setData(DataComponentTypes.ITEM_NAME, "<gradient:gold:yellow>Wire Menu".miniMsg())
+            setData(DataComponentTypes.ITEM_MODEL, emptyItemModel)
+        }.toSerializable(),
+        val furnitureButton: SerializableItemStack = ItemStack(Material.PAPER).apply {
+            setData(DataComponentTypes.ITEM_NAME, "<gradient:gold:yellow>Furniture Menu".miniMsg())
+            setData(DataComponentTypes.ITEM_MODEL, emptyItemModel)
+        }.toSerializable(),
     )
 }
