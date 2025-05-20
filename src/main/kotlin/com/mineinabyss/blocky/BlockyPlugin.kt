@@ -14,6 +14,7 @@ import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.observeLogger
 import com.mineinabyss.idofront.plugin.listeners
+import com.nexomc.protectionlib.ProtectionLib
 import io.papermc.paper.configuration.GlobalConfiguration
 import org.bukkit.Bukkit
 import org.bukkit.craftbukkit.CraftWorld
@@ -28,6 +29,7 @@ class BlockyPlugin : JavaPlugin() {
 
     override fun onEnable() {
         createBlockyContext()
+        ProtectionLib.init(this)
 
         (Bukkit.getWorlds().first() as CraftWorld).handle.dataStorage
 
