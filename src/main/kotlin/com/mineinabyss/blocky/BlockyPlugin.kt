@@ -53,6 +53,9 @@ class BlockyPlugin : JavaPlugin() {
             BlockyCopperListener()
         )
         CustomBlockData.registerListener(this)
+        runCatching {
+            with(gearyPaper.worldManager.global, AxiomCompatibility::registerCustomBlocks)
+        }.onFailure { it.printStackTrace() }
 
         blocky.config.run {
             if (noteBlocks.isEnabled) {

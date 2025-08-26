@@ -6,6 +6,7 @@ import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.components.features.furniture.BlockyModelEngine
 import com.mineinabyss.geary.modules.Geary
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
+import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.configuration.components.Prefab
 import com.mineinabyss.geary.systems.query.GearyQuery
@@ -38,6 +39,11 @@ class BlockyBlockQuery(world: Geary) : GearyQuery(world) {
             has<BlockyModelEngine>()
         }
     }
+
+    operator fun component1() = prefabKey
+    operator fun component2() = block
+    operator fun component3() = directional
+    operator fun component4() = world.getAddon(ItemTracking).itemProvider.serializePrefabToItemStack(prefabKey)
 }
 
 class BlockyFurnitureQuery(world: Geary) : GearyQuery(world) {
