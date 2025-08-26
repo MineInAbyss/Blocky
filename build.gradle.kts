@@ -33,7 +33,6 @@ dependencies {
     compileOnly(idofrontLibs.kotlinx.coroutines)
     compileOnly(idofrontLibs.minecraft.mccoroutine)
 
-    // Geary platform
     compileOnly(libs.geary.papermc)
     compileOnly(libs.guiy)
 
@@ -43,6 +42,7 @@ dependencies {
     compileOnly(idofrontLibs.creative.api)
     compileOnly(idofrontLibs.creative.serializer.minecraft)
 
+    compileOnly(libs.minecraft.plugin.axiompaper)
     implementation(libs.minecraft.plugin.protectionlib)
 }
 

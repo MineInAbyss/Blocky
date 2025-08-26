@@ -8,12 +8,12 @@ import io.papermc.paper.registry.tag.TagKey
 import net.kyori.adventure.key.Key
 
 class BlockyBootstrap : PluginBootstrap {
-    private val MINEABLE_AXE = TagKey.create(RegistryKey.BLOCK, Key.key("mineable/axe"))
+    private val MINEABLE_AXE = RegistryKey.BLOCK.tagKey("mineable/axe")
+    private val NOTEBLOCK = RegistryKey.BLOCK.typedKey("note_block")
+
     override fun bootstrap(context: BootstrapContext) {
         context.lifecycleManager.registerEventHandler(LifecycleEvents.TAGS.postFlatten(RegistryKey.BLOCK)) { event ->
-            val registrar = event.registrar()
-            val mineableAxeTag = registrar.getTag(MINEABLE_AXE)
-            registrar.setTag(MINEABLE_AXE, mineableAxeTag.filter { "note_block" !in it.key().asString() })
+            event.registrar().setTag(MINEABLE_AXE, event.registrar().getTag(MINEABLE_AXE).minus(NOTEBLOCK))
         }
     }
 }
