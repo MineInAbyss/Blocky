@@ -9,7 +9,7 @@ import com.mineinabyss.geary.papermc.toGeary
 import com.mineinabyss.geary.papermc.tracking.items.ItemTracking
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.geary.prefabs.Prefabs
-import com.mineinabyss.guiy.inventory.guiy
+import com.mineinabyss.guiy.canvas.guiy
 import com.mineinabyss.idofront.commands.brigadier.commands
 import com.mineinabyss.idofront.messaging.error
 import com.mineinabyss.idofront.messaging.success
@@ -62,7 +62,7 @@ object BlockyBrigadierCommands {
                 }
                 "menu" {
                     playerExecutes {
-                        guiy { BlockyMainMenu(player) }
+                        guiy(player) { BlockyMainMenu() }
                     }
                 }
             }
