@@ -29,7 +29,7 @@ class BlockyFurniturePacketListener : Listener {
     fun PlayerTrackEntityEvent.onTrackEntity() {
         val baseEntity = entity as? ItemDisplay ?: return
         blocky.plugin.launch {
-            delay(2.ticks)
+            delay(4.ticks)
             FurniturePacketHelpers.sendInteractionHitboxPackets(baseEntity, player)
             FurniturePacketHelpers.sendCollisionHitboxPacket(baseEntity, player)
             FurniturePacketHelpers.sendLightPacket(baseEntity, player)

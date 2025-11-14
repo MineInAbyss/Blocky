@@ -32,7 +32,7 @@ data class BlockyFurniture(
         val offset: @Serializable(VectorSerializer::class) Vector = Vector(),
         val width: Float = 1f,
         val height: Float = 1f,
-        val outline: SerializableItemStack = ItemStack(Material.GLASS).toSerializable()
+        val outline: SerializableItemStack = ItemStack.of(Material.GLASS).toSerializable()
     ) {
 
         fun toBoundingBox(location: Location) = BoundingBox.of(location, width.times(0.7), height.times(0.7), width.times(0.7))
@@ -41,14 +41,17 @@ data class BlockyFurniture(
         }
 
         fun offset(furnitureYaw: Float): Vector {
-            val angleRad = Math.toRadians(furnitureYaw.toDouble())
+            val angle = furnitureYaw.takeIf { it >= 0f } ?: (furnitureYaw + 360f)
+            val radians = Math.toRadians(angle.toDouble())
 
-            // Get the coordinates relative to the local y-axis
-            val x = cos(angleRad) * offset.x + sin(angleRad) * offset.z
-            val y = offset.y
-            val z = sin(angleRad) * offset.x + cos(angleRad) * offset.z
+            val x = offset.x * cos(radians) - (-offset.z) * sin(radians)
+            val z = offset.x * sin(radians) + (-offset.z) * cos(radians)
 
-            return Vector(x, y, z)
+            return Vector(x, offset.y, z)
+        }
+
+        fun boundingBox(center: Location): BoundingBox {
+            return BoundingBox.of(center, width.div(2.0), height.div(2.0), width.div(2.0))
         }
     }
 
@@ -63,14 +66,13 @@ data class BlockyFurniture(
         fun add(location: Location) = location.clone().add(x.toDouble(), y.toDouble(), z.toDouble())
 
         fun groundRotate(angle: Float): BlockLocation {
-            val fixedAngle = 360 - angle
-            val radians = Math.toRadians(fixedAngle.toDouble())
+            val radians = Math.toRadians(if (angle < 0) angle + 360.0 else angle.toDouble())
 
-            return BlockLocation(
-                (round(cos(radians) * x - sin(radians) * z).toInt()),
-                y,
-                (round(sin(radians) * x - cos(radians) * z).toInt()).let { it.takeUnless { fixedAngle % 180 > 1 } ?: (it * -1) }
-            )
+            // Standard 2D rotation matrix for counterclockwise rotation
+            val newX = round(x * cos(radians) - (-z) * sin(radians)).toInt()
+            val newZ = round(x * sin(radians) + (-z) * cos(radians)).toInt()
+
+            return BlockLocation(newX, y, newZ)
         }
     }
 

@@ -162,11 +162,7 @@ class ResourcepackGeneration(
         return this.model(childModel ?: parentModel ?: Key.key("minecraft:block/note_block")).also {
             val parentBlock = parent.get<BlockyDirectional>() ?: return@also
             if (childModel == null || childModel == parentModel) when (prefabKey) {
-                parentBlock.zBlock, parentBlock.eastBlock -> {
-                    it.x(90)
-                    it.y(90)
-                }
-
+                parentBlock.zBlock, parentBlock.eastBlock -> it.x(90).y(90)
                 parentBlock.xBlock -> it.x(90)
                 parentBlock.southBlock -> it.y(180)
                 parentBlock.westBlock, parentBlock.upBlock -> it.y(270)
