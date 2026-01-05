@@ -3,9 +3,7 @@ package com.mineinabyss.blocky.systems
 import com.mineinabyss.blocky.blocky
 import com.mineinabyss.blocky.components.features.blocks.BlockyDirectional
 import com.mineinabyss.blocky.helpers.blockyNoteBlock
-import com.mineinabyss.blocky.helpers.blockyTripWire
 import com.mineinabyss.geary.modules.Geary
-import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.geary.papermc.tracking.blocks.components.SetBlock
 import com.mineinabyss.geary.prefabs.PrefabKey
 import com.mineinabyss.idofront.textcomponents.serialize
@@ -38,7 +36,7 @@ object AxiomCompatibility {
     fun registerCustomBlocks() {
         AxiomCustomBlocksAPI.getAPI().unregisterAll(blocky.plugin)
         blocky.blockQuery.forEach { (prefab, block, directional, itemstack) ->
-            if (block.blockType == SetBlock.BlockType.NOTEBLOCK && directional != null) return@forEach
+            if (block.blockType != SetBlock.BlockType.NOTEBLOCK || directional != null) return@forEach
 
             val key = Key.key(prefab.full)
             val translationKey = itemstack?.getData(DataComponentTypes.ITEM_NAME)?.serialize() ?: prefab.full
@@ -56,17 +54,17 @@ object AxiomCompatibility {
 
             val key = Key.key(prefab.full)
             val translationKey = itemstack?.getData(DataComponentTypes.ITEM_NAME)?.serialize() ?: prefab.full
-            val directionalBlocks = AxiomCompatibility.DirectionalBlocks(directional)
+            val directionalBlocks = DirectionalBlocks(directional)
             val builder = when(directionalBlocks.type) {
-                AxiomCompatibility.DirectionalType.AXIS -> {
+                DirectionalType.AXIS -> {
                     val (x, y, z) = directionalBlocks.blocks.take(3).map { it.blockyNoteBlock() }
                     AxiomCustomBlocksAPI.getAPI().createAxis(key, translationKey, x, y, z)
                 }
-                AxiomCompatibility.DirectionalType.HORIZONTAL_FACING -> {
+                DirectionalType.HORIZONTAL_FACING -> {
                     val (n,e,s,w) = directionalBlocks.blocks.take(4).map { it.blockyNoteBlock() }
                     AxiomCustomBlocksAPI.getAPI().createHorizontalFacing(key, translationKey, n, e, s, w)
                 }
-                AxiomCompatibility.DirectionalType.FACING -> {
+                DirectionalType.FACING -> {
                     val (n,e,s,w) = directionalBlocks.blocks.take(4).map { it.blockyNoteBlock() }
                     val (u,d) = directionalBlocks.blocks.takeLast(2).map { it.blockyNoteBlock() }
                     AxiomCustomBlocksAPI.getAPI().createFacing(key, translationKey, n,e,s,w,u,d)

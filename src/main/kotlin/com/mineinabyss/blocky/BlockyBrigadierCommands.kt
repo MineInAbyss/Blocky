@@ -51,8 +51,7 @@ object BlockyBrigadierCommands {
                     val amount by IntegerArgumentType.integer(1)
                     playerExecutes {
                         val gearyItems = location.world.toGeary().getAddon(ItemTracking)
-                        val (player, item, amount) = (executor as? Player
-                            ?: return@playerExecutes) to item()!! to amount()!!
+                        val (player, item, amount) = (executor as? Player ?: return@playerExecutes) to item() to amount()!!
                         if (player.inventory.firstEmpty() == -1) return@playerExecutes player.error("No empty slots in inventory")
 
                         val itemstack = gearyItems.createItem(PrefabKey.of(item.asString()))?.asQuantity(amount)
