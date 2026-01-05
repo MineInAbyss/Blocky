@@ -13,6 +13,7 @@ import com.mineinabyss.geary.papermc.gearyPaper
 import com.mineinabyss.idofront.config.config
 import com.mineinabyss.idofront.di.DI
 import com.mineinabyss.idofront.messaging.observeLogger
+import com.mineinabyss.idofront.plugin.Plugins
 import com.mineinabyss.idofront.plugin.listeners
 import com.nexomc.protectionlib.ProtectionLib
 import io.papermc.paper.configuration.GlobalConfiguration
@@ -54,7 +55,7 @@ class BlockyPlugin : JavaPlugin() {
         )
         CustomBlockData.registerListener(this)
         runCatching {
-            with(gearyPaper.worldManager.global, AxiomCompatibility::registerCustomBlocks)
+            if (Plugins.isEnabled("AxiomPaper")) with(gearyPaper.worldManager.global, AxiomCompatibility::registerCustomBlocks)
         }.onFailure { it.printStackTrace() }
 
         blocky.config.run {
