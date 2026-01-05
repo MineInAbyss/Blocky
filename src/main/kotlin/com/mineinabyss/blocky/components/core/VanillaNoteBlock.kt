@@ -75,10 +75,10 @@ data class VanillaNoteBlock(private var note: Int = 0, private var powered: Bool
     private fun Block.instrumentSound(): String {
         val (stateAbove, stateBelow) = (getRelative(BlockFace.UP).state as CraftBlockState) to (getRelative(BlockFace.DOWN).state as CraftBlockState)
         val instrumentAbove = stateAbove.handle.instrument().takeIf { it.worksAboveNoteBlock() }
-            ?.soundEvent?.unwrapKey()?.getOrNull()?.location()?.path
+            ?.soundEvent?.unwrapKey()?.getOrNull()?.identifier()?.path
         val instrumentBelow = stateBelow.handle.instrument().takeUnless { it.worksAboveNoteBlock() }.let {
             stateBelow.block.toGearyOrNull()?.get<BlockyInstrument>()?.instrument?.asString()
-                ?: it?.soundEvent?.unwrapKey()?.getOrNull()?.location()?.path
+                ?: it?.soundEvent?.unwrapKey()?.getOrNull()?.identifier()?.path
         }
 
         // Check the above block for heads, if none check block below for vanilla-sound or custom-block sound, otherwise default

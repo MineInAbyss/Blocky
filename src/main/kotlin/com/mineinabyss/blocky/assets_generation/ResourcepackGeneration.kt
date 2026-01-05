@@ -111,7 +111,6 @@ class ResourcepackGeneration(
             SetBlock.BlockType.WIRE -> Material.TRIPWIRE to Key.key("block/barrier")
             SetBlock.BlockType.CAVEVINE -> Material.CAVE_VINES to Key.key("block/cave_vines")
             SetBlock.BlockType.STAIR, SetBlock.BlockType.SLAB, SetBlock.BlockType.DOOR, SetBlock.BlockType.TRAPDOOR, SetBlock.BlockType.GRATE -> return null
-            else -> Material.AIR to Key.key("nothing")
         }
 
         multiVariant[vanillaMaterial.createBlockData().propertiesAsString] =

@@ -44,7 +44,7 @@ object BlockStateCorrection {
         blockItem?.let {
             if (blockItem.place(placeContext) == InteractionResult.FAIL) return@withGeary
             // Seems shulkers for some reason do not adhere to the place-item subtraction by default
-            if (placeContext is DirectionalPlaceContext && player.getGameMode() != GameMode.CREATIVE)
+            if (placeContext is DirectionalPlaceContext && player.gameMode != GameMode.CREATIVE)
                 placedItem.subtract(1)
             val target = hitResult.blockPos.let { pos -> player.world.getBlockAt(pos.x, pos.y, pos.z) }
             // Open sign, side will always be front when placed
@@ -59,10 +59,10 @@ object BlockStateCorrection {
         val f = player.xRot
         val g = player.yRot
         val vec3 = player.eyePosition
-        val h = Mth.cos(-g * (Math.PI.toFloat() / 180f) - Math.PI.toFloat())
-        val i = Mth.sin(-g * (Math.PI.toFloat() / 180f) - Math.PI.toFloat())
-        val j = -Mth.cos(-f * (Math.PI.toFloat() / 180f))
-        val k = Mth.sin(-f * (Math.PI.toFloat() / 180f))
+        val h = Mth.cos(-g * (Math.PI / 180f) - Math.PI)
+        val i = Mth.sin(-g * (Math.PI / 180f) - Math.PI)
+        val j = -Mth.cos(-f * (Math.PI / 180f))
+        val k = Mth.sin(-f * (Math.PI / 180f))
         val l = i * j
         val n = h * j
         val d = 5.0
