@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky
 
-import com.jeff_media.customblockdata.CustomBlockData
+import com.nexomc.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.assets_generation.ResourcepackGeneration
 import com.mineinabyss.blocky.listeners.*
 import com.mineinabyss.blocky.systems.*

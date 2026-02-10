@@ -1,6 +1,6 @@
 package com.mineinabyss.blocky.listeners
 
-import com.jeff_media.customblockdata.CustomBlockData
+import com.nexomc.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.events.block.BlockyBlockInteractEvent
 import com.mineinabyss.blocky.blocky

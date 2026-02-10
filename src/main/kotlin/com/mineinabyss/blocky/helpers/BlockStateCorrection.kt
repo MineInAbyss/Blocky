@@ -19,6 +19,8 @@ import org.bukkit.craftbukkit.inventory.CraftItemStack
 import org.bukkit.entity.Player
 import org.bukkit.inventory.EquipmentSlot
 import org.bukkit.inventory.ItemStack
+import kotlin.math.cos
+import kotlin.math.sin
 
 object BlockStateCorrection {
     fun placeItemAsBlock(player: Player, slot: EquipmentSlot, itemStack: ItemStack) = player.withGeary {
@@ -59,10 +61,10 @@ object BlockStateCorrection {
         val f = player.xRot
         val g = player.yRot
         val vec3 = player.eyePosition
-        val h = Mth.cos(-g * (Math.PI / 180f) - Math.PI)
-        val i = Mth.sin(-g * (Math.PI / 180f) - Math.PI)
-        val j = -Mth.cos(-f * (Math.PI / 180f))
-        val k = Mth.sin(-f * (Math.PI / 180f))
+        val h = cos(-g * (Math.PI / 180f) - Math.PI)
+        val i = sin(-g * (Math.PI / 180f) - Math.PI)
+        val j = -cos(-f * (Math.PI / 180f))
+        val k = sin(-f * (Math.PI / 180f))
         val l = i * j
         val n = h * j
         val d = 5.0

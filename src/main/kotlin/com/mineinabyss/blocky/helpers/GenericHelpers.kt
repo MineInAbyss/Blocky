@@ -1,7 +1,7 @@
 package com.mineinabyss.blocky.helpers
 
 import com.destroystokyo.paper.MaterialTags
-import com.jeff_media.customblockdata.CustomBlockData
+import com.nexomc.customblockdata.CustomBlockData
 import com.mineinabyss.blocky.api.BlockyBlocks
 import com.mineinabyss.blocky.api.BlockyBlocks.isBlockyBlock
 import com.mineinabyss.blocky.api.BlockyFurnitures.isBlockyFurniture

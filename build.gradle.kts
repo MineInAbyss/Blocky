@@ -18,7 +18,6 @@ repositories {
     maven("https://repo.mineinabyss.com/snapshots")
     maven("https://repo.nexomc.com/releases")
     maven("https://repo.nexomc.com/snapshots")
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven("https://mvn.lumine.io/repository/maven-public/") // Model Engine
     maven("https://mvn.intellectualsites.com/content/repositories/releases/") // FAWE
     mavenLocal()
