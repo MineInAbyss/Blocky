@@ -29,7 +29,7 @@ data class BlockyFurniture(
     @Serializable
     @SerialName("blocky:interaction_hitbox")
     data class InteractionHitbox(
-        val offset: @Serializable(VectorSerializer::class) Vector = Vector(),
+        val offset: @Serializable(VectorAltSerializer::class) Vector = Vector(),
         val width: Float = 1f,
         val height: Float = 1f,
         val outline: SerializableItemStack = ItemStack.of(Material.GLASS).toSerializable()
@@ -86,8 +86,8 @@ data class BlockyFurniture(
         val persistent: Boolean = true,
         val itemStack: SerializableItemStack? = null,
         val displayTransform: ItemDisplayTransform = ItemDisplayTransform.NONE,
-        val scale: @Serializable(Vector3fSerializer::class) Vector3f = Vector3f(1f, 1f, 1f),
-        val translation: @Serializable(Vector3fSerializer::class) Vector3f = Vector3f(),
+        val scale: @Serializable(Vector3fAltSerializer::class) Vector3f = Vector3f(1f, 1f, 1f),
+        val translation: @Serializable(Vector3fAltSerializer::class) Vector3f = Vector3f(),
         val displayWidth: Float = 0f,
         val displayHeight: Float = 0f,
         val trackingRotation: Billboard = Billboard.FIXED,
